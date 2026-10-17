@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Real-time Status</title>
+<title>LoveLink - Real-time + Push Notification</title>
+<!-- Library Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Library OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
@@ -32,17 +36,18 @@
     font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px; transition: transform 0.1s;
   }
   .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .btn-outline { background: transparent; border: 1px solid #FF7FA8; color: #FF7FA8; margin-top: 12px; }
-  .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; }
-  .success { color: #64FFDA; font-size: 12px; margin-top: 12px; min-height: 18px; }
+  .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
+  .success { color: #64FFDA; font-size: 12px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
   .hidden { display: none !important; }
 
-  /* --- STYLE DASHBOARD STATUS --- */
+  /* DASHBOARD UI */
   .my-status-box {
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
     padding: 15px; border-radius: 15px; margin-bottom: 20px;
   }
-  .my-status-title { font-size: 11px; color: #C9A0B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .my-status-title { font-size: 11px; color: #C9A0B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: left;}
   .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .status-btn {
     padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
@@ -56,45 +61,39 @@
     border: 1px dashed #FF7FA8; padding: 20px 15px; border-radius: 15px; margin-bottom: 20px;
     position: relative; overflow: hidden;
   }
-  .partner-label { font-size: 11px; color: #C9A0B8; margin-bottom: 8px; }
-  .partner-activity { font-size: 18px; font-weight: 700; color: #FF7FA8; z-index: 2; position: relative; }
+  .partner-label { font-size: 11px; color: #C9A0B8; margin-bottom: 8px; text-align: left;}
+  .partner-activity { font-size: 18px; font-weight: 700; color: #FF7FA8; z-index: 2; position: relative; text-align: left;}
 
-  /* Animasi */
+  /* ANIMASI */
   .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
-  
-  /* Motor */
   @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(380px); } }
   .anim-motor { position: absolute; bottom: 10px; font-size: 30px; animation: ride 3s linear infinite; }
-  
-  /* Nugas */
   @keyframes write { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
   .anim-nugas { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); font-size: 30px; animation: write 1s ease-in-out infinite; }
-  
-  /* Tidur */
   @keyframes float { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 1; } }
   .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 30px; animation: float 2s ease-in-out infinite; }
-  
-  /* Idle / Santai */
   @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
   .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
 </style>
 </head>
 <body>
 
-<div class="card hidden" id="authCard">
+<!-- LAYAR LOGIN / REGISTER -->
+<div class="card" id="authCard">
   <h1>LoveLink 💌</h1>
   <p class="sub" id="subtitle">Masuk ke ruang rahasia kalian</p>
-  <input type="email" id="email" placeholder="Alamat Email">
-  <input type="password" id="password" placeholder="Password">
+  <input type="email" id="email" placeholder="Alamat Email" autocomplete="email">
+  <input type="password" id="password" placeholder="Password (min. 6 karakter)" autocomplete="current-password">
   <button class="btn" id="btnAction">Masuk</button>
   <button class="btn btn-outline" id="btnSwitch">Belum punya akun? Daftar</button>
   <div class="error" id="errorMsg"></div>
   <div class="success" id="successMsg"></div>
 </div>
 
+<!-- LAYAR DASHBOARD SETELAH LOGIN -->
 <div class="card hidden" id="dashboardCard">
   <h1>LoveLink 💌</h1>
-  <p class="sub">Real-time Connection</p>
+  <p class="sub">Real-time & Push Connection</p>
   
   <!-- STATUS PACAR -->
   <div class="partner-status-box">
@@ -103,7 +102,7 @@
     <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
   </div>
 
-  <!-- STATUS SAYA -->
+  <!-- TOMBOL UPDATE STATUS -->
   <div class="my-status-box">
     <div class="my-status-title">Update Statusmu:</div>
     <div class="status-grid">
@@ -119,11 +118,26 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // ==========================================
+  // KONFIGURASI (UDAH DIISI OTOMATIS SAMA GUA)
+  // ==========================================
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
+  
+  const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
+  const ONESIGNAL_REST_API_KEY = 'bc131dba-e4b5-4c2d-8291-f9a547603b92';
+
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  // Elemen
+  // --- SETUP ONESIGNAL ---
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({ appId: ONESIGNAL_APP_ID });
+    // Minta izin notifikasi ke user
+    await OneSignal.Slidedown.promptPush(); 
+  });
+
+  // Elemen UI
   const authCard = document.getElementById('authCard');
   const dashboardCard = document.getElementById('dashboardCard');
   const btnAction = document.getElementById('btnAction');
@@ -138,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isLoginMode = true;
   let currentUser = null;
 
-  // --- LOGIN / REGISTER LOGIC ---
+  // --- LOGIKA LOGIN / REGISTER ---
   btnSwitch.addEventListener('click', () => {
     isLoginMode = !isLoginMode;
     errorEl.innerText = ''; successEl.innerText = '';
@@ -179,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
   });
 
-  // --- LOGIKA UPDATE STATUS ---
+  // --- LOGIKA UPDATE STATUS & KIRIM NOTIFIKASI ---
   document.querySelectorAll('.status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!currentUser) return;
@@ -189,18 +203,58 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Update ke Supabase
-      const { error } = await supabaseClient
-        .from('user_status')
-        .upsert({ id: currentUser.id, activity: act, updated_at: new Date() });
-        
-      if (error) alert('Gagal update status: ' + error.message);
+      // 1. Update ke Supabase (Biar Realtime nyala)
+      await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act, updated_at: new Date() });
+
+      // 2. Kirim Push Notif
+      sendPushToPartner(act);
     });
   });
 
-  // --- RENDER ANIMASI PACAR ---
+  async function sendPushToPartner(activity) {
+    try {
+      // Cari ID Device OneSignal punya pacar (selain ID diri sendiri)
+      const { data: partnerData, error } = await supabaseClient
+        .from('profiles')
+        .select('onesignal_id')
+        .neq('id', currentUser.id)
+        .not('onesignal_id', 'is', null)
+        .limit(1)
+        .single();
+
+      if (error || !partnerData || !partnerData.onesignal_id) {
+        console.log('Pacar belum login / belum dapet ID Device.');
+        return;
+      }
+
+      const labels = {
+        'idle': 'Lagi Santai 🛋️',
+        'motor': 'Lagi Naik Motor 🏍️',
+        'nugas': 'Lagi Nugas 📚',
+        'tidur': 'Lagi Tidur 😴'
+      };
+
+      // Tembak API OneSignal untuk Push Notif
+      fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + ONESIGNAL_REST_API_KEY
+        },
+        body: JSON.stringify({
+          app_id: ONESIGNAL_APP_ID,
+          include_player_ids: [partnerData.onesignal_id],
+          headings: { en: 'LoveLink Update 💌' },
+          contents: { en: 'Pacar lu sekarang: ' + labels[activity] }
+        })
+      });
+    } catch (err) {
+      console.error('Gagal kirim notif', err);
+    }
+  }
+
+  // --- RENDER ANIMASI DI LAYAR ---
   function renderPartnerStatus(activity) {
-    // Set teks
     const labels = {
       'idle': '🛋️ Lagi Santai',
       'motor': '🏍️ Lagi Naik Motor',
@@ -209,27 +263,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     partnerActivity.innerText = labels[activity] || 'Nunggu update...';
 
-    // Set animasi
     partnerAnim.innerHTML = '';
-    if (activity === 'motor') {
-      partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
-    } else if (activity === 'nugas') {
-      partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
-    } else if (activity === 'tidur') {
-      partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
-    } else {
-      partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
-    }
+    if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
+    else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
+    else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
+    else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
   }
 
-  // --- SESSION & REALTIME LISTENER ---
+  // --- SESSION MANAGER & REALTIME ---
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (session) {
       currentUser = session.user;
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
-      // 1. Ambil status terakhir dari database (biar ga kosong pas baru buka)
+      // Ambil status terakhir dari database
       const { data: myData } = await supabaseClient.from('user_status').select('activity').eq('id', currentUser.id).single();
       if (myData) {
         document.querySelectorAll('.status-btn').forEach(b => {
@@ -237,11 +285,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // 2. Subscribe ke perubahan database (REALTIME!)
+      // Simpan ID Device OneSignal ke tabel profiles Supabase
+      OneSignalDeferred.push(async function(OneSignal) {
+        const playerId = await OneSignal.getUserId();
+        if (playerId) {
+          await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
+        }
+      });
+
+      // Subscribe ke perubahan database (REALTIME)
       window.statusChannel = supabaseClient.channel('realtime_status')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
-          // Kalau yang berubah BUKAN diri sendiri, berarti itu status pacar
+          // Kalau yang update bukan diri sendiri, ubah layar
           if (newData.id !== currentUser.id) {
             renderPartnerStatus(newData.activity);
           }
