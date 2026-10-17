@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoveLink - Login</title>
+<!-- Panggil Library Supabase via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+  
+  body {
+    background: linear-gradient(135deg, #1A0B14 0%, #2A1420 100%);
+    color: #FCF0F5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 182, 210, 0.15);
+    border-radius: 20px;
+    padding: 30px 20px;
+    width: 100%;
+    max-width: 360px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  h1 { font-size: 26px; color: #FF7FA8; margin-bottom: 5px; }
+  p.sub { font-size: 12px; color: #C9A0B8; margin-bottom: 25px; }
+  
+  input {
+    width: 100%;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,182,210,0.2);
+    color: #FFF;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #FF7FA8; background: rgba(0,0,0,0.3); }
+  
+  .btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #FF7FA8, #C99EFF);
+    color: #2A0018;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid #FF7FA8;
+    color: #FF7FA8;
+    margin-top: 12px;
+  }
+  
+  .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
+  .success { color: #64FFDA; font-size: 12px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
+  
+  .hidden { display: none !important; }
+
+  .user-info {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 13px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .user-info .label { color: #C9A0B8; margin-bottom: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;}
+  .user-info .email { color: #FFF; font-weight: 600; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<!-- LAYAR LOGIN / REGISTER -->
+<div class="card" id="authCard">
+  <h1>LoveLink 💌</h1>
+  <p class="sub" id="subtitle">Masuk ke ruang rahasia kalian</p>
+  
+  <input type="email" id="email" placeholder="Alamat Email" autocomplete="email">
+  <input type="password" id="password" placeholder="Password (min. 6 karakter)" autocomplete="current-password">
+  
+  <!-- Kita hapus onclick, ganti pakai addEventListener di JS -->
+  <button class="btn" id="btnAction">Masuk</button>
+  <button class="btn btn-outline" id="btnSwitch">Belum punya akun? Daftar</button>
+  
+  <div class="error" id="errorMsg"></div>
+  <div class="success" id="successMsg"></div>
+</div>
+
+<!-- LAYAR SETELAH LOGIN SUKSES -->
+<div class="card hidden" id="dashboardCard">
+  <h1>Berhasil! 🎉</h1>
+  <p class="sub">Selamat datang di ruang rahasia kalian.</p>
+  
+  <div class="user-info">
+    <div class="label">Login Sebagai:</div>
+    <div class="email" id="userEmail">-</div>
+  </div>
+  
+  <button class="btn" style="background:rgba(255,100,100,0.15); color:#FF6B6B; border:1px solid rgba(255,100,100,0.3);" id="btnLogout">Logout</button>
+</div>
+
+<script>
+  // Pastikan script jalan setelah halaman dimuat sepenuhnya
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. KONFIGURASI SUPABASE LU
+    const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
+
+    // 2. CEK APAKAH LIBRARY SUPABASE BERHASIL DIMUAT
+    if (!window.supabase) {
+      alert("Gagal memuat library Supabase. Cek koneksi internet lu!");
+      return; // Stop script kalau library gagal load
+    }
+
+    // Inisialisasi Client
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    // 3. AMBIL ELEMEN HTML
+    const authCard = document.getElementById('authCard');
+    const dashboardCard = document.getElementById('dashboardCard');
+    const btnAction = document.getElementById('btnAction');
+    const btnSwitch = document.getElementById('btnSwitch');
+    const btnLogout = document.getElementById('btnLogout');
+    const errorEl = document.getElementById('errorMsg');
+    const successEl = document.getElementById('successMsg');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const subtitle = document.getElementById('subtitle');
+    const userEmail = document.getElementById('userEmail');
+
+    let isLoginMode = true;
+
+    // 4. FUNGSI GANTI MODE (LOGIN <-> DAFTAR)
+    btnSwitch.addEventListener('click', () => {
+      isLoginMode = !isLoginMode;
+      errorEl.innerText = '';
+      successEl.innerText = '';
+
+      if (isLoginMode) {
+        btnAction.innerText = 'Masuk';
+        btnSwitch.innerText = 'Belum punya akun? Daftar';
+        subtitle.innerText = 'Masuk ke ruang rahasia kalian';
+      } else {
+        btnAction.innerText = 'Daftar Akun Baru';
+        btnSwitch.innerText = 'Sudah punya akun? Masuk';
+        subtitle.innerText = 'Buat ruang rahasia kalian sekarang';
+      }
+    });
+
+    // 5. FUNGSI UTAMA (LOGIN / REGISTER)
+    btnAction.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      errorEl.innerText = ''; 
+      successEl.innerText = '';
+
+      if (!email || !password) {
+        errorEl.innerText = 'Email dan password wajib diisi!';
+        return;
+      }
+      if (password.length < 6) {
+        errorEl.innerText = 'Password minimal 6 karakter!';
+        return;
+      }
+
+      // Loading state
+      const originalText = btnAction.innerText;
+      btnAction.innerText = 'Memproses...';
+      btnAction.disabled = true;
+
+      try {
+        if (isLoginMode) {
+          // PROSES LOGIN
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          successEl.innerText = 'Login berhasil! Mengalihkan...';
+          
+        } else {
+          // PROSES DAFTAR
+          const { data, error } = await supabaseClient.auth.signUp({ email, password });
+          if (error) throw error;
+          
+          if (data.user && data.session === null) {
+            successEl.innerText = 'Pendaftaran berhasil! Cek email lu untuk verifikasi.';
+          } else {
+            successEl.innerText = 'Pendaftaran berhasil! Silakan masuk.';
+            btnSwitch.click(); // Balik ke mode login otomatis
+          }
+        }
+      } catch (err) {
+        // Terjemahan Error
+        if (err.message.includes('Invalid login credentials')) {
+          errorEl.innerText = 'Email atau password salah!';
+        } else if (err.message.includes('User already registered')) {
+          errorEl.innerText = 'Email ini sudah terdaftar. Silakan masuk.';
+        } else if (err.message.includes('Email not confirmed')) {
+          errorEl.innerText = 'Email belum diverifikasi. Cek kotak masuk email lu.';
+        } else {
+          errorEl.innerText = err.message;
+        }
+      } finally {
+        // Kembalikan tombol ke semula
+        btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
+        btnAction.disabled = false;
+      }
+    });
+
+    // 6. FUNGSI LOGOUT
+    btnLogout.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      emailInput.value = '';
+      passwordInput.value = '';
+    });
+
+    // 7. SESSION MANAGER (Auto Login)
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        authCard.classList.add('hidden');
+        dashboardCard.classList.remove('hidden');
+        userEmail.innerText = session.user.email;
+      } else {
+        dashboardCard.classList.add('hidden');
+        authCard.classList.remove('hidden');
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>
