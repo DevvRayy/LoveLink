@@ -3,254 +3,258 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Login</title>
-<!-- Panggil Library Supabase via CDN -->
+<title>LoveLink - Real-time Status</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-  
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-  
   body {
     background: linear-gradient(135deg, #1A0B14 0%, #2A1420 100%);
-    color: #FCF0F5;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+    color: #FCF0F5; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
   }
-
   .card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 182, 210, 0.15);
-    border-radius: 20px;
-    padding: 30px 20px;
-    width: 100%;
-    max-width: 360px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    text-align: center;
-    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 182, 210, 0.15);
+    border-radius: 20px; padding: 25px 20px; width: 100%; max-width: 380px;
+    backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
   }
-
-  h1 { font-size: 26px; color: #FF7FA8; margin-bottom: 5px; }
-  p.sub { font-size: 12px; color: #C9A0B8; margin-bottom: 25px; }
+  h1 { font-size: 24px; color: #FF7FA8; margin-bottom: 5px; }
+  p.sub { font-size: 12px; color: #C9A0B8; margin-bottom: 20px; }
   
   input {
-    width: 100%;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,182,210,0.2);
-    color: #FFF;
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 14px;
-    margin-bottom: 12px;
-    outline: none;
-    transition: border-color 0.2s;
+    width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,182,210,0.2);
+    color: #FFF; padding: 12px 14px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none;
   }
-  input:focus { border-color: #FF7FA8; background: rgba(0,0,0,0.3); }
+  input:focus { border-color: #FF7FA8; }
   
   .btn {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: linear-gradient(135deg, #FF7FA8, #C99EFF);
-    color: #2A0018;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: transform 0.1s;
+    width: 100%; padding: 12px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #FF7FA8, #C99EFF); color: #2A0018;
+    font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px; transition: transform 0.1s;
   }
   .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid #FF7FA8;
-    color: #FF7FA8;
-    margin-top: 12px;
-  }
-  
-  .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
-  .success { color: #64FFDA; font-size: 12px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
-  
+  .btn-outline { background: transparent; border: 1px solid #FF7FA8; color: #FF7FA8; margin-top: 12px; }
+  .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; }
+  .success { color: #64FFDA; font-size: 12px; margin-top: 12px; min-height: 18px; }
   .hidden { display: none !important; }
 
-  .user-info {
-    background: rgba(255,255,255,0.05);
-    padding: 15px;
-    border-radius: 12px;
-    text-align: left;
-    font-size: 13px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+  /* --- STYLE DASHBOARD STATUS --- */
+  .my-status-box {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px; border-radius: 15px; margin-bottom: 20px;
   }
-  .user-info .label { color: #C9A0B8; margin-bottom: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;}
-  .user-info .email { color: #FFF; font-weight: 600; word-break: break-all; }
+  .my-status-title { font-size: 11px; color: #C9A0B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .status-btn {
+    padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.2); color: #FFF; font-size: 12px; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .status-btn.active { background: linear-gradient(135deg, rgba(255,127,168,0.3), rgba(201,158,255,0.3)); border-color: #FF7FA8; font-weight: 700; }
+  
+  .partner-status-box {
+    background: linear-gradient(135deg, rgba(255,127,168,0.1), rgba(201,158,255,0.05));
+    border: 1px dashed #FF7FA8; padding: 20px 15px; border-radius: 15px; margin-bottom: 20px;
+    position: relative; overflow: hidden;
+  }
+  .partner-label { font-size: 11px; color: #C9A0B8; margin-bottom: 8px; }
+  .partner-activity { font-size: 18px; font-weight: 700; color: #FF7FA8; z-index: 2; position: relative; }
+
+  /* Animasi */
+  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
+  
+  /* Motor */
+  @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(380px); } }
+  .anim-motor { position: absolute; bottom: 10px; font-size: 30px; animation: ride 3s linear infinite; }
+  
+  /* Nugas */
+  @keyframes write { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
+  .anim-nugas { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); font-size: 30px; animation: write 1s ease-in-out infinite; }
+  
+  /* Tidur */
+  @keyframes float { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 1; } }
+  .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 30px; animation: float 2s ease-in-out infinite; }
+  
+  /* Idle / Santai */
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+  .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
 </style>
 </head>
 <body>
 
-<!-- LAYAR LOGIN / REGISTER -->
-<div class="card" id="authCard">
+<div class="card hidden" id="authCard">
   <h1>LoveLink 💌</h1>
   <p class="sub" id="subtitle">Masuk ke ruang rahasia kalian</p>
-  
-  <input type="email" id="email" placeholder="Alamat Email" autocomplete="email">
-  <input type="password" id="password" placeholder="Password (min. 6 karakter)" autocomplete="current-password">
-  
-  <!-- Kita hapus onclick, ganti pakai addEventListener di JS -->
+  <input type="email" id="email" placeholder="Alamat Email">
+  <input type="password" id="password" placeholder="Password">
   <button class="btn" id="btnAction">Masuk</button>
   <button class="btn btn-outline" id="btnSwitch">Belum punya akun? Daftar</button>
-  
   <div class="error" id="errorMsg"></div>
   <div class="success" id="successMsg"></div>
 </div>
 
-<!-- LAYAR SETELAH LOGIN SUKSES -->
 <div class="card hidden" id="dashboardCard">
-  <h1>Berhasil! 🎉</h1>
-  <p class="sub">Selamat datang di ruang rahasia kalian.</p>
+  <h1>LoveLink 💌</h1>
+  <p class="sub">Real-time Connection</p>
   
-  <div class="user-info">
-    <div class="label">Login Sebagai:</div>
-    <div class="email" id="userEmail">-</div>
+  <!-- STATUS PACAR -->
+  <div class="partner-status-box">
+    <div class="anim-container" id="partnerAnim"></div>
+    <div class="partner-label">Pacar lu lagi:</div>
+    <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
+  </div>
+
+  <!-- STATUS SAYA -->
+  <div class="my-status-box">
+    <div class="my-status-title">Update Statusmu:</div>
+    <div class="status-grid">
+      <button class="status-btn" data-act="idle">🛋️ Santai</button>
+      <button class="status-btn" data-act="motor">🏍️ Naik Motor</button>
+      <button class="status-btn" data-act="nugas">📚 Lagi Nugas</button>
+      <button class="status-btn" data-act="tidur">😴 Tidur</button>
+    </div>
   </div>
   
   <button class="btn" style="background:rgba(255,100,100,0.15); color:#FF6B6B; border:1px solid rgba(255,100,100,0.3);" id="btnLogout">Logout</button>
 </div>
 
 <script>
-  // Pastikan script jalan setelah halaman dimuat sepenuhnya
-  document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. KONFIGURASI SUPABASE LU
-    const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
+document.addEventListener('DOMContentLoaded', () => {
+  const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-    // 2. CEK APAKAH LIBRARY SUPABASE BERHASIL DIMUAT
-    if (!window.supabase) {
-      alert("Gagal memuat library Supabase. Cek koneksi internet lu!");
-      return; // Stop script kalau library gagal load
-    }
+  // Elemen
+  const authCard = document.getElementById('authCard');
+  const dashboardCard = document.getElementById('dashboardCard');
+  const btnAction = document.getElementById('btnAction');
+  const btnSwitch = document.getElementById('btnSwitch');
+  const btnLogout = document.getElementById('btnLogout');
+  const errorEl = document.getElementById('errorMsg');
+  const successEl = document.getElementById('successMsg');
+  const partnerActivity = document.getElementById('partnerActivity');
+  const partnerAnim = document.getElementById('partnerAnim');
+  const subtitle = document.getElementById('subtitle');
 
-    // Inisialisasi Client
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  let isLoginMode = true;
+  let currentUser = null;
 
-    // 3. AMBIL ELEMEN HTML
-    const authCard = document.getElementById('authCard');
-    const dashboardCard = document.getElementById('dashboardCard');
-    const btnAction = document.getElementById('btnAction');
-    const btnSwitch = document.getElementById('btnSwitch');
-    const btnLogout = document.getElementById('btnLogout');
-    const errorEl = document.getElementById('errorMsg');
-    const successEl = document.getElementById('successMsg');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const subtitle = document.getElementById('subtitle');
-    const userEmail = document.getElementById('userEmail');
-
-    let isLoginMode = true;
-
-    // 4. FUNGSI GANTI MODE (LOGIN <-> DAFTAR)
-    btnSwitch.addEventListener('click', () => {
-      isLoginMode = !isLoginMode;
-      errorEl.innerText = '';
-      successEl.innerText = '';
-
-      if (isLoginMode) {
-        btnAction.innerText = 'Masuk';
-        btnSwitch.innerText = 'Belum punya akun? Daftar';
-        subtitle.innerText = 'Masuk ke ruang rahasia kalian';
-      } else {
-        btnAction.innerText = 'Daftar Akun Baru';
-        btnSwitch.innerText = 'Sudah punya akun? Masuk';
-        subtitle.innerText = 'Buat ruang rahasia kalian sekarang';
-      }
-    });
-
-    // 5. FUNGSI UTAMA (LOGIN / REGISTER)
-    btnAction.addEventListener('click', async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-
-      errorEl.innerText = ''; 
-      successEl.innerText = '';
-
-      if (!email || !password) {
-        errorEl.innerText = 'Email dan password wajib diisi!';
-        return;
-      }
-      if (password.length < 6) {
-        errorEl.innerText = 'Password minimal 6 karakter!';
-        return;
-      }
-
-      // Loading state
-      const originalText = btnAction.innerText;
-      btnAction.innerText = 'Memproses...';
-      btnAction.disabled = true;
-
-      try {
-        if (isLoginMode) {
-          // PROSES LOGIN
-          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          successEl.innerText = 'Login berhasil! Mengalihkan...';
-          
-        } else {
-          // PROSES DAFTAR
-          const { data, error } = await supabaseClient.auth.signUp({ email, password });
-          if (error) throw error;
-          
-          if (data.user && data.session === null) {
-            successEl.innerText = 'Pendaftaran berhasil! Cek email lu untuk verifikasi.';
-          } else {
-            successEl.innerText = 'Pendaftaran berhasil! Silakan masuk.';
-            btnSwitch.click(); // Balik ke mode login otomatis
-          }
-        }
-      } catch (err) {
-        // Terjemahan Error
-        if (err.message.includes('Invalid login credentials')) {
-          errorEl.innerText = 'Email atau password salah!';
-        } else if (err.message.includes('User already registered')) {
-          errorEl.innerText = 'Email ini sudah terdaftar. Silakan masuk.';
-        } else if (err.message.includes('Email not confirmed')) {
-          errorEl.innerText = 'Email belum diverifikasi. Cek kotak masuk email lu.';
-        } else {
-          errorEl.innerText = err.message;
-        }
-      } finally {
-        // Kembalikan tombol ke semula
-        btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
-        btnAction.disabled = false;
-      }
-    });
-
-    // 6. FUNGSI LOGOUT
-    btnLogout.addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
-      emailInput.value = '';
-      passwordInput.value = '';
-    });
-
-    // 7. SESSION MANAGER (Auto Login)
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        authCard.classList.add('hidden');
-        dashboardCard.classList.remove('hidden');
-        userEmail.innerText = session.user.email;
-      } else {
-        dashboardCard.classList.add('hidden');
-        authCard.classList.remove('hidden');
-      }
-    });
-
+  // --- LOGIN / REGISTER LOGIC ---
+  btnSwitch.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    errorEl.innerText = ''; successEl.innerText = '';
+    btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
+    btnSwitch.innerText = isLoginMode ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk';
+    subtitle.innerText = isLoginMode ? 'Masuk ke ruang rahasia kalian' : 'Buat ruang rahasia kalian sekarang';
   });
-</script>
 
+  btnAction.addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    errorEl.innerText = ''; successEl.innerText = '';
+
+    if (!email || !password) return errorEl.innerText = 'Email & password wajib diisi!';
+
+    btnAction.innerText = 'Memproses...'; btnAction.disabled = true;
+
+    try {
+      if (isLoginMode) {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) throw error;
+        if (data.session) btnSwitch.click();
+        else successEl.innerText = 'Cek email untuk verifikasi.';
+      }
+    } catch (err) {
+      errorEl.innerText = err.message.includes('Invalid') ? 'Email/password salah!' : err.message;
+    } finally {
+      btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
+      btnAction.disabled = false;
+    }
+  });
+
+  btnLogout.addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
+  });
+
+  // --- LOGIKA UPDATE STATUS ---
+  document.querySelectorAll('.status-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!currentUser) return;
+      const act = btn.getAttribute('data-act');
+      
+      // Update UI Lokal
+      document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Update ke Supabase
+      const { error } = await supabaseClient
+        .from('user_status')
+        .upsert({ id: currentUser.id, activity: act, updated_at: new Date() });
+        
+      if (error) alert('Gagal update status: ' + error.message);
+    });
+  });
+
+  // --- RENDER ANIMASI PACAR ---
+  function renderPartnerStatus(activity) {
+    // Set teks
+    const labels = {
+      'idle': '🛋️ Lagi Santai',
+      'motor': '🏍️ Lagi Naik Motor',
+      'nugas': '📚 Lagi Nugas',
+      'tidur': '😴 Lagi Tidur'
+    };
+    partnerActivity.innerText = labels[activity] || 'Nunggu update...';
+
+    // Set animasi
+    partnerAnim.innerHTML = '';
+    if (activity === 'motor') {
+      partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
+    } else if (activity === 'nugas') {
+      partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
+    } else if (activity === 'tidur') {
+      partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
+    } else {
+      partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
+    }
+  }
+
+  // --- SESSION & REALTIME LISTENER ---
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if (session) {
+      currentUser = session.user;
+      authCard.classList.add('hidden');
+      dashboardCard.classList.remove('hidden');
+
+      // 1. Ambil status terakhir dari database (biar ga kosong pas baru buka)
+      const { data: myData } = await supabaseClient.from('user_status').select('activity').eq('id', currentUser.id).single();
+      if (myData) {
+        document.querySelectorAll('.status-btn').forEach(b => {
+          if (b.getAttribute('data-act') === myData.activity) b.classList.add('active');
+        });
+      }
+
+      // 2. Subscribe ke perubahan database (REALTIME!)
+      window.statusChannel = supabaseClient.channel('realtime_status')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
+          const newData = payload.new;
+          // Kalau yang berubah BUKAN diri sendiri, berarti itu status pacar
+          if (newData.id !== currentUser.id) {
+            renderPartnerStatus(newData.activity);
+          }
+        })
+        .subscribe();
+
+    } else {
+      currentUser = null;
+      authCard.classList.remove('hidden');
+      dashboardCard.classList.add('hidden');
+    }
+  });
+});
+</script>
 </body>
 </html>
