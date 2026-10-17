@@ -277,6 +277,10 @@ const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyreg
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
+      OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.Slidedown.promptPush();
+});
+
       // Ambil status terakhir dari database
       const { data: myData } = await supabaseClient.from('user_status').select('activity').eq('id', currentUser.id).single();
       if (myData) {
