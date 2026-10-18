@@ -15,45 +15,33 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  /* FONTS */
   @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
   
-  /* --- WARM DARK COZY TOKENS --- */
   :root {
     --bg: #1E1816;
     --surface: #2C2421;
     --surface-hover: #382E2A;
-    
     --primary: #E5B98E;
     --secondary: #DCA3A5;
     --tertiary: #B8C4A8;
-    
     --text-main: #FDFBF7;
     --text-sub: #A89B93;
-    
     --border: #3F342F;
     --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-    
     --radius-xl: 32px;
     --radius-lg: 24px;
     --radius-md: 16px;
     --radius-pill: 50px;
-    
     --transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Quicksand', sans-serif; -webkit-tap-highlight-color: transparent; }
-  
-  body {
-    background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
-    display: flex; justify-content: center; align-items: center; padding: 16px;
-    overflow-x: hidden; position: relative; line-height: 1.5; 
-  }
+  body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; overflow-x: hidden; position: relative; line-height: 1.5; }
 
-  /* BACKGROUND */
+  /* BACKGROUND DECOR */
   .bg-decor { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0.4; }
   .cloud { position: absolute; background: var(--surface); border-radius: 50px; filter: blur(20px); }
   .cloud-1 { width: 150px; height: 80px; top: 10%; left: -20px; }
@@ -63,56 +51,28 @@
   @keyframes twinkle { from { opacity: 0.1; transform: scale(0.8); } to { opacity: 0.5; transform: scale(1.2); } }
 
   /* AUDIO BUTTON */
-  .audio-toggle { 
-    position: fixed; top: 20px; right: 20px; z-index: 900; /* Lowered so it doesn't overlap modals */
-    width: 48px; height: 48px; border-radius: 50%; 
-    background: var(--surface); border: 2px solid var(--border); 
-    color: var(--primary); font-size: 20px; display: grid; place-items: center; 
-    cursor: pointer; box-shadow: var(--shadow); transition: var(--bounce); 
-  }
+  .audio-toggle { position: fixed; top: 20px; right: 20px; z-index: 900; width: 48px; height: 48px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); color: var(--primary); font-size: 20px; display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow); transition: var(--bounce); }
   .audio-toggle.active { background: var(--primary); color: var(--bg); border-color: var(--primary); }
   .audio-toggle:active { transform: scale(0.9); }
 
   /* MAIN CARD */
-  .card { 
-    width: 100%; max-width: 420px; 
-    border-radius: var(--radius-xl); 
-    padding: 24px 20px; 
-    display: flex; flex-direction: column; gap: 20px; 
-    background: var(--surface);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    position: relative; z-index: 10;
-    animation: slide-up 0.6s var(--bounce) both; 
-  }
+  .card { width: 100%; max-width: 420px; border-radius: var(--radius-xl); padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; z-index: 10; animation: slide-up 0.6s var(--bounce) both; }
   @keyframes slide-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-  /* TYPOGRAPHY */
+  /* TYPOGRAPHY & INPUTS */
   h1 { font-family: 'Fredoka', sans-serif; font-size: 28px; font-weight: 600; color: var(--primary); text-align: center; }
   p.sub { font-size: 14px; color: var(--text-sub); font-weight: 600; text-align: center; }
   .title-small { font-family: 'Fredoka', sans-serif; font-size: 15px; color: var(--text-main); font-weight: 500; margin-bottom: 10px; text-align: left; }
-
-  /* INPUTS */
   .input-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
   .input-group label { font-size: 13px; color: var(--text-sub); font-weight: 700; margin-left: 8px; }
-  input, textarea { 
-    width: 100%; background: var(--bg); border: 2px solid var(--border); 
-    color: var(--text-main); padding: 16px; border-radius: var(--radius-md); 
-    font-size: 15px; font-weight: 600; outline: none; transition: var(--transition); 
-  }
+  input, textarea { width: 100%; background: var(--bg); border: 2px solid var(--border); color: var(--text-main); padding: 16px; border-radius: var(--radius-md); font-size: 15px; font-weight: 600; outline: none; transition: var(--transition); }
   input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(229, 185, 142, 0.15); }
   textarea { height: 100px; resize: none; }
   input[type="file"] { padding: 12px; font-size: 13px; cursor: pointer; }
   input[type="file"]::file-selector-button { background: var(--secondary); color: var(--bg); border: none; border-radius: 10px; padding: 8px 12px; font-weight: 800; margin-right: 10px; cursor: pointer; }
 
   /* BUTTONS */
-  .btn { 
-    width: 100%; padding: 16px; border-radius: var(--radius-pill); 
-    border: 2px solid transparent; background: var(--surface-hover); 
-    color: var(--text-main); font-family: 'Fredoka', sans-serif; font-weight: 500; font-size: 16px; 
-    cursor: pointer; transition: var(--bounce); display: flex; justify-content: center; align-items: center; gap: 8px; 
-    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-  }
+  .btn { width: 100%; padding: 16px; border-radius: var(--radius-pill); border: 2px solid transparent; background: var(--surface-hover); color: var(--text-main); font-family: 'Fredoka', sans-serif; font-weight: 500; font-size: 16px; cursor: pointer; transition: var(--bounce); display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
   .btn:active { transform: translateY(4px); box-shadow: none; }
   .btn-primary { background: var(--primary); color: var(--bg); box-shadow: 0 4px 0 #B88E63; }
   .btn-accent { background: var(--secondary); color: var(--bg); box-shadow: 0 4px 0 #B07C7D; }
@@ -122,11 +82,7 @@
   .span-full { grid-column: 1 / -1; }
 
   /* PROFILE HEADER */
-  .profile-header { 
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: var(--bg); border: 2px dashed var(--border); 
-    border-radius: var(--radius-xl); padding: 24px 16px; position: relative; overflow: hidden;
-  }
+  .profile-header { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); border: 2px dashed var(--border); border-radius: var(--radius-xl); padding: 24px 16px; position: relative; overflow: hidden; }
   .days-together { font-family: 'Fredoka', sans-serif; font-size: 42px; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 4px; }
   .days-label { font-size: 14px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;}
   .avatars-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; position: relative; }
@@ -153,7 +109,7 @@
   .action-row { display: flex; gap: 10px; width: 100%; }
   .action-row .btn { padding: 12px; font-size: 14px; }
 
-  /* COUNTDOWN */
+  /* COUNTDOWN & STATUS */
   .countdown-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; position: relative; }
   .countdown-timer { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
   .time-block { display: flex; flex-direction: column; align-items: center; background: var(--surface); padding: 10px; border-radius: var(--radius-md); min-width: 60px; border: 1px solid var(--border); }
@@ -162,8 +118,6 @@
   .btn-edit-countdown { position: absolute; top: 16px; right: 16px; background: var(--surface); border: 1px solid var(--border); color: var(--text-main); padding: 8px; border-radius: 50%; cursor: pointer; transition: var(--bounce);}
   .btn-edit-countdown:active { transform: scale(0.9); }
   .meet-today { font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 600; color: var(--secondary); text-align: center; margin: 10px 0; }
-
-  /* PARTNER STATUS */
   .partner-status-box { background: var(--bg); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius-xl); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left; }
   .partner-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   .partner-activity { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 500; color: var(--primary); z-index: 2; position: relative; }
@@ -184,7 +138,6 @@
   .anim-ngobrol { position: absolute; top: 30%; left: 30px; font-size: 32px; animation: pulse 2s ease-in-out infinite; }
   .anim-beres { position: absolute; bottom: 20px; right: 30px; font-size: 32px; animation: write 1.5s ease-in-out infinite; }
 
-  /* STATUS GRID */
   .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .status-btn { padding: 12px 8px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg); color: var(--text-sub); font-size: 13px; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 6px; }
   .status-btn.active { background: var(--surface); border-color: var(--primary); color: var(--primary); }
@@ -205,16 +158,25 @@
   .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 20px; text-align: center; color: var(--primary);}
 
   /* SHARELOCK */
-  .map-wrapper { position: relative; width: 100%; height: 280px; border-radius: var(--radius-lg); overflow: hidden; border: 2px solid var(--border); margin-bottom: 20px; z-index: 1; }
+  .map-wrapper { position: relative; width: 100%; height: 280px; border-radius: var(--radius-lg); overflow: hidden; border: 2px solid var(--border); margin-bottom: 24px; z-index: 1; }
   #map { height: 100%; width: 100%; z-index: 1; }
-  .map-overlay-avatars { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 40px; z-index: 400; pointer-events: none; }
-  .map-avatar { width: 50px; height: 50px; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 4px 10px rgba(0,0,0,0.5); object-fit: cover; background: var(--surface);}
-  .map-avatar.me { border-color: var(--primary); } .map-avatar.partner { border-color: var(--secondary); }
-  .map-distance-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--surface); border: 2px solid var(--border); color: var(--primary); font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-pill); z-index: 401; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 4px; }
+  
+  .map-distance-badge { 
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); 
+    background: var(--surface); border: 2px solid var(--border); color: var(--primary); 
+    font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 600; 
+    padding: 8px 18px; border-radius: var(--radius-pill); z-index: 400; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 6px; 
+  }
+  
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
   .mode-btn { padding: 12px; border-radius: var(--radius-md); border: 2px solid var(--border); background: var(--bg); color: var(--text-main); font-size: 24px; cursor: pointer; transition: var(--bounce); }
   .mode-btn.active { background: var(--primary); border-color: var(--primary); color: var(--bg); transform: scale(1.05);}
-  .map-icon { font-size: 24px; text-align: center; line-height: 30px; } /* FIX: line-height for icon centering */
+  
+  /* CUSTOM MAP AVATAR ICON */
+  .custom-map-avatar { position: relative; width: 44px; height: 44px; }
+  .custom-map-avatar img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--surface); background: var(--surface); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .custom-map-avatar .mode-icon { position: absolute; bottom: -6px; right: -6px; background: var(--bg); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; font-size: 12px; border: 1px solid var(--border); }
 
   /* LOVE NOTES */
   .note-color-picker { display: flex; gap: 12px; margin-bottom: 16px; justify-content: center; }
@@ -275,7 +237,6 @@
   .bucket-delete { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; padding: 5px; transition: 0.2s;}
   .bucket-delete:hover { color: var(--secondary); }
 
-  /* INCOMING NOTIFICATION */
   #incomingReminderModal { justify-content: center; } 
   #incomingReminderModal .modal-content { border-radius: var(--radius-xl); transform: scale(0.9); max-width: 340px; }
   #incomingReminderModal.show .modal-content { transform: scale(1); }
@@ -297,7 +258,6 @@
 </head>
 <body>
 
-<!-- DECORATIONS -->
 <div class="bg-decor">
   <div class="cloud cloud-1"></div>
   <div class="cloud cloud-2"></div>
@@ -334,7 +294,6 @@
 <!-- LAYAR DASHBOARD -->
 <div class="card hidden" id="dashboardCard">
   
-  <!-- PROFILE HEADER -->
   <div class="profile-header">
     <div class="days-together" id="daysTogether">0</div>
     <div class="days-label">Hari Bersama</div>
@@ -357,14 +316,12 @@
   </div>
 
   <div class="dashboard-grid">
-    <!-- COUNTDOWN -->
     <div class="countdown-box span-full" id="countdownBox">
       <button class="btn-edit-countdown" id="btnEditCountdown">✏️</button>
       <div class="title-small" style="text-align:center; margin-bottom: 4px;">Menuju Ketemuan</div>
       <div id="countdownDisplay" class="countdown-timer"></div>
     </div>
 
-    <!-- KANGEN GAUGE -->
     <div class="kangen-section span-full">
       <div class="gauge-container">
         <svg class="gauge-svg" viewBox="0 0 100 100">
@@ -388,14 +345,12 @@
       </div>
     </div>
 
-    <!-- PARTNER STATUS -->
     <div class="partner-status-box span-full">
       <div class="anim-container" id="partnerAnim"></div>
       <div class="partner-label">Pacar lu lagi:</div>
       <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
     </div>
 
-    <!-- CUTE ACTION BUTTONS -->
     <button class="cute-action-btn" id="btnOpenTimeline">
       <div class="icon-wrap"><div class="icon">📸</div></div>
       <div class="text">Memory Time</div>
@@ -429,7 +384,6 @@
       <div class="text">Surat Waktu</div>
     </button>
 
-    <!-- UPDATE STATUS -->
     <div class="span-full" style="background: var(--bg); padding: 16px; border-radius: var(--radius-xl); border: 1px solid var(--border);">
       <div class="title-small">Update Statusmu:</div>
       <div class="status-grid">
@@ -509,17 +463,14 @@
   </div>
 </div>
 
-<!-- MODAL SHARELOCK -->
+<!-- MODAL SHARELOCK (FIXED OVERLAY) -->
 <div class="modal" id="shareLockModal">
   <div class="modal-content" style="padding: 16px; background: var(--surface);">
     <h2 style="margin-bottom: 12px;">📍 ShareLock</h2>
     
     <div class="map-wrapper">
       <div id="map"></div>
-      <div class="map-overlay-avatars">
-        <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Me&backgroundColor=ffdfbf" class="map-avatar me">
-        <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Partner&backgroundColor=ffd5dc" class="map-avatar partner">
-      </div>
+      <!-- Badge Jarak dipindah ke bawah peta biar ga nimpa avatar -->
       <div class="map-distance-badge">
         ❤️ <span id="distanceInfo">- km</span>
       </div>
@@ -650,12 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // FIX: Safari iOS Audio Context Hack
   const unlockAudio = () => {
     AudioManager.init();
-    if (!AudioManager.isBgmPlaying && !document.getElementById('audioToggle').classList.contains('active')) { 
-      AudioManager.toggleBgm(); 
-    }
+    if (!AudioManager.isBgmPlaying && !document.getElementById('audioToggle').classList.contains('active')) { AudioManager.toggleBgm(); }
     document.body.removeEventListener('touchstart', unlockAudio);
     document.body.removeEventListener('click', unlockAudio);
   };
@@ -920,9 +868,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- SHARELOCK LOGIC ---
+  // --- SHARELOCK LOGIC (FIXED OVERLAY) ---
   const modeIcons = { 'motor': '🏍️', 'jalan': '🚶', 'mobil': '🚗' };
-  function createCustomIcon(mode) { return L.divIcon({ html: `<div class="map-icon">${modeIcons[mode] || '📍'}</div>`, className: '', iconSize: [30, 30], iconAnchor: [15, 15] }); }
+  
+  function createCustomAvatarIcon(mode, isPartner) {
+    const avatarUrl = isPartner 
+      ? 'https://api.dicebear.com/7.x/notionists/svg?seed=Partner&backgroundColor=ffd5dc' 
+      : 'https://api.dicebear.com/7.x/notionists/svg?seed=Me&backgroundColor=ffdfbf';
+    const borderColor = isPartner ? '#DCA3A5' : '#E5B98E'; // Gunakan HEX karena Leaflet HTML
+
+    return L.divIcon({
+      html: `
+        <div class="custom-map-avatar" style="border-color: ${borderColor};">
+          <img src="${avatarUrl}" alt="Avatar">
+          <div class="mode-icon">${modeIcons[mode] || '📍'}</div>
+        </div>
+      `,
+      className: '', 
+      iconSize: [44, 44], 
+      iconAnchor: [22, 22]
+    });
+  }
+
   function hitungJarak(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180; const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return (R * c).toFixed(2); }
   
   let lastMapUpdate = 0;
@@ -940,15 +907,25 @@ document.addEventListener('DOMContentLoaded', () => {
   btnOpenShareLock.addEventListener('click', () => {
     shareLockModal.classList.add('show');
     setTimeout(() => {
-      if (!mapInitialized) { map = L.map('map').setView([-6.175392, 106.827153], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); mapInitialized = true; }
+      if (!mapInitialized) { 
+        map = L.map('map', { zoomControl: false }).setView([-6.175392, 106.827153], 15); // Disable zoom control default
+        L.control.zoom({ position: 'topright' }).addTo(map); // Pindah ke kanan atas biar ga ketutupan
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); 
+        mapInitialized = true; 
+      }
       if (map) map.invalidateSize();
       if (lastPartnerLat && lastPartnerLng) updatePartnerMap(lastPartnerLat, lastPartnerLng, lastPartnerMode);
-      updateDistanceInfo(); centerMapToBoth(); // Auto-center only on open
+      updateDistanceInfo(); 
+      centerMapToBoth(); // Auto-center only on open
     }, 300);
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
-            if (map) { if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); else myMarker.setLatLng([latitude, longitude]); updateDistanceInfo(); }
+            if (map) { 
+              if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomAvatarIcon(myMode, false) }).addTo(map); 
+              else myMarker.setLatLng([latitude, longitude]); 
+              updateDistanceInfo(); 
+            }
         }, (err) => console.log("GPS Error:", err), { enableHighAccuracy: true });
     }
   });
@@ -958,7 +935,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       modeBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); myMode = btn.getAttribute('data-mode');
       if (isTracking && currentUser) supabaseClient.from('user_status').update({ transport_mode: myMode }).eq('id', currentUser.id);
-      if (myMarker) myMarker.setIcon(createCustomIcon(myMode));
+      if (myMarker) myMarker.setIcon(createCustomAvatarIcon(myMode, false));
     });
   });
 
@@ -971,7 +948,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const { latitude, longitude } = pos.coords;
           btnToggleTracking.innerText = 'Berhenti Bagikan Lokasi'; btnToggleTracking.style.background = 'var(--secondary)'; btnToggleTracking.style.borderColor = 'transparent'; btnToggleTracking.style.color = 'var(--bg)';
           await supabaseClient.from('user_status').update({ latitude, longitude, transport_mode: myMode }).eq('id', currentUser.id);
-          if (map) { if (!myMarker) { myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); } else { myMarker.setLatLng([latitude, longitude]); myMarker.setIcon(createCustomIcon(myMode)); } updateDistanceInfo(); } // REMOVED centerMapToBoth() to stop resetting
+          if (map) { 
+            if (!myMarker) { myMarker = L.marker([latitude, longitude], { icon: createCustomAvatarIcon(myMode, false) }).addTo(map); } 
+            else { myMarker.setLatLng([latitude, longitude]); myMarker.setIcon(createCustomAvatarIcon(myMode, false)); } 
+            updateDistanceInfo(); 
+          }
         },
         (err) => {
           if (err.code === 1) { alert("Izin lokasi ditolak! Pastikan buka via HTTPS dan izinkan akses lokasi."); isTracking = false; btnToggleTracking.innerText = 'Mulai Bagikan Lokasi'; btnToggleTracking.style.background = ''; btnToggleTracking.classList.add('btn-accent'); btnToggleTracking.style.color = ''; } 
@@ -988,8 +969,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updatePartnerMap(lat, lng, mode) {
     lastPartnerLat = lat; lastPartnerLng = lng; lastPartnerMode = mode; if (!map) return;
-    if (partnerMarker) { partnerMarker.setLatLng([lat, lng]); partnerMarker.setIcon(createCustomIcon(mode)); } else { partnerMarker = L.marker([lat, lng], { icon: createCustomIcon(mode) }).addTo(map); }
-    updateDistanceInfo(); // REMOVED centerMapToBoth() to stop resetting
+    if (partnerMarker) { partnerMarker.setLatLng([lat, lng]); partnerMarker.setIcon(createCustomAvatarIcon(mode, true)); } 
+    else { partnerMarker = L.marker([lat, lng], { icon: createCustomAvatarIcon(mode, true) }).addTo(map); }
+    updateDistanceInfo(); 
   }
 
   // --- LOGIN LOGIC ---
@@ -1055,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.warn('Gagal jalan:', err.message);
     } finally {
-      isProcessingMove = false; // FIX: Prevent lockout
+      isProcessingMove = false; 
     }
   }
   function checkWinner(b) { const lines = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]]; for (let line of lines) { if (b[line[0]] && b[line[0]] === b[line[1]] && b[line[0]] === b[line[2]]) return b[line[0]]; } if (!b.includes('')) return 'Seri'; return ''; }
