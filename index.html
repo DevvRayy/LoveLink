@@ -15,111 +15,55 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  /* Font Lucu & Modern */
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
   
-  * { 
-    box-sizing: border-box; margin: 0; padding: 0; 
-    font-family: 'Nunito', sans-serif; 
-    -webkit-tap-highlight-color: transparent; 
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
   
   :root {
     --bg: #140E13;
     --card-bg: rgba(36, 26, 36, 0.7);
     --card-border: rgba(255, 180, 200, 0.15);
-    
     --text-main: #FFF0F5;
     --text-sub: #B49FAD;
-    
     --primary: #FF8BA7;
     --primary-glow: rgba(255, 139, 167, 0.5);
     --accent: #C99EFF;
     --accent-glow: rgba(201, 158, 255, 0.5);
-    
     --danger: #FF6B6B;
     --success: #64FFDA;
-    
     --radius-lg: 28px;
     --radius-md: 20px;
     --radius-sm: 14px;
-    
     --transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     --smooth-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   body {
-    background-color: var(--bg);
-    color: var(--text-main); 
-    min-height: 100vh; 
-    display: flex; justify-content: center; align-items: center; 
-    padding: 16px;
-    overflow-x: hidden;
-    position: relative;
-    line-height: 1.5;
-    /* Optimasi GPU */
-    transform: translate3d(0,0,0); 
+    background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
+    display: flex; justify-content: center; align-items: center; padding: 16px;
+    overflow-x: hidden; position: relative; line-height: 1.5; transform: translate3d(0,0,0); 
   }
 
-  /* --- OPTIMASI BACKGROUND (CSS MURNI, NO JS) --- */
+  /* --- BACKGROUND --- */
   .bg-shapes { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
-  .shape {
-    position: absolute; background: var(--primary); border-radius: 50%;
-    filter: blur(80px); opacity: 0.15; animation: float-bg 20s infinite ease-in-out alternate;
-    will-change: transform;
-  }
+  .shape { position: absolute; background: var(--primary); border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float-bg 20s infinite ease-in-out alternate; will-change: transform; }
   .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; background: #FF8BA7; animation-duration: 25s; }
   .shape:nth-child(2) { width: 400px; height: 400px; bottom: -20%; right: -20%; background: #8B6BFF; animation-duration: 30s; animation-delay: -5s; }
   .shape:nth-child(3) { width: 200px; height: 200px; top: 40%; left: 60%; background: #FFD166; animation-duration: 15s; animation-delay: -10s; opacity: 0.1;}
   @keyframes float-bg { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(30px, 50px, 0) scale(1.1); } }
 
-  .floating-emoji {
-    position: absolute; font-size: 24px; opacity: 0; animation: float-up 15s linear infinite;
-    filter: grayscale(20%); will-change: transform, opacity;
-  }
-  .e1 { left: 10%; animation-delay: 0s; } .e2 { left: 30%; animation-delay: 3s; }
-  .e3 { left: 60%; animation-delay: 6s; } .e4 { left: 80%; animation-delay: 9s; }
-  .e5 { left: 45%; animation-delay: 12s; }
-  @keyframes float-up {
-    0% { transform: translate3d(0, 100vh, 0) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.2; }
-    90% { opacity: 0.2; }
-    100% { transform: translate3d(0, -100px, 0) rotate(360deg); opacity: 0; }
-  }
+  .floating-emoji { position: absolute; font-size: 24px; opacity: 0; animation: float-up 15s linear infinite; filter: grayscale(20%); will-change: transform, opacity; }
+  .e1 { left: 10%; animation-delay: 0s; } .e2 { left: 30%; animation-delay: 3s; } .e3 { left: 60%; animation-delay: 6s; } .e4 { left: 80%; animation-delay: 9s; } .e5 { left: 45%; animation-delay: 12s; }
+  @keyframes float-up { 0% { transform: translate3d(0, 100vh, 0) rotate(0deg); opacity: 0; } 10% { opacity: 0.2; } 90% { opacity: 0.2; } 100% { transform: translate3d(0, -100px, 0) rotate(360deg); opacity: 0; } }
 
   /* --- UI CONTAINERS --- */
-  .glass-panel {
-    background: var(--card-bg);
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border: 2px solid var(--card-border);
-    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.08);
-    position: relative; z-index: 10;
-    /* Optimasi render */
-    transform: translate3d(0,0,0);
-  }
-
-  .card {
-    width: 100%; max-width: 440px;
-    border-radius: var(--radius-lg); 
-    padding: 24px;
-    text-align: center;
-    display: flex; flex-direction: column; gap: 20px; 
-    animation: slide-up 0.6s var(--smooth-bounce) both;
-  }
-  @keyframes slide-up {
-    from { transform: translate3d(0, 30px, 0); opacity: 0; }
-    to { transform: translate3d(0, 0, 0); opacity: 1; }
-  }
+  .glass-panel { background: var(--card-bg); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 2px solid var(--card-border); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.08); position: relative; z-index: 10; transform: translate3d(0,0,0); }
+  .card { width: 100%; max-width: 440px; border-radius: var(--radius-lg); padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 20px; animation: slide-up 0.6s var(--smooth-bounce) both; }
+  @keyframes slide-up { from { transform: translate3d(0, 30px, 0); opacity: 0; } to { transform: translate3d(0, 0, 0); opacity: 1; } }
 
   /* --- AUDIO CONTROL --- */
-  .audio-toggle {
-    position: fixed; top: 20px; right: 20px; z-index: 9999;
-    width: 44px; height: 44px; border-radius: 50%;
-    background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
-    color: #FFF; font-size: 20px; display: grid; place-items: center;
-    cursor: pointer; backdrop-filter: blur(10px); transition: 0.3s;
-  }
+  .audio-toggle { position: fixed; top: 20px; right: 20px; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: #FFF; font-size: 20px; display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(10px); transition: 0.3s; }
   .audio-toggle.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); }
   .audio-toggle:active { transform: scale(0.9); }
 
@@ -131,26 +75,12 @@
   /* --- INPUTS --- */
   .input-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
   .input-group label { font-size: 13px; color: var(--text-sub); font-weight: 800; margin-left: 6px; }
-  input, textarea {
-    width: 100%; background: rgba(0,0,0,0.3); 
-    border: 2px solid rgba(255,255,255,0.05);
-    color: #FFF; padding: 16px; border-radius: var(--radius-md); 
-    font-size: 15px; font-weight: 700;
-    outline: none; transition: var(--transition);
-  }
-  input:focus, textarea:focus { 
-    border-color: var(--primary); background: rgba(0,0,0,0.5);
-    box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px);
-  }
+  input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.05); color: #FFF; padding: 16px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; outline: none; transition: var(--transition); }
+  input:focus, textarea:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px); }
   textarea { height: 100px; resize: none; }
 
   /* --- BUTTONS --- */
-  .btn {
-    width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05);
-    background: rgba(255,255,255,0.03); color: #FFF; font-weight: 800; font-size: 15px; cursor: pointer; 
-    transition: var(--transition); display: flex; justify-content: center; align-items: center; gap: 8px;
-    will-change: transform;
-  }
+  .btn { width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-weight: 800; font-size: 15px; cursor: pointer; transition: var(--transition); display: flex; justify-content: center; align-items: center; gap: 8px; will-change: transform; }
   .btn:active { transform: scale(0.95); }
   .btn-primary { background: linear-gradient(135deg, #FF8BA7, #FF6B9D); border: none; color: #140E13; box-shadow: 0 8px 24px var(--primary-glow); }
   .btn-accent { background: linear-gradient(135deg, #C99EFF, #A855F7); border: none; color: #140E13; box-shadow: 0 8px 24px var(--accent-glow); }
@@ -160,22 +90,14 @@
   .span-full { grid-column: 1 / -1; }
 
   /* --- PROFILE HEADER --- */
-  .profile-header {
-    display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
-    border: 2px solid rgba(255,255,255,0.05);
-    border-radius: var(--radius-lg); padding: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden;
-  }
+  .profile-header { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent); border: 2px solid rgba(255,255,255,0.05); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
   .profile-header::after { content: '✨'; position: absolute; right: 10px; top: 10px; font-size: 14px; opacity: 0.5; animation: twinkle 2s infinite alternate; }
   @keyframes twinkle { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
-
   .avatar-box { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
   .avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--primary); padding: 2px; background: #2A202A; box-shadow: 0 4px 15px var(--primary-glow); object-fit: cover; transition: var(--transition); }
   .avatar:hover { transform: scale(1.1) rotate(5deg); }
   .avatar-box.partner .avatar { border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); }
   .avatar-name { font-size: 13px; font-weight: 800; color: var(--text-main); }
-  
   .heart-connection { display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 1;}
   .heart-pulse { font-size: 28px; animation: heartbeat 1.5s infinite; filter: drop-shadow(0 0 10px #FF8BA7); }
   .days-count { font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 700; color: var(--primary); }
@@ -183,23 +105,14 @@
   @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
   /* --- KANGEN GAUGE --- */
-  .kangen-section {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.03);
-  }
+  .kangen-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.03); }
   .gauge-container { position: relative; width: 160px; height: 160px; margin-bottom: 16px; }
   .gauge-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
   .gauge-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 12; }
-  .gauge-progress { 
-    fill: none; stroke: url(#gradient); stroke-width: 12; stroke-linecap: round;
-    /* Optimasi Animasi Gauge */
-    transition: stroke-dashoffset 1s var(--smooth-bounce);
-    filter: drop-shadow(0 0 10px var(--primary-glow)); will-change: stroke-dashoffset;
-  }
+  .gauge-progress { fill: none; stroke: url(#gradient); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1s var(--smooth-bounce); filter: drop-shadow(0 0 10px var(--primary-glow)); will-change: stroke-dashoffset; }
   .gauge-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .gauge-num { font-family: 'Fredoka', sans-serif; font-size: 40px; font-weight: 700; color: #FFF; line-height: 1; }
   .gauge-label { font-size: 11px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: 1px;}
-  
   .action-row { display: flex; gap: 10px; width: 100%; }
   .action-row .btn { padding: 14px; font-size: 14px; border-radius: var(--radius-md); box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
 
@@ -214,10 +127,7 @@
   .meet-today { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); text-align: center; margin: 10px 0; text-shadow: 0 0 20px var(--accent-glow);}
 
   /* --- PARTNER STATUS --- */
-  .partner-status-box { 
-    background: linear-gradient(135deg, rgba(255, 139, 167, 0.08), rgba(201, 158, 255, 0.08)); border: 2px solid var(--card-border);
-    padding: 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left;
-  }
+  .partner-status-box { background: linear-gradient(135deg, rgba(255, 139, 167, 0.08), rgba(201, 158, 255, 0.08)); border: 2px solid var(--card-border); padding: 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left; }
   .partner-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   .partner-activity { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; color: var(--primary); z-index: 2; position: relative; text-shadow: 0 0 10px var(--primary-glow);}
   .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.5; z-index: 1; }
@@ -237,31 +147,34 @@
   .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.2), rgba(201, 158, 255, 0.2)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px);}
 
   /* --- CUTE ACTION BUTTONS --- */
-  .cute-action-btn {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 16px 10px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05);
-    background: rgba(255,255,255,0.03); cursor: pointer; transition: var(--smooth-bounce);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; overflow: hidden;
-  }
+  .cute-action-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 10px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); cursor: pointer; transition: var(--smooth-bounce); box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
   .cute-action-btn:active { transform: scale(0.92); }
   .cute-action-btn .icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: 0.3s;}
   .cute-action-btn .text { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-main); letter-spacing: 0.5px;}
 
   /* --- MODALS --- */
-  .modal { 
-    position: fixed; inset: 0; background: rgba(10, 5, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-    padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; overflow-y: auto;
-  }
+  .modal { position: fixed; inset: 0; background: rgba(10, 5, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; overflow-y: auto; }
   .modal.show { opacity: 1; pointer-events: auto; }
-  .modal-content { 
-    background: linear-gradient(160deg, #2A202A, #1A1118); border: 2px solid var(--card-border);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
-    width: 100%; max-width: 400px; padding: 24px; border-radius: var(--radius-lg); 
-    text-align: left; transform: translate3d(0, 30px, 0) scale(0.95); transition: var(--smooth-bounce); will-change: transform;
-  }
+  .modal-content { background: linear-gradient(160deg, #2A202A, #1A1118); border: 2px solid var(--card-border); box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); width: 100%; max-width: 400px; padding: 24px; border-radius: var(--radius-lg); text-align: left; transform: translate3d(0, 30px, 0) scale(0.95); transition: var(--smooth-bounce); will-change: transform; }
   .modal.show .modal-content { transform: translate3d(0, 0, 0) scale(1); }
   .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 20px; text-align: center; color: var(--primary);}
+
+  /* --- LOVE NOTES --- */
+  .note-color-picker { display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; }
+  .color-option { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: var(--smooth-bounce); }
+  .color-option.active { transform: scale(1.2); border-color: #FFF; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+  .color-yellow { background: #FFE066; } .color-pink { background: #FF8BA7; }
+  .color-blue { background: #64FFDA; } .color-purple { background: #C99EFF; }
+  
+  .notes-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); }
+  .sticky-note { padding: 16px; border-radius: 4px; color: #140E13; font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; box-shadow: 2px 4px 10px rgba(0,0,0,0.4); position: relative; word-wrap: break-word; transform: rotate(var(--rot)); transition: var(--smooth-bounce); cursor: pointer;}
+  .sticky-note:hover { transform: scale(1.05) rotate(0deg); z-index: 10; box-shadow: 4px 8px 15px rgba(0,0,0,0.6); }
+  .sticky-note::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; background: rgba(255,255,255,0.6); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  .note-bg-yellow { background: #FFE066; } .note-bg-pink { background: #FF8BA7; }
+  .note-bg-blue { background: #64FFDA; } .note-bg-purple { background: #C99EFF; }
+  .note-delete { position: absolute; bottom: 5px; right: 8px; font-family: 'Nunito', sans-serif; font-size: 12px; color: rgba(0,0,0,0.4); cursor: pointer; }
+  .note-delete:hover { color: #FF6B6B; }
+  .notes-empty { grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--text-sub); font-weight: 700; padding: 20px; }
 
   /* --- SHARELOCK --- */
   #map { height: 220px; width: 100%; border-radius: var(--radius-md); margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.1); z-index: 1; }
@@ -281,7 +194,6 @@
   .ttt-cell:active { transform: scale(0.85); }
   .ttt-cell.x { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
   .ttt-cell.o { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
-  
   .wheel-container { position: relative; width: 240px; height: 240px; margin: 0 auto 20px; border-radius: 50%; box-shadow: 0 0 30px var(--primary-glow); }
   .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #C99EFF 45deg 90deg, #FFD166 90deg 135deg, #FF6B6B 135deg 180deg, #FF8BA7 180deg 225deg, #C99EFF 225deg 270deg, #FFD166 270deg 315deg, #FF6B6B 315deg 360deg); will-change: transform;}
   .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));}
@@ -294,7 +206,6 @@
   .letter-date { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;}
   .letter-content { font-size: 14px; color: #FFF; line-height: 1.6; white-space: pre-wrap; font-weight: 600;}
   .letter-lock-msg { font-size: 12px; color: var(--danger); font-weight: 800; text-align: center; margin-top: 10px; }
-  
   .bucket-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: var(--radius-md); margin-bottom: 10px; border: 2px solid rgba(255,255,255,0.05); transition: 0.3s; }
   .bucket-item.done { opacity: 0.5; background: rgba(201, 158, 255, 0.05); border-color: rgba(201, 158, 255, 0.2); }
   .bucket-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--text-sub); display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px; transition: var(--smooth-bounce);}
@@ -312,7 +223,6 @@
   #incomingReminderModal p { font-size: 16px; font-weight: 800; line-height: 1.5; margin-bottom: 24px; background: rgba(255,255,255,0.9); padding: 20px; border-radius: var(--radius-md); color: #140E13; border: none;}
   #incomingReminderModal .btn { background: #140E13; color: #FFF; font-weight: 800; border: none;}
 
-  /* --- ANIMATIONS --- */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s ease-out forwards; }
   @keyframes fallUp { 0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 1; } 100% { transform: translate3d(0, -150px, 0) scale(1.5); opacity: 0; } }
   
@@ -322,10 +232,8 @@
 </head>
 <body>
 
-<!-- AUDIO CONTROL -->
 <button class="audio-toggle" id="audioToggle" title="Musik On/Off">🎵</button>
 
-<!-- BACKGROUND ELEMEN LUCU (CSS OPTIMIZED) -->
 <div class="bg-shapes">
   <div class="shape"></div>
   <div class="shape"></div>
@@ -361,7 +269,6 @@
 <!-- LAYAR DASHBOARD -->
 <div class="card glass-panel hidden" id="dashboardCard">
   
-  <!-- Header Profile & Days Together -->
   <div class="profile-header">
     <div class="avatar-box">
       <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Me&backgroundColor=ffdfbf" class="avatar" alt="Me">
@@ -379,14 +286,12 @@
   </div>
 
   <div class="dashboard-grid">
-    <!-- Countdown (Span Full) -->
     <div class="countdown-box span-full" id="countdownBox">
       <button class="btn-edit-countdown" id="btnEditCountdown">✏️</button>
       <div class="title-small" style="text-align:center; margin-bottom: 4px;">Menuju Ketemuan</div>
       <div id="countdownDisplay" class="countdown-timer"></div>
     </div>
 
-    <!-- Kangen Meter (Span Full) -->
     <div class="kangen-section span-full">
       <div class="gauge-container">
         <svg class="gauge-svg" viewBox="0 0 100 100">
@@ -410,40 +315,42 @@
       </div>
     </div>
 
-    <!-- Partner Status (Span Full) -->
     <div class="partner-status-box span-full">
       <div class="anim-container" id="partnerAnim"></div>
       <div class="partner-label">Pacar lu lagi:</div>
       <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
     </div>
 
-    <!-- CUTE ACTION BUTTONS (Grid 2 Kolom) -->
-    <button class="cute-action-btn" id="btnOpenReminder">
-      <div class="icon">🐰</div>
-      <div class="text">Pesan</div>
+    <!-- CUTE ACTION BUTTONS -->
+    <button class="cute-action-btn" id="btnOpenLoveNotes">
+      <div class="icon">📝</div>
+      <div class="text">Love Notes</div>
     </button>
     <button class="cute-action-btn" id="btnOpenShareLock">
       <div class="icon">🐻</div>
       <div class="text">ShareLock</div>
     </button>
-    <button class="cute-action-btn" id="btnSpin">
-      <div class="icon">🎲</div>
-      <div class="text">Tantangan</div>
+    <button class="cute-action-btn" id="btnOpenReminder">
+      <div class="icon">🐰</div>
+      <div class="text">Pesan</div>
     </button>
     <button class="cute-action-btn" id="btnOpenGame">
       <div class="icon">🐱</div>
       <div class="text">Tic Tac Toe</div>
     </button>
-    <button class="cute-action-btn" id="btnOpenCapsule">
-      <div class="icon">🐼</div>
-      <div class="text">Surat Waktu</div>
+    <button class="cute-action-btn" id="btnSpin">
+      <div class="icon">🎲</div>
+      <div class="text">Tantangan</div>
     </button>
     <button class="cute-action-btn" id="btnOpenBucket">
       <div class="icon">🦊</div>
       <div class="text">Bucket List</div>
     </button>
+    <button class="cute-action-btn" id="btnOpenCapsule">
+      <div class="icon">🐼</div>
+      <div class="text">Surat Waktu</div>
+    </button>
 
-    <!-- Update Status (Span Full) -->
     <div class="span-full" style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05);">
       <div class="title-small">Update Statusmu:</div>
       <div class="status-grid">
@@ -454,8 +361,35 @@
       </div>
     </div>
 
-    <!-- Logout (Span Full) -->
     <button class="btn span-full" style="background: rgba(255,255,255,0.03); color: var(--text-sub); margin-top: 10px;" id="btnLogout">Keluar Akun</button>
+  </div>
+</div>
+
+<!-- MODAL LOVE NOTES -->
+<div class="modal" id="loveNotesModal">
+  <div class="modal-content">
+    <h2>📝 Love Notes</h2>
+    
+    <div class="notes-board" id="notesBoard">
+      <!-- Notes will be injected here -->
+      <div class="notes-empty">Belum ada notes. Tulis yang manis dong! 🥺</div>
+    </div>
+
+    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+      <div class="title-small" style="text-align:left; margin-bottom:8px;">Tulis Notes Baru:</div>
+      <textarea id="noteInput" placeholder="Tulis pesan manis buat pacar lu..." style="height: 80px; margin-bottom: 12px; font-family: 'Caveat', cursive; font-size: 20px;"></textarea>
+      
+      <div class="note-color-picker">
+        <div class="color-option color-yellow active" data-color="yellow"></div>
+        <div class="color-option color-pink" data-color="pink"></div>
+        <div class="color-option color-blue" data-color="blue"></div>
+        <div class="color-option color-purple" data-color="purple"></div>
+      </div>
+
+      <button class="btn btn-primary" id="btnAddNote">Tempel Notes! 📌</button>
+    </div>
+    
+    <button class="btn" id="btnCloseLoveNotes" style="margin-top: 16px;">Tutup</button>
   </div>
 </div>
 
@@ -464,23 +398,17 @@
   <div class="modal-content">
     <h2>📍 ShareLock Lokasi</h2>
     <div id="map"></div>
-    
-    <!-- WIDGET JARAK -->
     <div class="distance-widget">
       <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Me&backgroundColor=ffdfbf" class="distance-avatar" alt="Me">
-      <div class="distance-line">
-        <div class="distance-text" id="distanceInfo">- km</div>
-      </div>
+      <div class="distance-line"><div class="distance-text" id="distanceInfo">- km</div></div>
       <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Partner&backgroundColor=ffd5dc" class="distance-avatar" alt="Partner">
     </div>
-    
     <div class="title-small" style="text-align:center;">Pilih Kendaraanmu:</div>
     <div class="mode-grid">
       <button class="mode-btn active" data-mode="motor">🏍️</button>
       <button class="mode-btn" data-mode="jalan">🚶</button>
       <button class="mode-btn" data-mode="mobil">🚗</button>
     </div>
-
     <button class="btn btn-accent" id="btnToggleTracking">Mulai Bagikan Lokasi</button>
     <button class="btn" id="btnCloseShareLock" style="margin-top: 10px;">Tutup</button>
   </div>
@@ -580,91 +508,29 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // --- AUDIO MANAGER (Web Audio API & BGM) ---
+  // --- AUDIO MANAGER ---
   const AudioManager = {
-    ctx: null,
-    bgm: null,
-    isBgmPlaying: false,
-    isInitialized: false,
-    
-    init() {
-      if (this.isInitialized) return;
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) this.ctx = new AudioContext();
-      this.isInitialized = true;
-    },
-
-    playTone(freq, type, duration, vol) {
-      if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + duration);
-    },
-
+    ctx: null, bgm: null, isBgmPlaying: false, isInitialized: false,
+    init() { if (this.isInitialized) return; const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) this.ctx = new AudioContext(); this.isInitialized = true; },
+    playTone(freq, type, duration, vol) { if (!this.ctx) return; if (this.ctx.state === 'suspended') this.ctx.resume(); const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime); gain.gain.setValueAtTime(vol, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + duration); },
     playClick() { this.init(); this.playTone(800, 'sine', 0.1, 0.05); },
     playPop() { this.init(); this.playTone(400, 'sine', 0.15, 0.1); this.playTone(600, 'sine', 0.2, 0.05); },
     playSuccess() { this.init(); this.playTone(523.25, 'triangle', 0.1, 0.1); setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.1), 100); setTimeout(() => this.playTone(783.99, 'triangle', 0.3, 0.1), 200); },
     playNotif() { this.init(); this.playTone(880, 'sine', 0.1, 0.1); setTimeout(() => this.playTone(1108.73, 'sine', 0.3, 0.1), 100); },
-    
+    playSticky() { this.init(); this.playTone(300, 'sine', 0.1, 0.1); this.playTone(500, 'sine', 0.2, 0.1); },
     toggleBgm() {
       this.init();
-      if (!this.bgm) {
-        // Lofi Cozy Beat (Reliable CDN)
-        this.bgm = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3');
-        this.bgm.loop = true;
-        this.bgm.volume = 0.3;
-      }
-      
-      if (this.isBgmPlaying) {
-        this.bgm.pause();
-        this.isBgmPlaying = false;
-        document.getElementById('audioToggle').classList.remove('active');
-        document.getElementById('audioToggle').innerText = '🔇';
-      } else {
-        this.bgm.play().then(() => {
-          this.isBgmPlaying = true;
-          document.getElementById('audioToggle').classList.add('active');
-          document.getElementById('audioToggle').innerText = '🎵';
-        }).catch(e => console.log("Audio play blocked:", e));
-      }
+      if (!this.bgm) { this.bgm = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'); this.bgm.loop = true; this.bgm.volume = 0.3; }
+      if (this.isBgmPlaying) { this.bgm.pause(); this.isBgmPlaying = false; document.getElementById('audioToggle').classList.remove('active'); document.getElementById('audioToggle').innerText = '🔇'; } 
+      else { this.bgm.play().then(() => { this.isBgmPlaying = true; document.getElementById('audioToggle').classList.add('active'); document.getElementById('audioToggle').innerText = '🎵'; }).catch(e => console.log("Audio play blocked:", e)); }
     }
   };
 
-  // Interaksi Pertama untuk buka izin Audio
-  document.body.addEventListener('click', () => {
-    AudioManager.init();
-    if (!AudioManager.isBgmPlaying && !document.getElementById('audioToggle').classList.contains('active')) {
-      // Auto start BGM on first click for better UX
-      AudioManager.toggleBgm();
-    }
-  }, { once: true });
+  document.body.addEventListener('click', () => { AudioManager.init(); if (!AudioManager.isBgmPlaying && !document.getElementById('audioToggle').classList.contains('active')) { AudioManager.toggleBgm(); } }, { once: true });
+  document.getElementById('audioToggle').addEventListener('click', (e) => { e.stopPropagation(); AudioManager.toggleBgm(); });
+  document.querySelectorAll('button').forEach(btn => { btn.addEventListener('click', () => { if (btn.id === 'audioToggle') return; if (btn.classList.contains('btn-primary') || btn.classList.contains('cute-action-btn')) { AudioManager.playPop(); } else { AudioManager.playClick(); } }); });
 
-  document.getElementById('audioToggle').addEventListener('click', (e) => {
-    e.stopPropagation();
-    AudioManager.toggleBgm();
-  });
-
-  // Add SFX to all buttons
-  document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.id === 'audioToggle') return;
-      if (btn.classList.contains('btn-primary') || btn.classList.contains('cute-action-btn')) {
-        AudioManager.playPop();
-      } else {
-        AudioManager.playClick();
-      }
-    });
-  });
-
-  // --- SUPABASE & KONFIGURASI ---
+  // --- SUPABASE ---
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
@@ -672,20 +538,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  // === OneSignal v16 init ===
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({ appId: ONESIGNAL_APP_ID });
-    try { await OneSignal.Notifications.requestPermission(); } catch (e) {}
-  });
+  OneSignalDeferred.push(async function(OneSignal) { await OneSignal.init({ appId: ONESIGNAL_APP_ID }); try { await OneSignal.Notifications.requestPermission(); } catch (e) {} });
 
-  function safeVibrate(pattern) {
-    if (typeof navigator.vibrate === 'function') {
-      try { navigator.vibrate(pattern); } catch (e) {}
-    }
-  }
+  function safeVibrate(pattern) { if (typeof navigator.vibrate === 'function') { try { navigator.vibrate(pattern); } catch (e) {} } }
 
-  // DOM ELEMENTS
+  // --- DOM ELEMENTS ---
   const authCard = document.getElementById('authCard');
   const dashboardCard = document.getElementById('dashboardCard');
   const btnAction = document.getElementById('btnAction');
@@ -697,23 +555,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const kangenScoreEl = document.getElementById('kangenScore');
   const gaugeProgress = document.getElementById('gaugeProgress');
   
+  // Love Notes Elements
+  const loveNotesModal = document.getElementById('loveNotesModal');
+  const btnOpenLoveNotes = document.getElementById('btnOpenLoveNotes');
+  const btnCloseLoveNotes = document.getElementById('btnCloseLoveNotes');
+  const btnAddNote = document.getElementById('btnAddNote');
+  const noteInput = document.getElementById('noteInput');
+  const notesBoard = document.getElementById('notesBoard');
+  let selectedColor = 'yellow';
+
   // ShareLock
   const shareLockModal = document.getElementById('shareLockModal');
   const btnOpenShareLock = document.getElementById('btnOpenShareLock');
   const btnCloseShareLock = document.getElementById('btnCloseShareLock');
   const btnToggleTracking = document.getElementById('btnToggleTracking');
   const modeBtns = document.querySelectorAll('.mode-btn');
-  
-  let map = null;
-  let myMarker = null;
-  let partnerMarker = null;
-  let watchId = null;
-  let isTracking = false;
-  let myMode = 'motor';
-  let lastPartnerLat = null;
-  let lastPartnerLng = null;
-  let lastPartnerMode = 'motor';
-  let mapInitialized = false;
+  let map = null, myMarker = null, partnerMarker = null, watchId = null, isTracking = false, myMode = 'motor', lastPartnerLat = null, lastPartnerLng = null, lastPartnerMode = 'motor', mapInitialized = false;
 
   // Game
   const gameModal = document.getElementById('gameModal');
@@ -722,8 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnResetGame = document.getElementById('btnResetGame');
   const tttGrid = document.getElementById('tttGrid');
   const tttStatus = document.getElementById('tttStatus');
-  let gameState = null;
-  let isProcessingMove = false;
+  let gameState = null, isProcessingMove = false;
 
   // Reminder
   const reminderModal = document.getElementById('reminderModal');
@@ -731,7 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseReminder = document.getElementById('btnCloseReminder');
   const btnSendReminder = document.getElementById('btnSendReminder');
   const reminderText = document.getElementById('reminderText');
-  
   const incomingReminderModal = document.getElementById('incomingReminderModal');
   const incomingReminderText = document.getElementById('incomingReminderText');
   const btnAcceptReminder = document.getElementById('btnAcceptReminder');
@@ -744,17 +599,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const meetDateInput = document.getElementById('meetDateInput');
   const btnSaveCountdown = document.getElementById('btnSaveCountdown');
   const btnCloseCountdown = document.getElementById('btnCloseCountdown');
-  let countdownInterval = null;
-  let currentMeetDate = null;
+  let countdownInterval = null, currentMeetDate = null;
 
-  // Fitur lain
+  // Others
   const spinModal = document.getElementById('spinModal');
   const wheel = document.getElementById('wheel');
   const btnSpin = document.getElementById('btnSpin');
   const btnDoSpin = document.getElementById('btnDoSpin');
   const btnCloseSpin = document.getElementById('btnCloseSpin');
   const spinResult = document.getElementById('spinResult');
-
   const capsuleModal = document.getElementById('capsuleModal');
   const btnOpenCapsule = document.getElementById('btnOpenCapsule');
   const btnCloseCapsule = document.getElementById('btnCloseCapsule');
@@ -762,7 +615,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const capsuleText = document.getElementById('capsuleText');
   const capsuleDate = document.getElementById('capsuleDate');
   const capsuleList = document.getElementById('capsuleList');
-
   const bucketModal = document.getElementById('bucketModal');
   const btnOpenBucket = document.getElementById('btnOpenBucket');
   const btnCloseBucket = document.getElementById('btnCloseBucket');
@@ -770,103 +622,119 @@ document.addEventListener('DOMContentLoaded', () => {
   const bucketInput = document.getElementById('bucketInput');
   const bucketListContainer = document.getElementById('bucketListContainer');
 
-  let isLoginMode = true;
-  let currentUser = null;
-  let partnerId = null; 
-  let isSpinning = false;
-  let lastSpinId = 0;
-  let lastPartnerScore = 0;
+  let isLoginMode = true, currentUser = null, partnerId = null, isSpinning = false, lastSpinId = 0, lastPartnerScore = 0;
   
-  // Days Together Logic
-  const relationshipStartDate = new Date('2024-01-01'); // Ubah tanggal jadian di sini
-  function updateDaysTogether() {
-    const today = new Date();
-    const diffTime = Math.abs(today - relationshipStartDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    document.getElementById('daysTogether').innerText = diffDays;
-  }
+  const relationshipStartDate = new Date('2024-01-01'); 
+  function updateDaysTogether() { const today = new Date(); const diffTime = Math.abs(today - relationshipStartDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); document.getElementById('daysTogether').innerText = diffDays; }
 
-  const challenges = [
-    "Kirim Pap 3 kali 📸", "Kirim Vn I Love You 🎙", "Bilang 'Aku Sayang Kamu' 3x 😻", "Panggil Pacar Pake Nama Lucu🐣",
-    "Kirim Foto Selfie Di Posisi Sekarang 📸", "Teken Tombol Aku Kangen Kamu 💗", "Pelukan Virtual 10 Detik 🫂", "Tukeran Wallpaper 1 Hari 🖼️"
-  ];
+  const challenges = [ "Kirim Pap 3 kali 📸", "Kirim Vn I Love You 🎙", "Bilang 'Aku Sayang Kamu' 3x 😻", "Panggil Pacar Pake Nama Lucu🐣", "Kirim Foto Selfie Di Posisi Sekarang 📸", "Teken Tombol Aku Kangen Kamu 💗", "Pelukan Virtual 10 Detik 🫂", "Tukeran Wallpaper 1 Hari 🖼️" ];
 
-  function escapeHTML(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  function escapeHTML(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)); }
+
+  // --- LOVE NOTES LOGIC ---
+  document.querySelectorAll('.color-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      selectedColor = opt.getAttribute('data-color');
+    });
+  });
+
+  btnOpenLoveNotes.addEventListener('click', async () => { loveNotesModal.classList.add('show'); noteInput.value = ''; await loadNotes(); });
+  btnCloseLoveNotes.addEventListener('click', () => loveNotesModal.classList.remove('show'));
+
+  btnAddNote.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const content = noteInput.value.trim();
+    if (!content) return alert('Tulis pesannya dulu bro!');
+
+    btnAddNote.innerText = 'Menempel...'; btnAddNote.disabled = true;
+    const { error } = await supabaseClient.from('love_notes').insert({ sender_id: currentUser.id, content: content, color: selectedColor });
+    btnAddNote.innerText = 'Tempel Notes! 📌'; btnAddNote.disabled = false;
+
+    if (error) alert('Gagal nempel notes: ' + error.message);
+    else {
+      noteInput.value = '';
+      AudioManager.playSticky();
+      safeVibrate([50, 50, 50]);
+      sendPushToPartner('📝 Pacar lu ninggalin Love Note baru!');
+      await loadNotes();
+    }
+  });
+
+  async function loadNotes() {
+    if (!currentUser) return;
+    const { data, error } = await supabaseClient.from('love_notes').select('*').order('created_at', { ascending: false }).limit(20);
+    
+    if (error) {
+      console.warn('Load notes error:', error.message);
+      notesBoard.innerHTML = `<div class="notes-empty">Gagal memuat notes: ${escapeHTML(error.message)}</div>`;
+      return;
+    }
+    
+    notesBoard.innerHTML = '';
+    if (!data || data.length === 0) {
+      notesBoard.innerHTML = '<div class="notes-empty">Belum ada notes. Tulis yang manis dong! 🥺</div>';
+      return;
+    }
+
+    data.forEach(note => {
+      const isMine = note.sender_id === currentUser.id;
+      const rot = (Math.random() * 6 - 3).toFixed(1) + 'deg';
+      
+      const div = document.createElement('div');
+      div.className = `sticky-note note-bg-${note.color}`;
+      div.style.setProperty('--rot', rot);
+      div.innerHTML = `<div>${escapeHTML(note.content)}</div>`;
+      
+      if (isMine) {
+        const delBtn = document.createElement('div');
+        delBtn.className = 'note-delete';
+        delBtn.innerText = 'hapus';
+        delBtn.onclick = async (e) => {
+          e.stopPropagation();
+          if(confirm('Hapus note ini?')) {
+            const { error } = await supabaseClient.from('love_notes').delete().eq('id', note.id);
+            if (error) alert('Gagal hapus note: ' + error.message);
+            else await loadNotes();
+          }
+        };
+        div.appendChild(delBtn);
+      }
+      
+      notesBoard.appendChild(div);
+    });
   }
 
   // --- SHARELOCK LOGIC ---
   const modeIcons = { 'motor': '🏍️', 'jalan': '🚶', 'mobil': '🚗' };
-
-  function createCustomIcon(mode) {
-    return L.divIcon({
-      html: `<div class="map-icon">${modeIcons[mode] || '📍'}</div>`,
-      className: '', iconSize: [30, 30], iconAnchor: [15, 15]
-    });
-  }
-
-  function hitungJarak(lat1, lon1, lat2, lon2) {
-    const R = 6371; 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return (R * c).toFixed(2); 
-  }
-
-  // OPTIMASI PETA: Throttle update biar gak lag
+  function createCustomIcon(mode) { return L.divIcon({ html: `<div class="map-icon">${modeIcons[mode] || '📍'}</div>`, className: '', iconSize: [30, 30], iconAnchor: [15, 15] }); }
+  function hitungJarak(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180; const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return (R * c).toFixed(2); }
+  
   let lastMapUpdate = 0;
   function updateDistanceInfo() {
-    const now = Date.now();
-    if (now - lastMapUpdate < 2000) return; // Limit to every 2 seconds
-    lastMapUpdate = now;
-
-    const distEl = document.getElementById('distanceInfo');
-    if (!distEl) return;
+    const now = Date.now(); if (now - lastMapUpdate < 2000) return; lastMapUpdate = now;
+    const distEl = document.getElementById('distanceInfo'); if (!distEl) return;
     if (myMarker && partnerMarker) {
-      const myLatLng = myMarker.getLatLng();
-      const partnerLatLng = partnerMarker.getLatLng();
-      const dist = hitungJarak(myLatLng.lat, myLatLng.lng, partnerLatLng.lat, partnerLatLng.lng);
-      distEl.innerText = `${dist} km`;
-    } else {
-      distEl.innerText = `- km`;
-    }
+      const myLatLng = myMarker.getLatLng(); const partnerLatLng = partnerMarker.getLatLng();
+      distEl.innerText = `${hitungJarak(myLatLng.lat, myLatLng.lng, partnerLatLng.lat, partnerLatLng.lng)} km`;
+    } else { distEl.innerText = `- km`; }
   }
 
-  function centerMapToBoth() {
-    if (map && myMarker && partnerMarker) {
-      const bounds = L.latLngBounds([myMarker.getLatLng(), partnerMarker.getLatLng()]);
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
-    }
-  }
+  function centerMapToBoth() { if (map && myMarker && partnerMarker) { const bounds = L.latLngBounds([myMarker.getLatLng(), partnerMarker.getLatLng()]); map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 }); } }
 
   btnOpenShareLock.addEventListener('click', () => {
     shareLockModal.classList.add('show');
     setTimeout(() => {
-      if (!mapInitialized) {
-        map = L.map('map').setView([-6.175392, 106.827153], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-        mapInitialized = true;
-      }
+      if (!mapInitialized) { map = L.map('map').setView([-6.175392, 106.827153], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); mapInitialized = true; }
       if (map) map.invalidateSize();
       if (lastPartnerLat && lastPartnerLng) updatePartnerMap(lastPartnerLat, lastPartnerLng, lastPartnerMode);
-      updateDistanceInfo();
-      centerMapToBoth();
+      updateDistanceInfo(); centerMapToBoth();
     }, 300);
-    
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
-            if (map) {
-                if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map);
-                else myMarker.setLatLng([latitude, longitude]);
-                map.setView([latitude, longitude], 16);
-                updateDistanceInfo();
-                centerMapToBoth();
-            }
+            if (map) { if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); else myMarker.setLatLng([latitude, longitude]); map.setView([latitude, longitude], 16); updateDistanceInfo(); centerMapToBoth(); }
         }, (err) => console.log("GPS Error:", err), { enableHighAccuracy: true });
     }
   });
@@ -874,442 +742,200 @@ document.addEventListener('DOMContentLoaded', () => {
 
   modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      modeBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      myMode = btn.getAttribute('data-mode');
+      modeBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); myMode = btn.getAttribute('data-mode');
       if (isTracking && currentUser) supabaseClient.from('user_status').update({ transport_mode: myMode }).eq('id', currentUser.id);
       if (myMarker) myMarker.setIcon(createCustomIcon(myMode));
     });
   });
 
   btnToggleTracking.addEventListener('click', () => {
-    if (!currentUser) return;
-    isTracking = !isTracking;
-
+    if (!currentUser) return; isTracking = !isTracking;
     if (isTracking) {
       if (!navigator.geolocation) return alert('HP lu nggak support GPS bro!');
-      
-      btnToggleTracking.innerText = 'Mencari Sinyal GPS...';
-      btnToggleTracking.classList.remove('btn-accent');
-      
+      btnToggleTracking.innerText = 'Mencari Sinyal GPS...'; btnToggleTracking.classList.remove('btn-accent');
       watchId = navigator.geolocation.watchPosition(async (pos) => {
           const { latitude, longitude } = pos.coords;
-          
-          btnToggleTracking.innerText = 'Berhenti Bagikan Lokasi';
-          btnToggleTracking.style.background = 'var(--danger)';
-          btnToggleTracking.style.borderColor = 'transparent';
-
+          btnToggleTracking.innerText = 'Berhenti Bagikan Lokasi'; btnToggleTracking.style.background = 'var(--danger)'; btnToggleTracking.style.borderColor = 'transparent';
           await supabaseClient.from('user_status').update({ latitude, longitude, transport_mode: myMode }).eq('id', currentUser.id);
-
-          if (map) {
-            if (!myMarker) {
-               myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map);
-               map.setView([latitude, longitude], 16);
-            } else {
-               myMarker.setLatLng([latitude, longitude]);
-               myMarker.setIcon(createCustomIcon(myMode));
-            }
-            updateDistanceInfo();
-            centerMapToBoth();
-          }
+          if (map) { if (!myMarker) { myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); map.setView([latitude, longitude], 16); } else { myMarker.setLatLng([latitude, longitude]); myMarker.setIcon(createCustomIcon(myMode)); } updateDistanceInfo(); centerMapToBoth(); }
         },
         (err) => {
-          if (err.code === 1) { 
-             alert("Izin lokasi ditolak! Pastikan buka via HTTPS dan izinkan akses lokasi.");
-             isTracking = false;
-             btnToggleTracking.innerText = 'Mulai Bagikan Lokasi';
-             btnToggleTracking.style.background = '';
-             btnToggleTracking.classList.add('btn-accent');
-          } else if (err.code === 3) { 
-             btnToggleTracking.innerText = 'Sinyal GPS Lemah. Coba Lagi.';
-          }
-        },
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+          if (err.code === 1) { alert("Izin lokasi ditolak! Pastikan buka via HTTPS dan izinkan akses lokasi."); isTracking = false; btnToggleTracking.innerText = 'Mulai Bagikan Lokasi'; btnToggleTracking.style.background = ''; btnToggleTracking.classList.add('btn-accent'); } 
+          else if (err.code === 3) { btnToggleTracking.innerText = 'Sinyal GPS Lemah. Coba Lagi.'; }
+        }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
       );
       sendPushToPartner('Pacar lu mulai ShareLock lokasi! 📍');
     } else {
       if (watchId) navigator.geolocation.clearWatch(watchId);
-      btnToggleTracking.innerText = 'Mulai Bagikan Lokasi';
-      btnToggleTracking.style.background = '';
-      btnToggleTracking.classList.add('btn-accent');
+      btnToggleTracking.innerText = 'Mulai Bagikan Lokasi'; btnToggleTracking.style.background = ''; btnToggleTracking.classList.add('btn-accent');
       supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     }
   });
 
   function updatePartnerMap(lat, lng, mode) {
-    lastPartnerLat = lat; lastPartnerLng = lng; lastPartnerMode = mode;
-    if (!map) return;
-    
-    if (partnerMarker) {
-      partnerMarker.setLatLng([lat, lng]);
-      partnerMarker.setIcon(createCustomIcon(mode));
-    } else {
-      partnerMarker = L.marker([lat, lng], { icon: createCustomIcon(mode) }).addTo(map);
-    }
-    
-    updateDistanceInfo();
-    centerMapToBoth();
+    lastPartnerLat = lat; lastPartnerLng = lng; lastPartnerMode = mode; if (!map) return;
+    if (partnerMarker) { partnerMarker.setLatLng([lat, lng]); partnerMarker.setIcon(createCustomIcon(mode)); } 
+    else { partnerMarker = L.marker([lat, lng], { icon: createCustomIcon(mode) }).addTo(map); }
+    updateDistanceInfo(); centerMapToBoth();
   }
 
   // --- LOGIN LOGIC ---
-  btnSwitch.addEventListener('click', () => {
-    isLoginMode = !isLoginMode;
-    errorEl.innerText = '';
-    btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
-    btnSwitch.innerText = isLoginMode ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk';
-  });
-
+  btnSwitch.addEventListener('click', () => { isLoginMode = !isLoginMode; errorEl.innerText = ''; btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru'; btnSwitch.innerText = isLoginMode ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'; });
   btnAction.addEventListener('click', async () => {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    errorEl.innerText = '';
+    const email = document.getElementById('email').value.trim(); const password = document.getElementById('password').value; errorEl.innerText = '';
     if (!email || !password) return errorEl.innerText = 'Isi email & password!';
-
     btnAction.innerText = 'Memproses...'; btnAction.disabled = true;
-    try {
-      if (isLoginMode) {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        const { error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) throw error;
-      }
-    } catch (err) { errorEl.innerText = err.message; } 
-    finally {
-      btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
-      btnAction.disabled = false;
-    }
+    try { if (isLoginMode) { const { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) throw error; } else { const { error } = await supabaseClient.auth.signUp({ email, password }); if (error) throw error; } } 
+    catch (err) { errorEl.innerText = err.message; } finally { btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru'; btnAction.disabled = false; }
   });
 
   btnLogout.addEventListener('click', async () => {
-    if (countdownInterval) clearInterval(countdownInterval);
-    if (watchId) navigator.geolocation.clearWatch(watchId);
-    isTracking = false;
-    btnToggleTracking.innerText = 'Mulai Bagikan Lokasi';
-    btnToggleTracking.style.background = '';
-    btnToggleTracking.classList.add('btn-accent');
+    if (countdownInterval) clearInterval(countdownInterval); if (watchId) navigator.geolocation.clearWatch(watchId);
+    isTracking = false; btnToggleTracking.innerText = 'Mulai Bagikan Lokasi'; btnToggleTracking.style.background = ''; btnToggleTracking.classList.add('btn-accent');
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
-    
-    ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel'].forEach(ch => {
-      if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; }
-    });
-    
-    if (map) { try { map.remove(); } catch(e){} map = null; }
-    myMarker = null; partnerMarker = null; mapInitialized = false;
-    lastPartnerLat = null; lastPartnerLng = null;
+    ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
+    if (map) { try { map.remove(); } catch(e){} map = null; } myMarker = null; partnerMarker = null; mapInitialized = false; lastPartnerLat = null; lastPartnerLng = null;
   });
 
   // --- GAME LOGIC ---
   btnOpenGame.addEventListener('click', async () => { gameModal.classList.add('show'); await loadGameState(); });
   btnCloseGame.addEventListener('click', () => gameModal.classList.remove('show'));
-
   btnResetGame.addEventListener('click', async () => {
     if (!currentUser) return;
-    const { data, error } = await supabaseClient.from('game_state')
-      .upsert({ id: 1, player_x: currentUser.id, board: ["","","","","","","","",""], turn: 'X', winner: '' })
-      .select().maybeSingle();
+    const { data, error } = await supabaseClient.from('game_state').upsert({ id: 1, player_x: currentUser.id, board: ["","","","","","","","",""], turn: 'X', winner: '' }).select().maybeSingle();
     if (error) { console.warn('Reset gagal:', error.message); return alert('Gagal reset game: ' + error.message); }
     if (data) { gameState = data; renderGame(); }
     sendPushToPartner('Pacar lu mulai game Tic Tac Toe baru! 🎮');
   });
-
   async function loadGameState() {
     const { data, error } = await supabaseClient.from('game_state').select('*').eq('id', 1).maybeSingle();
     if (error) { console.warn('Load game error:', error.message); }
-    if (data) { gameState = data; renderGame(); }
-    else {
-      gameState = null;
-      if (tttStatus) tttStatus.innerText = "Klik 'Mulai Game Baru' untuk mulai!";
-      if (tttGrid) tttGrid.innerHTML = '';
-    }
+    if (data) { gameState = data; renderGame(); } else { gameState = null; if (tttStatus) tttStatus.innerText = "Klik 'Mulai Game Baru' untuk mulai!"; if (tttGrid) tttGrid.innerHTML = ''; }
   }
-
   function renderGame() {
-    if (!gameState || !tttGrid) {
-      if (tttStatus) tttStatus.innerText = "Klik 'Mulai Game Baru' untuk mulai!";
-      if (tttGrid) tttGrid.innerHTML = '';
-      return;
-    }
-    tttGrid.innerHTML = '';
-    const board = Array.isArray(gameState.board) ? gameState.board : ["","","","","","","","",""];
-    for (let i = 0; i < 9; i++) {
-      const cellValue = board[i] || '';
-      const div = document.createElement('div');
-      div.className = `ttt-cell ${cellValue === 'X' ? 'x' : cellValue === 'O' ? 'o' : ''}`;
-      div.innerText = cellValue;
-      div.onclick = () => playMove(i);
-      tttGrid.appendChild(div);
-    }
-    if (!gameState.player_x) {
-      tttStatus.innerText = "Klik Mulai Game Baru!";
-    } else {
-      const isMeX = currentUser && currentUser.id === gameState.player_x;
-      const mySymbol = isMeX ? 'X' : 'O';
-      if (gameState.winner) {
-        if (gameState.winner === 'Seri') tttStatus.innerText = "Game Selesai: Seri! 🤝";
-        else if (gameState.winner === mySymbol) tttStatus.innerText = "GAME SELESAI: LU MENANG! 🎉";
-        else tttStatus.innerText = "GAME SELESAI: PACAR LU MENANG 😭";
-      } else {
-        tttStatus.innerText = gameState.turn === mySymbol ? `Giliran LU (${mySymbol})` : `Giliran PACAR (${gameState.turn})`;
-      }
+    if (!gameState || !tttGrid) { if (tttStatus) tttStatus.innerText = "Klik 'Mulai Game Baru' untuk mulai!"; if (tttGrid) tttGrid.innerHTML = ''; return; }
+    tttGrid.innerHTML = ''; const board = Array.isArray(gameState.board) ? gameState.board : ["","","","","","","","",""];
+    for (let i = 0; i < 9; i++) { const cellValue = board[i] || ''; const div = document.createElement('div'); div.className = `ttt-cell ${cellValue === 'X' ? 'x' : cellValue === 'O' ? 'o' : ''}`; div.innerText = cellValue; div.onclick = () => playMove(i); tttGrid.appendChild(div); }
+    if (!gameState.player_x) { tttStatus.innerText = "Klik Mulai Game Baru!"; } 
+    else {
+      const isMeX = currentUser && currentUser.id === gameState.player_x; const mySymbol = isMeX ? 'X' : 'O';
+      if (gameState.winner) { if (gameState.winner === 'Seri') tttStatus.innerText = "Game Selesai: Seri! 🤝"; else if (gameState.winner === mySymbol) tttStatus.innerText = "GAME SELESAI: LU MENANG! 🎉"; else tttStatus.innerText = "GAME SELESAI: PACAR LU MENANG 😭"; } 
+      else { tttStatus.innerText = gameState.turn === mySymbol ? `Giliran LU (${mySymbol})` : `Giliran PACAR (${gameState.turn})`; }
     }
   }
-
   async function playMove(index) {
     if (isProcessingMove || !gameState || gameState.winner || !currentUser) return;
     const board = Array.isArray(gameState.board) ? gameState.board : ["","","","","","","","",""];
     if (board[index] !== "") return;
-
-    const isMeX = currentUser.id === gameState.player_x;
-    const mySymbol = isMeX ? 'X' : 'O';
+    const isMeX = currentUser.id === gameState.player_x; const mySymbol = isMeX ? 'X' : 'O';
     if (gameState.turn !== mySymbol) return; 
-
-    AudioManager.playClick();
-    isProcessingMove = true;
-    const newBoard = [...board];
-    newBoard[index] = mySymbol;
-    const newWinner = checkWinner(newBoard);
-    const newTurn = mySymbol === 'X' ? 'O' : 'X';
-
-    const { data, error } = await supabaseClient.from('game_state')
-      .update({ board: newBoard, turn: newTurn, winner: newWinner })
-      .eq('id', 1).select().maybeSingle();
-
-    isProcessingMove = false;
-    if (error) { console.warn('Move gagal:', error.message); return; }
-    if (data) { gameState = data; renderGame(); }
-
-    if (newWinner) {
-        AudioManager.playSuccess();
-        sendPushToPartner('Hasil Tic Tac Toe: ' + (newWinner === 'Seri' ? 'Seri!' : newWinner + ' Menang!'));
-    } else {
-        sendPushToPartner('Pacar lu jalan di Tic Tac Toe! 🎮');
-    }
+    AudioManager.playClick(); isProcessingMove = true;
+    const newBoard = [...board]; newBoard[index] = mySymbol; const newWinner = checkWinner(newBoard); const newTurn = mySymbol === 'X' ? 'O' : 'X';
+    const { data, error } = await supabaseClient.from('game_state').update({ board: newBoard, turn: newTurn, winner: newWinner }).eq('id', 1).select().maybeSingle();
+    isProcessingMove = false; if (error) { console.warn('Move gagal:', error.message); return; } if (data) { gameState = data; renderGame(); }
+    if (newWinner) { AudioManager.playSuccess(); sendPushToPartner('Hasil Tic Tac Toe: ' + (newWinner === 'Seri' ? 'Seri!' : newWinner + ' Menang!')); } else { sendPushToPartner('Pacar lu jalan di Tic Tac Toe! 🎮'); }
   }
-
-  function checkWinner(b) {
-    const lines = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
-    for (let line of lines) {
-      if (b[line[0]] && b[line[0]] === b[line[1]] && b[line[0]] === b[line[2]]) return b[line[0]];
-    }
-    if (!b.includes('')) return 'Seri'; 
-    return '';
-  }
+  function checkWinner(b) { const lines = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]]; for (let line of lines) { if (b[line[0]] && b[line[0]] === b[line[1]] && b[line[0]] === b[line[2]]) return b[line[0]]; } if (!b.includes('')) return 'Seri'; return ''; }
 
   // --- REMINDER LOGIC ---
   btnOpenReminder.addEventListener('click', () => { reminderText.value = ''; reminderModal.classList.add('show'); });
   btnCloseReminder.addEventListener('click', () => reminderModal.classList.remove('show'));
-
   btnSendReminder.addEventListener('click', async () => {
-    if (!currentUser) return;
-    const msg = reminderText.value.trim();
-    if (!msg) return alert('Ketik pesannya dulu bro!');
-    if (!partnerId) {
-       const { data: profilesData } = await supabaseClient.from('profiles').select('id').neq('id', currentUser.id).limit(1).maybeSingle();
-       if (profilesData) partnerId = profilesData.id;
-    }
+    if (!currentUser) return; const msg = reminderText.value.trim(); if (!msg) return alert('Ketik pesannya dulu bro!');
+    if (!partnerId) { const { data: profilesData } = await supabaseClient.from('profiles').select('id').neq('id', currentUser.id).limit(1).maybeSingle(); if (profilesData) partnerId = profilesData.id; }
     if (!partnerId) return alert('Pacar lu belum login nih.');
-
     btnSendReminder.innerText = 'Mengirim...'; btnSendReminder.disabled = true;
     const { error } = await supabaseClient.from('reminders').insert({ sender_id: currentUser.id, receiver_id: partnerId, message: msg });
     btnSendReminder.innerText = 'Kirim Pesan'; btnSendReminder.disabled = false;
-
-    if (error) alert('Gagal: ' + error.message);
-    else {
-      reminderModal.classList.remove('show');
-      AudioManager.playSuccess();
-      sendPushToPartner('📢 Pesan Baru: ' + msg);
-      alert('Pesan terkirim!');
-    }
+    if (error) alert('Gagal: ' + error.message); else { reminderModal.classList.remove('show'); AudioManager.playSuccess(); sendPushToPartner('📢 Pesan Baru: ' + msg); alert('Pesan terkirim!'); }
   });
-
-  btnAcceptReminder.addEventListener('click', async () => {
-    incomingReminderModal.classList.remove('show');
-    if (currentIncomingReminderId) {
-      await supabaseClient.from('reminders').update({ is_read: true }).eq('id', currentIncomingReminderId);
-      currentIncomingReminderId = null;
-    }
-  });
+  btnAcceptReminder.addEventListener('click', async () => { incomingReminderModal.classList.remove('show'); if (currentIncomingReminderId) { await supabaseClient.from('reminders').update({ is_read: true }).eq('id', currentIncomingReminderId); currentIncomingReminderId = null; } });
 
   // --- COUNTDOWN LOGIC ---
-  btnEditCountdown.addEventListener('click', () => {
-    countdownModal.classList.add('show');
-    if(currentMeetDate) {
-      const d = new Date(currentMeetDate);
-      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-      meetDateInput.value = d.toISOString().slice(0,16);
-    } else meetDateInput.value = '';
-  });
+  btnEditCountdown.addEventListener('click', () => { countdownModal.classList.add('show'); if(currentMeetDate) { const d = new Date(currentMeetDate); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); meetDateInput.value = d.toISOString().slice(0,16); } else meetDateInput.value = ''; });
   btnCloseCountdown.addEventListener('click', () => countdownModal.classList.remove('show'));
-
   btnSaveCountdown.addEventListener('click', async () => {
-    const val = meetDateInput.value;
-    if (!val) await supabaseClient.from('couple_settings').update({ meet_date: null }).eq('id', 1);
-    else await supabaseClient.from('couple_settings').update({ meet_date: new Date(val).toISOString() }).eq('id', 1);
-    countdownModal.classList.remove('show');
-    sendPushToPartner('Pacar lu update jadwal ketemuan! 🗓️');
+    const val = meetDateInput.value; if (!val) await supabaseClient.from('couple_settings').update({ meet_date: null }).eq('id', 1); else await supabaseClient.from('couple_settings').update({ meet_date: new Date(val).toISOString() }).eq('id', 1);
+    countdownModal.classList.remove('show'); sendPushToPartner('Pacar lu update jadwal ketemuan! 🗓️');
   });
-
   function renderCountdown(meetDate) {
-    currentMeetDate = meetDate;
-    if (countdownInterval) clearInterval(countdownInterval);
-    if (!meetDate) {
-      countdownDisplay.innerHTML = '<div style="font-size:12px; color:var(--text-sub); font-weight:700;">Belum diatur. Klik ikon pensil!</div>';
-      return;
-    }
+    currentMeetDate = meetDate; if (countdownInterval) clearInterval(countdownInterval);
+    if (!meetDate) { countdownDisplay.innerHTML = '<div style="font-size:12px; color:var(--text-sub); font-weight:700;">Belum diatur. Klik ikon pensil!</div>'; return; }
     function updateTimer() {
       const distance = new Date(meetDate).getTime() - new Date().getTime();
-      if (distance < 0) {
-        countdownDisplay.innerHTML = '<div class="meet-today">HARI INI KETEMUAN! 🎉</div>';
-        clearInterval(countdownInterval); return;
-      }
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      countdownDisplay.innerHTML = `
-        <div class="time-block"><div class="time-num">${days}</div><div class="time-label">Hari</div></div>
-        <div class="time-block"><div class="time-num">${hours}</div><div class="time-label">Jam</div></div>
-        <div class="time-block"><div class="time-num">${minutes}</div><div class="time-label">Menit</div></div>
-        <div class="time-block"><div class="time-num">${seconds}</div><div class="time-label">Detik</div></div>
-      `;
+      if (distance < 0) { countdownDisplay.innerHTML = '<div class="meet-today">HARI INI KETEMUAN! 🎉</div>'; clearInterval(countdownInterval); return; }
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24)); const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      countdownDisplay.innerHTML = `<div class="time-block"><div class="time-num">${days}</div><div class="time-label">Hari</div></div><div class="time-block"><div class="time-num">${hours}</div><div class="time-label">Jam</div></div><div class="time-block"><div class="time-num">${minutes}</div><div class="time-label">Menit</div></div><div class="time-block"><div class="time-num">${seconds}</div><div class="time-label">Detik</div></div>`;
     }
-    updateTimer();
-    countdownInterval = setInterval(updateTimer, 1000);
+    updateTimer(); countdownInterval = setInterval(updateTimer, 1000);
   }
 
   // --- AKSI LAINNYA ---
   document.querySelectorAll('.status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!currentUser) return;
-      const act = btn.getAttribute('data-act');
-      document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if (!currentUser) return; const act = btn.getAttribute('data-act');
+      document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
       await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act });
       sendPushToPartner('Pacar lu sekarang: ' + getActivityLabel(act));
     });
   });
 
-  // Update Kangen Gauge Function (More performant)
   function updateKangenGauge(score) {
-    const maxScore = 100; 
-    const percentage = Math.min((score / maxScore) * 100, 100);
-    const strokeDashoffset = 276 - (276 * percentage) / 100;
-    
-    // CSS transition handles the smooth animation
+    const maxScore = 100; const percentage = Math.min((score / maxScore) * 100, 100); const strokeDashoffset = 276 - (276 * percentage) / 100;
     gaugeProgress.style.strokeDashoffset = strokeDashoffset;
-    
-    // Number animation
     let currentNum = parseInt(kangenScoreEl.innerText) || 0;
-    if (score > currentNum) {
-      const interval = setInterval(() => {
-        if (currentNum >= score) { clearInterval(interval); return; }
-        currentNum++;
-        kangenScoreEl.innerText = currentNum;
-      }, 50);
-    } else {
-      kangenScoreEl.innerText = score;
-    }
+    if (score > currentNum) { const interval = setInterval(() => { if (currentNum >= score) { clearInterval(interval); return; } currentNum++; kangenScoreEl.innerText = currentNum; }, 50); } else { kangenScoreEl.innerText = score; }
   }
 
   document.getElementById('btnKangen').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).maybeSingle();
-    const newScore = (data?.kangen_score || 0) + 1;
-    await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
-    
-    const currentTotal = parseInt(kangenScoreEl.innerText) || 0;
-    updateKangenGauge(currentTotal + 1);
-    
-    spawnHearts(5);
-    AudioManager.playSuccess();
-    safeVibrate([100, 50, 100]);
-    sendPushToPartner('Pacar lu ngirim Kangen ❤️');
+    if (!currentUser) return; const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).maybeSingle();
+    const newScore = (data?.kangen_score || 0) + 1; await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
+    const currentTotal = parseInt(kangenScoreEl.innerText) || 0; updateKangenGauge(currentTotal + 1);
+    spawnHearts(5); AudioManager.playSuccess(); safeVibrate([100, 50, 100]); sendPushToPartner('Pacar lu ngirim Kangen ❤️');
   });
 
   document.getElementById('btnTouch').addEventListener('click', async () => {
-    if (!currentUser) return;
-    safeVibrate([200, 100, 200]);
-    AudioManager.playPop();
-    sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
+    if (!currentUser) return; safeVibrate([200, 100, 200]); AudioManager.playPop(); sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
 
   // SPIN
-  btnSpin.addEventListener('click', () => {
-    spinModal.classList.add('show');
-    spinResult.innerText = "Tekan tombol di bawah untuk memutar!";
-    wheel.style.transition = 'none'; wheel.style.transform = 'rotate(0deg)';
-  });
+  btnSpin.addEventListener('click', () => { spinModal.classList.add('show'); spinResult.innerText = "Tekan tombol di bawah untuk memutar!"; wheel.style.transition = 'none'; wheel.style.transform = 'rotate(0deg)'; });
   btnCloseSpin.addEventListener('click', () => spinModal.classList.remove('show'));
-
   btnDoSpin.addEventListener('click', async () => {
-    if (isSpinning || !currentUser) return;
-    isSpinning = true; btnDoSpin.disabled = true; btnDoSpin.innerText = "Memutar...";
-    AudioManager.playTone(200, 'sawtooth', 0.5, 0.05); // Whoosh sound
-    const randomIndex = Math.floor(Math.random() * challenges.length);
-    const resultTeks = challenges[randomIndex];
-    const spinData = resultTeks + '|' + Date.now(); 
-    await supabaseClient.from('user_status').update({ spin_result: spinData }).eq('id', currentUser.id);
-    sendPushToPartner('Pacar lu muter roda tantangan! 🎡');
-    animateWheelTo(randomIndex, resultTeks);
+    if (isSpinning || !currentUser) return; isSpinning = true; btnDoSpin.disabled = true; btnDoSpin.innerText = "Memutar...";
+    AudioManager.playTone(200, 'sawtooth', 0.5, 0.05);
+    const randomIndex = Math.floor(Math.random() * challenges.length); const resultTeks = challenges[randomIndex]; const spinData = resultTeks + '|' + Date.now(); 
+    await supabaseClient.from('user_status').update({ spin_result: spinData }).eq('id', currentUser.id); sendPushToPartner('Pacar lu muter roda tantangan! 🎡'); animateWheelTo(randomIndex, resultTeks);
   });
-
   function animateWheelTo(index, resultTeks) {
-    const segmentAngle = 360 / challenges.length;
-    const targetDeg = (360 * 5) + (360 - (index * segmentAngle) - (segmentAngle / 2)); 
-    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-    wheel.style.transform = `rotate(${targetDeg}deg)`;
-    setTimeout(() => {
-      spinResult.innerHTML = `Tantangannya:<br><span style="color:var(--primary)">${resultTeks}</span>`;
-      AudioManager.playSuccess();
-      safeVibrate([100, 50, 100]);
-      isSpinning = false; btnDoSpin.disabled = false; btnDoSpin.innerText = "Putar Lagi!";
-    }, 4200);
+    const segmentAngle = 360 / challenges.length; const targetDeg = (360 * 5) + (360 - (index * segmentAngle) - (segmentAngle / 2)); 
+    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)'; wheel.style.transform = `rotate(${targetDeg}deg)`;
+    setTimeout(() => { spinResult.innerHTML = `Tantangannya:<br><span style="color:var(--primary)">${resultTeks}</span>`; AudioManager.playSuccess(); safeVibrate([100, 50, 100]); isSpinning = false; btnDoSpin.disabled = false; btnDoSpin.innerText = "Putar Lagi!"; }, 4200);
   }
 
   // CAPSULE
-  btnOpenCapsule.addEventListener('click', async () => {
-    capsuleModal.classList.add('show'); capsuleText.value = ''; capsuleDate.value = '';
-    await loadCapsules();
-  });
+  btnOpenCapsule.addEventListener('click', async () => { capsuleModal.classList.add('show'); capsuleText.value = ''; capsuleDate.value = ''; await loadCapsules(); });
   btnCloseCapsule.addEventListener('click', () => capsuleModal.classList.remove('show'));
-
   btnSendCapsule.addEventListener('click', async () => {
-    if (!currentUser) return;
-    const text = capsuleText.value.trim(); const date = capsuleDate.value;
-    if (!text) return alert('Tulis suratnya dulu bro!');
-    if (!date) return alert('Pilih tanggal buka suratnya!');
-    const todayObj = new Date();
-    const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
+    if (!currentUser) return; const text = capsuleText.value.trim(); const date = capsuleDate.value;
+    if (!text) return alert('Tulis suratnya dulu bro!'); if (!date) return alert('Pilih tanggal buka suratnya!');
+    const todayObj = new Date(); const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
     if (date < todayStr) return alert('Tanggal tidak boleh masa lalu!');
     btnSendCapsule.innerText = 'Mengunci...'; btnSendCapsule.disabled = true;
     const { error } = await supabaseClient.from('time_capsules').insert({ sender_id: currentUser.id, sender_email: currentUser.email, content: text, unlock_date: date });
     btnSendCapsule.innerText = 'Kirim & Kunci Surat'; btnSendCapsule.disabled = false;
-    if (error) alert('Gagal: ' + error.message);
-    else {
-      AudioManager.playSuccess();
-      alert('Surat berhasil dikunci! Bakal kebuka otomatis tanggal ' + date);
-      capsuleText.value = ''; capsuleDate.value = '';
-      sendPushToPartner('Pacar lu ngirim Surat Masa Depan! 📜');
-      await loadCapsules(); 
-    }
+    if (error) alert('Gagal: ' + error.message); else { AudioManager.playSuccess(); alert('Surat berhasil dikunci! Bakal kebuka otomatis tanggal ' + date); capsuleText.value = ''; capsuleDate.value = ''; sendPushToPartner('Pacar lu ngirim Surat Masa Depan! 📜'); await loadCapsules(); }
   });
-
   async function loadCapsules() {
-    if (!currentUser) return;
-    capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub); font-weight:700;">Memuat surat...</div>';
+    if (!currentUser) return; capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub); font-weight:700;">Memuat surat...</div>';
     const { data, error } = await supabaseClient.from('time_capsules').select('*').neq('sender_id', currentUser.id).order('created_at', { ascending: false });
     if (error || !data || data.length === 0) { capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub); font-weight:700;">Belum ada surat masuk.</div>'; return; }
     capsuleList.innerHTML = '';
-    const todayObj = new Date();
-    const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
+    const todayObj = new Date(); const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
     data.forEach(letter => {
-      const isLocked = todayStr < letter.unlock_date;
-      const dateObj = new Date(letter.unlock_date + 'T00:00:00');
-      const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-      const div = document.createElement('div');
-      div.className = `letter-item ${isLocked ? 'locked' : ''}`;
+      const isLocked = todayStr < letter.unlock_date; const dateObj = new Date(letter.unlock_date + 'T00:00:00'); const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+      const div = document.createElement('div'); div.className = `letter-item ${isLocked ? 'locked' : ''}`;
       if (isLocked) div.innerHTML = `<div class="letter-date">Dikirim oleh: ${escapeHTML(letter.sender_email)}</div><div class="letter-content" style="filter: blur(5px); user-select: none;">Isi surat masih rahasia ya sayang...</div><div class="letter-lock-msg">🔒 Terkunci hingga ${dateStr}</div>`;
       else div.innerHTML = `<div class="letter-date">Dibuka pada: ${dateStr}</div><div class="letter-content">${escapeHTML(letter.content)}</div>`;
       capsuleList.appendChild(div);
@@ -1319,31 +945,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // BUCKET LIST
   btnOpenBucket.addEventListener('click', async () => { bucketModal.classList.add('show'); bucketInput.value = ''; await loadBucketList(); });
   btnCloseBucket.addEventListener('click', () => bucketModal.classList.remove('show'));
-
   btnAddBucket.addEventListener('click', async () => {
-    if (!currentUser) return;
-    const content = bucketInput.value.trim();
-    if (!content) return;
-    bucketInput.value = ''; 
-    await supabaseClient.from('bucket_list').insert({ content: content, added_by: currentUser.id });
-    AudioManager.playPop();
-    sendPushToPartner('Pacar lu nambahin bucket list baru! 🎯');
+    if (!currentUser) return; const content = bucketInput.value.trim(); if (!content) return; bucketInput.value = ''; 
+    await supabaseClient.from('bucket_list').insert({ content: content, added_by: currentUser.id }); AudioManager.playPop(); sendPushToPartner('Pacar lu nambahin bucket list baru! 🎯');
   });
-
   async function loadBucketList() {
-    if (!currentUser) return;
-    const { data, error } = await supabaseClient.from('bucket_list').select('*').order('created_at', { ascending: true });
-    if (error || !data) return;
-    renderBucketList(data);
+    if (!currentUser) return; const { data, error } = await supabaseClient.from('bucket_list').select('*').order('created_at', { ascending: true }); if (error || !data) return; renderBucketList(data);
   }
-
   function renderBucketList(data) {
-    if (!currentUser) return;
-    bucketListContainer.innerHTML = '';
+    if (!currentUser) return; bucketListContainer.innerHTML = '';
     if (!data || data.length === 0) { bucketListContainer.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub); padding:10px; font-weight:700;">Belum ada rencana. Yuk tambahin!</div>'; return; }
     data.forEach(item => {
-      const div = document.createElement('div');
-      div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
+      const div = document.createElement('div'); div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
       const checkbox = document.createElement('div'); checkbox.className = 'bucket-checkbox'; checkbox.innerText = '✓'; checkbox.onclick = () => toggleBucket(item.id, item.is_completed);
       const textContainer = document.createElement('div'); textContainer.className = 'bucket-text'; textContainer.innerText = item.content;
       const badge = document.createElement('span'); badge.style.fontSize = '10px'; badge.style.color = 'var(--accent)'; badge.style.fontWeight = '800'; badge.innerText = (item.added_by === currentUser.id) ? ' (Lu)' : ' (Pacar)';
@@ -1352,63 +965,38 @@ document.addEventListener('DOMContentLoaded', () => {
       div.appendChild(checkbox); div.appendChild(textContainer); div.appendChild(deleteBtn); bucketListContainer.appendChild(div);
     });
   }
-
   window.toggleBucket = async (id, currentStatus) => { await supabaseClient.from('bucket_list').update({ is_completed: !currentStatus }).eq('id', id); AudioManager.playClick(); sendPushToPartner(!currentStatus ? 'Pacar lu nyentang bucket list! 🎉' : 'Bucket list dibatalin centangnya 😅'); };
   window.deleteBucket = async (id) => { if(!confirm('Hapus rencana ini?')) return; await supabaseClient.from('bucket_list').delete().eq('id', id); };
 
   // --- FUNGSI BANTU ---
-  function getActivityLabel(act) {
-    const labels = { 'idle': 'Lagi Santai', 'motor': 'Lagi Naik Motor', 'nugas': 'Lagi Nugas', 'tidur': 'Lagi Tidur' };
-    return labels[act] || 'Lagi Santai';
-  }
-
+  function getActivityLabel(act) { const labels = { 'idle': 'Lagi Santai', 'motor': 'Lagi Naik Motor', 'nugas': 'Lagi Nugas', 'tidur': 'Lagi Tidur' }; return labels[act] || 'Lagi Santai'; }
+  
   function renderPartnerStatus(activity) {
-    activity = activity || 'idle';
-    partnerActivity.innerText = getActivityLabel(activity);
+    activity = activity || 'idle'; 
+    partnerActivity.innerText = getActivityLabel(activity); 
     partnerAnim.innerHTML = '';
-    if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
-    else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
-    else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
+    if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>'; 
+    else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>'; 
+    else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>'; 
     else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
-    document.querySelectorAll('.status-btn').forEach(b => {
-      b.classList.toggle('active', b.getAttribute('data-act') === activity);
-    });
+    // BUG FIX: Baris yang mengubah status-btn dihapus dari sini.
   }
 
-  function spawnHearts(count) {
-    for(let i=0; i<count; i++) {
-      setTimeout(() => {
-        const heart = document.createElement('div'); heart.className = 'heart'; heart.innerText = '💖';
-        heart.style.left = (Math.random() * 80 + 10) + '%'; heart.style.bottom = (Math.random() * 20 + 10) + '%';
-        document.body.appendChild(heart); setTimeout(() => heart.remove(), 2000);
-      }, i * 150);
-    }
-  }
+  function spawnHearts(count) { for(let i=0; i<count; i++) { setTimeout(() => { const heart = document.createElement('div'); heart.className = 'heart'; heart.innerText = '💖'; heart.style.left = (Math.random() * 80 + 10) + '%'; heart.style.bottom = (Math.random() * 20 + 10) + '%'; document.body.appendChild(heart); setTimeout(() => heart.remove(), 2000); }, i * 150); } }
 
   async function sendPushToPartner(pesan) {
     try {
-      if (!currentUser) return;
-      const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).maybeSingle();
+      if (!currentUser) return; const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).maybeSingle();
       if (!partnerData || !partnerData.onesignal_id) return;
-      fetch('https://onesignal.com/api/v1/notifications', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + ONESIGNAL_REST_API_KEY },
-        body: JSON.stringify({ app_id: ONESIGNAL_APP_ID, include_player_ids: [partnerData.onesignal_id], headings: { en: 'LoveLink 🎀' }, contents: { en: pesan } })
-      });
+      fetch('https://onesignal.com/api/v1/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + ONESIGNAL_REST_API_KEY }, body: JSON.stringify({ app_id: ONESIGNAL_APP_ID, include_player_ids: [partnerData.onesignal_id], headings: { en: 'LoveLink 🎀' }, contents: { en: pesan } }) });
     } catch (err) {}
   }
 
   // --- SESSION & REALTIME ---
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (session) {
-      currentUser = session.user;
-      authCard.classList.add('hidden');
-      dashboardCard.classList.remove('hidden');
-      
-      updateDaysTogether();
-
-      ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel'].forEach(ch => {
-        if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; }
-      });
+      currentUser = session.user; authCard.classList.add('hidden'); dashboardCard.classList.remove('hidden'); updateDaysTogether();
+      ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
 
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).maybeSingle();
       const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).maybeSingle();
@@ -1416,135 +1004,74 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: profilesData } = await supabaseClient.from('profiles').select('id').neq('id', currentUser.id).limit(1).maybeSingle();
       
       if (profilesData) partnerId = profilesData.id;
+      if (myData && myData.transport_mode) { myMode = myData.transport_mode; modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode)); }
+      if (myData && myData.activity) { document.querySelectorAll('.status-btn').forEach(b => { b.classList.toggle('active', b.getAttribute('data-act') === myData.activity); }); }
 
-      if (myData && myData.transport_mode) {
-        myMode = myData.transport_mode;
-        modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode));
-      }
-
-      if (myData && myData.activity) {
-        document.querySelectorAll('.status-btn').forEach(b => {
-          b.classList.toggle('active', b.getAttribute('data-act') === myData.activity);
-        });
-      }
-
-      const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
-      updateKangenGauge(totalScore);
-      lastPartnerScore = partnerData?.kangen_score || 0;
-
+      const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0); updateKangenGauge(totalScore); lastPartnerScore = partnerData?.kangen_score || 0;
       if (partnerData) {
           renderPartnerStatus(partnerData.activity || 'idle');
           if (partnerData.spin_result) lastSpinId = parseInt(partnerData.spin_result.split('|')[1] || 0);
           if (partnerData.latitude && partnerData.longitude) updatePartnerMap(partnerData.latitude, partnerData.longitude, partnerData.transport_mode || 'motor');
       }
-
-      if (settingsData && settingsData.meet_date) renderCountdown(settingsData.meet_date);
-      else renderCountdown(null);
-
+      if (settingsData && settingsData.meet_date) renderCountdown(settingsData.meet_date); else renderCountdown(null);
       await loadGameState();
 
-      setTimeout(() => {
-          OneSignalDeferred.push(async function(OneSignal) {
-            try {
-              const playerId = OneSignal.User && OneSignal.User.PushSubscription ? OneSignal.User.PushSubscription.id : null;
-              if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
-            } catch (e) {}
-          });
-      }, 1500);
+      setTimeout(() => { OneSignalDeferred.push(async function(OneSignal) { try { const playerId = OneSignal.User && OneSignal.User.PushSubscription ? OneSignal.User.PushSubscription.id : null; if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id); } catch (e) {} }); }, 1500);
 
-      if (navigator.permissions && navigator.permissions.query) {
-        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-          if (result.state === 'granted' && !isTracking) {
-            setTimeout(() => btnToggleTracking.click(), 1000);
-          }
-        }).catch(e => console.log('Permission check err:', e));
-      }
+      if (navigator.permissions && navigator.permissions.query) { navigator.permissions.query({ name: 'geolocation' }).then((result) => { if (result.state === 'granted' && !isTracking) { setTimeout(() => btnToggleTracking.click(), 1000); } }).catch(e => console.log('Permission check err:', e)); }
 
-      window.sharelockChannel = supabaseClient.channel('realtime_sharelock')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
+      // REALTIME CHANNELS
+      window.sharelockChannel = supabaseClient.channel('realtime_sharelock').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           if (newData.id !== currentUser.id) {
             if (newData.latitude && newData.longitude) updatePartnerMap(newData.latitude, newData.longitude, newData.transport_mode || 'motor');
-            else {
-              lastPartnerLat = null; lastPartnerLng = null;
-              if (partnerMarker && map) { map.removeLayer(partnerMarker); partnerMarker = null; }
-              updateDistanceInfo();
-            }
+            else { lastPartnerLat = null; lastPartnerLng = null; if (partnerMarker && map) { map.removeLayer(partnerMarker); partnerMarker = null; } updateDistanceInfo(); }
           }
-        }).subscribe();
+      }).subscribe();
 
-      window.gameChannel = supabaseClient.channel('realtime_game')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'game_state' }, payload => {
+      window.gameChannel = supabaseClient.channel('realtime_game').on('postgres_changes', { event: '*', schema: 'public', table: 'game_state' }, payload => {
           gameState = payload.new; renderGame();
-          if (gameState && gameState.winner && gameState.winner !== 'Seri') {
-              AudioManager.playSuccess();
-              safeVibrate([200, 100, 200]);
-          }
-        }).subscribe();
+          if (gameState && gameState.winner && gameState.winner !== 'Seri') { AudioManager.playSuccess(); safeVibrate([200, 100, 200]); }
+      }).subscribe();
 
-      window.reminderChannel = supabaseClient.channel('realtime_reminders')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reminders' }, payload => {
+      window.reminderChannel = supabaseClient.channel('realtime_reminders').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reminders' }, payload => {
           const newReminder = payload.new;
-          if (newReminder.receiver_id === currentUser.id) {
-             currentIncomingReminderId = newReminder.id;
-             incomingReminderText.innerText = newReminder.message;
-             incomingReminderModal.classList.add('show');
-             AudioManager.playNotif();
-             safeVibrate([300, 100, 300, 100, 300]); 
-          }
-        }).subscribe();
+          if (newReminder.receiver_id === currentUser.id) { currentIncomingReminderId = newReminder.id; incomingReminderText.innerText = newReminder.message; incomingReminderModal.classList.add('show'); AudioManager.playNotif(); safeVibrate([300, 100, 300, 100, 300]); }
+      }).subscribe();
 
-      window.statusChannel = supabaseClient.channel('realtime_status')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
+      window.statusChannel = supabaseClient.channel('realtime_status').on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           if (!newData || newData.id === currentUser.id) return;
-          
           if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
-          
-          if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
-              lastPartnerScore = newData.kangen_score;
-              const currentTotal = parseInt(kangenScoreEl.innerText) || 0;
-              updateKangenGauge(currentTotal + 1);
-              spawnHearts(3);
-              AudioManager.playNotif();
-          }
-
+          if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) { lastPartnerScore = newData.kangen_score; const currentTotal = parseInt(kangenScoreEl.innerText) || 0; updateKangenGauge(currentTotal + 1); spawnHearts(3); AudioManager.playNotif(); }
           if (newData.spin_result) {
-             const parts = newData.spin_result.split('|');
-             const teks = parts[0];
-             const receivedSpinId = parseInt(parts[1] || 0);
-             if (receivedSpinId > lastSpinId) {
-               lastSpinId = receivedSpinId;
-               if (isSpinning) return; 
-               const index = challenges.indexOf(teks);
-               if (index !== -1) {
-                 spinModal.classList.add('show');
-                 spinResult.innerText = "Pacar lu muter rodanya!";
-                 AudioManager.playNotif();
-                 setTimeout(() => { animateWheelTo(index, teks); }, 500);
-               }
-             }
+             const parts = newData.spin_result.split('|'); const teks = parts[0]; const receivedSpinId = parseInt(parts[1] || 0);
+             if (receivedSpinId > lastSpinId) { lastSpinId = receivedSpinId; if (isSpinning) return; const index = challenges.indexOf(teks); if (index !== -1) { spinModal.classList.add('show'); spinResult.innerText = "Pacar lu muter rodanya!"; AudioManager.playNotif(); setTimeout(() => { animateWheelTo(index, teks); }, 500); } }
           }
-        }).subscribe();
+      }).subscribe();
 
-      window.bucketChannel = supabaseClient.channel('realtime_bucket')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'bucket_list' }, async () => {
-          if (bucketModal.classList.contains('show')) await loadBucketList();
-        }).subscribe();
+      window.bucketChannel = supabaseClient.channel('realtime_bucket').on('postgres_changes', { event: '*', schema: 'public', table: 'bucket_list' }, async () => { if (bucketModal.classList.contains('show')) await loadBucketList(); }).subscribe();
 
-      window.settingsChannel = supabaseClient.channel('realtime_settings')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'couple_settings' }, payload => {
-           const newSettings = payload.new;
-           if (newSettings.meet_date) renderCountdown(newSettings.meet_date);
-           else renderCountdown(null);
+      window.settingsChannel = supabaseClient.channel('realtime_settings').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'couple_settings' }, payload => {
+           const newSettings = payload.new; if (newSettings.meet_date) renderCountdown(newSettings.meet_date); else renderCountdown(null);
+      }).subscribe();
+
+      // Realtime Love Notes
+      window.notesChannel = supabaseClient.channel('realtime_notes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'love_notes' }, async payload => {
+           if (loveNotesModal.classList.contains('show')) {
+               await loadNotes();
+               if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id) {
+                   AudioManager.playSticky();
+               }
+           }
         }).subscribe();
 
     } else {
-      currentUser = null; partnerId = null;
-      authCard.classList.remove('hidden'); dashboardCard.classList.add('hidden');
+      currentUser = null; partnerId = null; authCard.classList.remove('hidden'); dashboardCard.classList.add('hidden');
     }
   });
 });
 </script>
 </body>
-</html>
+  </html>
