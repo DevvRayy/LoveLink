@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#140E13">
-<title>LoveLink - Cute Dark Cozy</title>
+<meta name="theme-color" content="#120D12">
+<title>LoveLink - Cozy Lofi</title>
 
 <!-- Library Supabase & OneSignal -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,20 +21,28 @@
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
   
   :root {
-    --bg: #140E13;
-    --card-bg: rgba(36, 26, 36, 0.7);
-    --card-border: rgba(255, 180, 200, 0.15);
+    --bg: #120D12; /* Deep Warm Dark */
+    --card-bg: rgba(40, 30, 40, 0.6); /* Warm Lofi Glass */
+    --card-border: rgba(255, 200, 220, 0.15);
+    
     --text-main: #FFF0F5;
-    --text-sub: #B49FAD;
-    --primary: #FF8BA7;
-    --primary-glow: rgba(255, 139, 167, 0.5);
-    --accent: #C99EFF;
-    --accent-glow: rgba(201, 158, 255, 0.5);
+    --text-sub: #C0A8B8;
+    
+    --primary: #FF8BA7; /* Pastel Pink */
+    --primary-glow: rgba(255, 139, 167, 0.4);
+    --accent: #C99EFF; /* Pastel Purple */
+    --accent-glow: rgba(201, 158, 255, 0.4);
+    --mint: #64FFDA;
+    --yellow: #FFD166;
+    --peach: #FFB07C;
+    
     --danger: #FF6B6B;
     --success: #64FFDA;
+    
     --radius-lg: 28px;
     --radius-md: 20px;
     --radius-sm: 14px;
+    
     --transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     --smooth-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -42,23 +50,24 @@
   body {
     background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
     display: flex; justify-content: center; align-items: center; padding: 16px;
-    overflow-x: hidden; position: relative; line-height: 1.5; transform: translate3d(0,0,0); 
+    overflow-x: hidden; position: relative; line-height: 1.5; 
+    transform: translate3d(0,0,0); /* Force GPU Rendering */
   }
 
-  /* --- BACKGROUND --- */
+  /* --- ANIMATED BACKGROUND (OPTIMIZED) --- */
   .bg-shapes { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
-  .shape { position: absolute; background: var(--primary); border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float-bg 20s infinite ease-in-out alternate; will-change: transform; }
-  .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; background: #FF8BA7; animation-duration: 25s; }
-  .shape:nth-child(2) { width: 400px; height: 400px; bottom: -20%; right: -20%; background: #8B6BFF; animation-duration: 30s; animation-delay: -5s; }
-  .shape:nth-child(3) { width: 200px; height: 200px; top: 40%; left: 60%; background: #FFD166; animation-duration: 15s; animation-delay: -10s; opacity: 0.1;}
-  @keyframes float-bg { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(30px, 50px, 0) scale(1.1); } }
+  .shape { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.2; animation: float-bg 25s infinite ease-in-out alternate; will-change: transform; }
+  .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; background: var(--primary); animation-duration: 20s; }
+  .shape:nth-child(2) { width: 400px; height: 400px; bottom: -20%; right: -20%; background: var(--accent); animation-duration: 28s; animation-delay: -5s; }
+  .shape:nth-child(3) { width: 250px; height: 250px; top: 40%; left: 60%; background: var(--yellow); animation-duration: 18s; animation-delay: -10s; opacity: 0.15;}
+  @keyframes float-bg { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(40px, 60px, 0) scale(1.1); } }
 
-  .floating-emoji { position: absolute; font-size: 24px; opacity: 0; animation: float-up 15s linear infinite; filter: grayscale(20%); will-change: transform, opacity; }
+  .floating-emoji { position: absolute; font-size: 24px; opacity: 0; animation: float-up 15s linear infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); will-change: transform, opacity; }
   .e1 { left: 10%; animation-delay: 0s; } .e2 { left: 30%; animation-delay: 3s; } .e3 { left: 60%; animation-delay: 6s; } .e4 { left: 80%; animation-delay: 9s; } .e5 { left: 45%; animation-delay: 12s; }
-  @keyframes float-up { 0% { transform: translate3d(0, 100vh, 0) rotate(0deg); opacity: 0; } 10% { opacity: 0.2; } 90% { opacity: 0.2; } 100% { transform: translate3d(0, -100px, 0) rotate(360deg); opacity: 0; } }
+  @keyframes float-up { 0% { transform: translate3d(0, 100vh, 0) rotate(0deg); opacity: 0; } 10% { opacity: 0.3; } 90% { opacity: 0.3; } 100% { transform: translate3d(0, -100px, 0) rotate(360deg); opacity: 0; } }
 
   /* --- UI CONTAINERS --- */
-  .glass-panel { background: var(--card-bg); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 2px solid var(--card-border); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.08); position: relative; z-index: 10; transform: translate3d(0,0,0); }
+  .glass-panel { background: var(--card-bg); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 2px solid var(--card-border); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.1); position: relative; z-index: 10; }
   .card { width: 100%; max-width: 440px; border-radius: var(--radius-lg); padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 20px; animation: slide-up 0.6s var(--smooth-bounce) both; }
   @keyframes slide-up { from { transform: translate3d(0, 30px, 0); opacity: 0; } to { transform: translate3d(0, 0, 0); opacity: 1; } }
 
@@ -82,15 +91,15 @@
   /* --- BUTTONS --- */
   .btn { width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-weight: 800; font-size: 15px; cursor: pointer; transition: var(--transition); display: flex; justify-content: center; align-items: center; gap: 8px; will-change: transform; }
   .btn:active { transform: scale(0.95); }
-  .btn-primary { background: linear-gradient(135deg, #FF8BA7, #FF6B9D); border: none; color: #140E13; box-shadow: 0 8px 24px var(--primary-glow); }
-  .btn-accent { background: linear-gradient(135deg, #C99EFF, #A855F7); border: none; color: #140E13; box-shadow: 0 8px 24px var(--accent-glow); }
+  .btn-primary { background: linear-gradient(135deg, #FF8BA7, #FF6B9D); border: none; color: #120D12; box-shadow: 0 8px 24px var(--primary-glow); }
+  .btn-accent { background: linear-gradient(135deg, #C99EFF, #A855F7); border: none; color: #120D12; box-shadow: 0 8px 24px var(--accent-glow); }
 
   /* --- DASHBOARD LAYOUT --- */
   .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
   .span-full { grid-column: 1 / -1; }
 
   /* --- PROFILE HEADER --- */
-  .profile-header { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent); border: 2px solid rgba(255,255,255,0.05); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+  .profile-header { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border: 2px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
   .profile-header::after { content: '✨'; position: absolute; right: 10px; top: 10px; font-size: 14px; opacity: 0.5; animation: twinkle 2s infinite alternate; }
   @keyframes twinkle { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
   .avatar-box { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
@@ -105,7 +114,7 @@
   @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
   /* --- KANGEN GAUGE --- */
-  .kangen-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.03); }
+  .kangen-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05); }
   .gauge-container { position: relative; width: 160px; height: 160px; margin-bottom: 16px; }
   .gauge-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
   .gauge-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 12; }
@@ -127,10 +136,11 @@
   .meet-today { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); text-align: center; margin: 10px 0; text-shadow: 0 0 20px var(--accent-glow);}
 
   /* --- PARTNER STATUS --- */
-  .partner-status-box { background: linear-gradient(135deg, rgba(255, 139, 167, 0.08), rgba(201, 158, 255, 0.08)); border: 2px solid var(--card-border); padding: 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left; }
+  .partner-status-box { background: linear-gradient(135deg, rgba(255, 139, 167, 0.1), rgba(201, 158, 255, 0.1)); border: 2px solid var(--card-border); padding: 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left; }
   .partner-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   .partner-activity { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; color: var(--primary); z-index: 2; position: relative; text-shadow: 0 0 10px var(--primary-glow);}
-  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.5; z-index: 1; }
+  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
+  
   @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(450px); } }
   .anim-motor { position: absolute; bottom: 10px; font-size: 32px; animation: ride 4s linear infinite; }
   @keyframes write { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
@@ -140,11 +150,19 @@
   @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
   .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
 
+  /* New Status Animations */
+  .anim-scroll { position: absolute; top: 40%; right: 20px; font-size: 32px; animation: float 2s ease-in-out infinite; }
+  .anim-makan { position: absolute; bottom: 15px; right: 25px; font-size: 32px; animation: float 2.5s ease-in-out infinite; }
+  .anim-jajan { position: absolute; top: 20%; left: 25px; font-size: 32px; animation: ride 5s linear infinite; }
+  .anim-temen { position: absolute; bottom: 10px; left: 20px; font-size: 32px; animation: heartbeat 1.5s ease-in-out infinite; }
+  .anim-ngobrol { position: absolute; top: 30%; left: 30px; font-size: 32px; animation: pulse 2s ease-in-out infinite; }
+  .anim-beres { position: absolute; bottom: 20px; right: 30px; font-size: 32px; animation: write 1.5s ease-in-out infinite; }
+
   /* --- STATUS GRID --- */
-  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .status-btn { padding: 14px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 14px; font-weight: 800; cursor: pointer; transition: var(--smooth-bounce); display: flex; align-items: center; justify-content: center; gap: 8px;}
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .status-btn { padding: 12px 8px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 12px; font-weight: 800; cursor: pointer; transition: var(--smooth-bounce); display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center;}
   .status-btn:active { transform: scale(0.95); }
-  .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.2), rgba(201, 158, 255, 0.2)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px);}
+  .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.3), rgba(201, 158, 255, 0.3)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px);}
 
   /* --- CUTE ACTION BUTTONS --- */
   .cute-action-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 10px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); cursor: pointer; transition: var(--smooth-bounce); box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
@@ -167,7 +185,7 @@
   .color-blue { background: #64FFDA; } .color-purple { background: #C99EFF; }
   
   .notes-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); }
-  .sticky-note { padding: 16px; border-radius: 4px; color: #140E13; font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; box-shadow: 2px 4px 10px rgba(0,0,0,0.4); position: relative; word-wrap: break-word; transform: rotate(var(--rot)); transition: var(--smooth-bounce); cursor: pointer;}
+  .sticky-note { padding: 16px; border-radius: 4px; color: #120D12; font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; box-shadow: 2px 4px 10px rgba(0,0,0,0.4); position: relative; word-wrap: break-word; transform: rotate(var(--rot)); transition: var(--smooth-bounce); cursor: pointer;}
   .sticky-note:hover { transform: scale(1.05) rotate(0deg); z-index: 10; box-shadow: 4px 8px 15px rgba(0,0,0,0.6); }
   .sticky-note::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; background: rgba(255,255,255,0.6); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
   .note-bg-yellow { background: #FFE066; } .note-bg-pink { background: #FF8BA7; }
@@ -184,7 +202,7 @@
   .distance-text { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 13px; font-family: 'Fredoka'; font-weight: 600; color: var(--primary); background: #1A1118; padding: 2px 8px; border-radius: 10px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);}
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
   .mode-btn { padding: 12px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 24px; cursor: pointer; transition: var(--transition); }
-  .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #140E13; transform: scale(1.05);}
+  .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #120D12; transform: scale(1.05);}
   .map-icon { font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
   /* --- GAME & WHEEL --- */
@@ -197,7 +215,7 @@
   .wheel-container { position: relative; width: 240px; height: 240px; margin: 0 auto 20px; border-radius: 50%; box-shadow: 0 0 30px var(--primary-glow); }
   .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #C99EFF 45deg 90deg, #FFD166 90deg 135deg, #FF6B6B 135deg 180deg, #FF8BA7 180deg 225deg, #C99EFF 225deg 270deg, #FFD166 270deg 315deg, #FF6B6B 315deg 360deg); will-change: transform;}
   .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));}
-  .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px; background: #140E13; border-radius: 50%; display: grid; place-items: center; font-size: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); border: 2px solid var(--primary);}
+  .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px; background: #120D12; border-radius: 50%; display: grid; place-items: center; font-size: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); border: 2px solid var(--primary);}
   .result-text { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; color: #FFF; text-align: center; background: rgba(0,0,0,0.4); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.05); }
 
   /* --- CAPSULE & BUCKET --- */
@@ -209,7 +227,7 @@
   .bucket-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: var(--radius-md); margin-bottom: 10px; border: 2px solid rgba(255,255,255,0.05); transition: 0.3s; }
   .bucket-item.done { opacity: 0.5; background: rgba(201, 158, 255, 0.05); border-color: rgba(201, 158, 255, 0.2); }
   .bucket-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--text-sub); display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px; transition: var(--smooth-bounce);}
-  .bucket-item.done .bucket-checkbox { background: var(--accent); border-color: var(--accent); color: #140E13; transform: scale(1.1);}
+  .bucket-item.done .bucket-checkbox { background: var(--accent); border-color: var(--accent); color: #120D12; transform: scale(1.1);}
   .bucket-text { flex: 1; font-size: 14px; color: #FFF; text-align: left; font-weight: 700;}
   .bucket-item.done .bucket-text { text-decoration: line-through; color: var(--text-sub); }
   .bucket-delete { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; padding: 5px; transition: 0.2s;}
@@ -219,9 +237,9 @@
   #incomingReminderModal { z-index: 1050; }
   #incomingReminderModal .modal-content { background: linear-gradient(135deg, #FF8BA7, #C99EFF); border: 3px solid #FFF; box-shadow: 0 0 50px var(--primary-glow); animation: popIn 0.5s var(--smooth-bounce); }
   @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  #incomingReminderModal h2 { color: #140E13; font-size: 24px; text-shadow: none; }
-  #incomingReminderModal p { font-size: 16px; font-weight: 800; line-height: 1.5; margin-bottom: 24px; background: rgba(255,255,255,0.9); padding: 20px; border-radius: var(--radius-md); color: #140E13; border: none;}
-  #incomingReminderModal .btn { background: #140E13; color: #FFF; font-weight: 800; border: none;}
+  #incomingReminderModal h2 { color: #120D12; font-size: 24px; text-shadow: none; }
+  #incomingReminderModal p { font-size: 16px; font-weight: 800; line-height: 1.5; margin-bottom: 24px; background: rgba(255,255,255,0.9); padding: 20px; border-radius: var(--radius-md); color: #120D12; border: none;}
+  #incomingReminderModal .btn { background: #120D12; color: #FFF; font-weight: 800; border: none;}
 
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s ease-out forwards; }
   @keyframes fallUp { 0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 1; } 100% { transform: translate3d(0, -150px, 0) scale(1.5); opacity: 0; } }
@@ -263,6 +281,10 @@
   
   <button class="btn btn-primary" id="btnAction" style="margin-top:10px;">Masuk</button>
   <button class="btn btn-outline" id="btnSwitch">Belum punya akun? Daftar</button>
+  
+  <!-- Teks indikator remember device -->
+  <p style="font-size: 11px; color: var(--text-sub); margin-top: 5px; font-weight: 700;">🔒 Sesi login aman & tersimpan di perangkat ini</p>
+  
   <div class="error" id="errorMsg"></div>
 </div>
 
@@ -351,6 +373,7 @@
       <div class="text">Surat Waktu</div>
     </button>
 
+    <!-- UPDATE STATUS -->
     <div class="span-full" style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05);">
       <div class="title-small">Update Statusmu:</div>
       <div class="status-grid">
@@ -358,6 +381,12 @@
         <button class="status-btn" data-act="motor">🏍️ Motor</button>
         <button class="status-btn" data-act="nugas">📚 Nugas</button>
         <button class="status-btn" data-act="tidur">😴 Tidur</button>
+        <button class="status-btn" data-act="scroll">📱 Scroll</button>
+        <button class="status-btn" data-act="makan">🍔 Makan</button>
+        <button class="status-btn" data-act="jajan">🍦 Jajan</button>
+        <button class="status-btn" data-act="temen">👯 Sama Temen</button>
+        <button class="status-btn" data-act="ngobrol">🗣️ Ngobrol</button>
+        <button class="status-btn" data-act="beres">🧹 Beres-beres</button>
       </div>
     </div>
 
@@ -371,7 +400,6 @@
     <h2>📝 Love Notes</h2>
     
     <div class="notes-board" id="notesBoard">
-      <!-- Notes will be injected here -->
       <div class="notes-empty">Belum ada notes. Tulis yang manis dong! 🥺</div>
     </div>
 
@@ -518,6 +546,12 @@ document.addEventListener('DOMContentLoaded', () => {
     playSuccess() { this.init(); this.playTone(523.25, 'triangle', 0.1, 0.1); setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.1), 100); setTimeout(() => this.playTone(783.99, 'triangle', 0.3, 0.1), 200); },
     playNotif() { this.init(); this.playTone(880, 'sine', 0.1, 0.1); setTimeout(() => this.playTone(1108.73, 'sine', 0.3, 0.1), 100); },
     playSticky() { this.init(); this.playTone(300, 'sine', 0.1, 0.1); this.playTone(500, 'sine', 0.2, 0.1); },
+    playMilestone() { 
+        this.init(); 
+        this.playTone(1046.50, 'sine', 0.3, 0.1); 
+        setTimeout(() => this.playTone(1318.51, 'sine', 0.3, 0.1), 150); 
+        setTimeout(() => this.playTone(1567.98, 'sine', 0.5, 0.1), 300); 
+    },
     toggleBgm() {
       this.init();
       if (!this.bgm) { this.bgm = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'); this.bgm.loop = true; this.bgm.volume = 0.3; }
@@ -530,13 +564,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('audioToggle').addEventListener('click', (e) => { e.stopPropagation(); AudioManager.toggleBgm(); });
   document.querySelectorAll('button').forEach(btn => { btn.addEventListener('click', () => { if (btn.id === 'audioToggle') return; if (btn.classList.contains('btn-primary') || btn.classList.contains('cute-action-btn')) { AudioManager.playPop(); } else { AudioManager.playClick(); } }); });
 
-  // --- SUPABASE ---
+  // --- SUPABASE INIT (WITH PERSISTENT SESSION) ---
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
   const ONESIGNAL_REST_API_KEY = 'bc131dba-e4b5-4c2d-8291-f9a547603b92';
 
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  // FITUR REMEMBER DEVICE (AUTO LOGIN)
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: window.localStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) { await OneSignal.init({ appId: ONESIGNAL_APP_ID }); try { await OneSignal.Notifications.requestPermission(); } catch (e) {} });
@@ -630,6 +672,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const challenges = [ "Kirim Pap 3 kali 📸", "Kirim Vn I Love You 🎙", "Bilang 'Aku Sayang Kamu' 3x 😻", "Panggil Pacar Pake Nama Lucu🐣", "Kirim Foto Selfie Di Posisi Sekarang 📸", "Teken Tombol Aku Kangen Kamu 💗", "Pelukan Virtual 10 Detik 🫂", "Tukeran Wallpaper 1 Hari 🖼️" ];
 
   function escapeHTML(str) { if (str === null || str === undefined) return ''; return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)); }
+
+  // --- MILESTONE & EMBEL-EMBEL ---
+  function spawnMilestoneEmojis() {
+    const emojis = ['✨', '🌸', '🎀', '🐻', '🌟', '💖', '🦋'];
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'heart';
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = (Math.random() * 80 + 10) + '%';
+            el.style.bottom = (Math.random() * 20 + 10) + '%';
+            el.style.fontSize = (Math.random() * 15 + 20) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
+        }, i * 80);
+    }
+    safeVibrate([100, 50, 100, 50, 200]);
+  }
 
   // --- LOVE NOTES LOGIC ---
   document.querySelectorAll('.color-option').forEach(opt => {
@@ -729,12 +789,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!mapInitialized) { map = L.map('map').setView([-6.175392, 106.827153], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); mapInitialized = true; }
       if (map) map.invalidateSize();
       if (lastPartnerLat && lastPartnerLng) updatePartnerMap(lastPartnerLat, lastPartnerLng, lastPartnerMode);
-      updateDistanceInfo(); centerMapToBoth();
+      updateDistanceInfo(); 
+      centerMapToBoth();
     }, 300);
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
-            if (map) { if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); else myMarker.setLatLng([latitude, longitude]); map.setView([latitude, longitude], 16); updateDistanceInfo(); centerMapToBoth(); }
+            if (map) { 
+                if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); 
+                else myMarker.setLatLng([latitude, longitude]); 
+                updateDistanceInfo(); 
+            }
         }, (err) => console.log("GPS Error:", err), { enableHighAccuracy: true });
     }
   });
@@ -757,7 +822,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const { latitude, longitude } = pos.coords;
           btnToggleTracking.innerText = 'Berhenti Bagikan Lokasi'; btnToggleTracking.style.background = 'var(--danger)'; btnToggleTracking.style.borderColor = 'transparent';
           await supabaseClient.from('user_status').update({ latitude, longitude, transport_mode: myMode }).eq('id', currentUser.id);
-          if (map) { if (!myMarker) { myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); map.setView([latitude, longitude], 16); } else { myMarker.setLatLng([latitude, longitude]); myMarker.setIcon(createCustomIcon(myMode)); } updateDistanceInfo(); centerMapToBoth(); }
+          if (map) { 
+              if (!myMarker) { myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map); } 
+              else { myMarker.setLatLng([latitude, longitude]); myMarker.setIcon(createCustomIcon(myMode)); } 
+              updateDistanceInfo(); 
+          }
         },
         (err) => {
           if (err.code === 1) { alert("Izin lokasi ditolak! Pastikan buka via HTTPS dan izinkan akses lokasi."); isTracking = false; btnToggleTracking.innerText = 'Mulai Bagikan Lokasi'; btnToggleTracking.style.background = ''; btnToggleTracking.classList.add('btn-accent'); } 
@@ -776,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastPartnerLat = lat; lastPartnerLng = lng; lastPartnerMode = mode; if (!map) return;
     if (partnerMarker) { partnerMarker.setLatLng([lat, lng]); partnerMarker.setIcon(createCustomIcon(mode)); } 
     else { partnerMarker = L.marker([lat, lng], { icon: createCustomIcon(mode) }).addTo(map); }
-    updateDistanceInfo(); centerMapToBoth();
+    updateDistanceInfo(); 
   }
 
   // --- LOGIN LOGIC ---
@@ -881,18 +950,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  function updateKangenGauge(score) {
-    const maxScore = 100; const percentage = Math.min((score / maxScore) * 100, 100); const strokeDashoffset = 276 - (276 * percentage) / 100;
+  function updateKangenGauge(score, isInitialLoad = false) {
+    const visualScore = score % 100;
+    const percentage = (score > 0 && visualScore === 0) ? 100 : visualScore;
+    
+    const strokeDashoffset = 276 - (276 * percentage) / 100;
     gaugeProgress.style.strokeDashoffset = strokeDashoffset;
+    
     let currentNum = parseInt(kangenScoreEl.innerText) || 0;
-    if (score > currentNum) { const interval = setInterval(() => { if (currentNum >= score) { clearInterval(interval); return; } currentNum++; kangenScoreEl.innerText = currentNum; }, 50); } else { kangenScoreEl.innerText = score; }
+    
+    if (score > currentNum && !isInitialLoad) {
+        if (Math.floor(score / 100) > Math.floor(currentNum / 100)) {
+            AudioManager.playMilestone();
+            spawnMilestoneEmojis();
+        }
+
+        const interval = setInterval(() => {
+            if (currentNum >= score) { clearInterval(interval); return; }
+            currentNum++;
+            kangenScoreEl.innerText = currentNum;
+            
+            const tempVisual = currentNum % 100;
+            const tempPercentage = (currentNum > 0 && tempVisual === 0) ? 100 : tempVisual;
+            gaugeProgress.style.strokeDashoffset = 276 - (276 * tempPercentage) / 100;
+        }, 30);
+    } else {
+        kangenScoreEl.innerText = score;
+        const finalVisual = score % 100;
+        const finalPercent = (score > 0 && finalVisual === 0) ? 100 : finalVisual;
+        gaugeProgress.style.strokeDashoffset = 276 - (276 * finalPercent) / 100;
+    }
   }
 
   document.getElementById('btnKangen').addEventListener('click', async () => {
     if (!currentUser) return; const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).maybeSingle();
     const newScore = (data?.kangen_score || 0) + 1; await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
     const currentTotal = parseInt(kangenScoreEl.innerText) || 0; updateKangenGauge(currentTotal + 1);
-    spawnHearts(5); AudioManager.playSuccess(); safeVibrate([100, 50, 100]); sendPushToPartner('Pacar lu ngirim Kangen ❤️');
+    AudioManager.playSuccess(); safeVibrate([100, 50, 100]); sendPushToPartner('Pacar lu ngirim Kangen ❤️');
   });
 
   document.getElementById('btnTouch').addEventListener('click', async () => {
@@ -969,7 +1063,21 @@ document.addEventListener('DOMContentLoaded', () => {
   window.deleteBucket = async (id) => { if(!confirm('Hapus rencana ini?')) return; await supabaseClient.from('bucket_list').delete().eq('id', id); };
 
   // --- FUNGSI BANTU ---
-  function getActivityLabel(act) { const labels = { 'idle': 'Lagi Santai', 'motor': 'Lagi Naik Motor', 'nugas': 'Lagi Nugas', 'tidur': 'Lagi Tidur' }; return labels[act] || 'Lagi Santai'; }
+  function getActivityLabel(act) { 
+    const labels = { 
+        'idle': 'Lagi Santai', 
+        'motor': 'Lagi Naik Motor', 
+        'nugas': 'Lagi Nugas', 
+        'tidur': 'Lagi Tidur',
+        'scroll': 'Lagi Scroll',
+        'makan': 'Lagi Makan',
+        'jajan': 'Lagi Jajan',
+        'temen': 'Sama Temen',
+        'ngobrol': 'Lagi Ngobrol',
+        'beres': 'Beres-beres'
+    }; 
+    return labels[act] || 'Lagi Santai'; 
+  }
   
   function renderPartnerStatus(activity) {
     activity = activity || 'idle'; 
@@ -978,8 +1086,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>'; 
     else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>'; 
     else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>'; 
+    else if (activity === 'scroll') partnerAnim.innerHTML = '<div class="anim-scroll">📱</div>';
+    else if (activity === 'makan') partnerAnim.innerHTML = '<div class="anim-makan">🍔</div>';
+    else if (activity === 'jajan') partnerAnim.innerHTML = '<div class="anim-jajan">🍦</div>';
+    else if (activity === 'temen') partnerAnim.innerHTML = '<div class="anim-temen">👯</div>';
+    else if (activity === 'ngobrol') partnerAnim.innerHTML = '<div class="anim-ngobrol">💬</div>';
+    else if (activity === 'beres') partnerAnim.innerHTML = '<div class="anim-beres">🧹</div>';
     else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
-    // BUG FIX: Baris yang mengubah status-btn dihapus dari sini.
   }
 
   function spawnHearts(count) { for(let i=0; i<count; i++) { setTimeout(() => { const heart = document.createElement('div'); heart.className = 'heart'; heart.innerText = '💖'; heart.style.left = (Math.random() * 80 + 10) + '%'; heart.style.bottom = (Math.random() * 20 + 10) + '%'; document.body.appendChild(heart); setTimeout(() => heart.remove(), 2000); }, i * 150); } }
@@ -994,6 +1107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- SESSION & REALTIME ---
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    // Memastikan jika ada event SIGNED_IN atau INITIAL_SESSION dari cache, dashboard langsung muncul
     if (session) {
       currentUser = session.user; authCard.classList.add('hidden'); dashboardCard.classList.remove('hidden'); updateDaysTogether();
       ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
@@ -1007,7 +1121,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (myData && myData.transport_mode) { myMode = myData.transport_mode; modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode)); }
       if (myData && myData.activity) { document.querySelectorAll('.status-btn').forEach(b => { b.classList.toggle('active', b.getAttribute('data-act') === myData.activity); }); }
 
-      const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0); updateKangenGauge(totalScore); lastPartnerScore = partnerData?.kangen_score || 0;
+      const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0); 
+      
+      updateKangenGauge(totalScore, true); 
+      lastPartnerScore = partnerData?.kangen_score || 0;
+      
       if (partnerData) {
           renderPartnerStatus(partnerData.activity || 'idle');
           if (partnerData.spin_result) lastSpinId = parseInt(partnerData.spin_result.split('|')[1] || 0);
@@ -1043,7 +1161,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const newData = payload.new;
           if (!newData || newData.id === currentUser.id) return;
           if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
-          if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) { lastPartnerScore = newData.kangen_score; const currentTotal = parseInt(kangenScoreEl.innerText) || 0; updateKangenGauge(currentTotal + 1); spawnHearts(3); AudioManager.playNotif(); }
+          
+          if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) { 
+              lastPartnerScore = newData.kangen_score; 
+              const currentTotal = parseInt(kangenScoreEl.innerText) || 0; 
+              updateKangenGauge(currentTotal + 1); 
+          }
+          
           if (newData.spin_result) {
              const parts = newData.spin_result.split('|'); const teks = parts[0]; const receivedSpinId = parseInt(parts[1] || 0);
              if (receivedSpinId > lastSpinId) { lastSpinId = receivedSpinId; if (isSpinning) return; const index = challenges.indexOf(teks); if (index !== -1) { spinModal.classList.add('show'); spinResult.innerText = "Pacar lu muter rodanya!"; AudioManager.playNotif(); setTimeout(() => { animateWheelTo(index, teks); }, 500); } }
@@ -1056,7 +1180,6 @@ document.addEventListener('DOMContentLoaded', () => {
            const newSettings = payload.new; if (newSettings.meet_date) renderCountdown(newSettings.meet_date); else renderCountdown(null);
       }).subscribe();
 
-      // Realtime Love Notes
       window.notesChannel = supabaseClient.channel('realtime_notes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'love_notes' }, async payload => {
            if (loveNotesModal.classList.contains('show')) {
@@ -1068,10 +1191,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }).subscribe();
 
     } else {
+      // Hanya tampil login kalau memang bener-bener belum login / abis logout
       currentUser = null; partnerId = null; authCard.classList.remove('hidden'); dashboardCard.classList.add('hidden');
     }
   });
 });
 </script>
 </body>
-  </html>
+</html>
