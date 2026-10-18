@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Spin the Wheel</title>
+<title>LoveLink - Time Capsule</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
@@ -24,10 +24,12 @@
   h1 { font-size: 24px; color: #FF7FA8; margin-bottom: 5px; }
   p.sub { font-size: 12px; color: #C9A0B8; margin-bottom: 20px; }
   
-  input {
+  input, textarea {
     width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,182,210,0.2);
     color: #FFF; padding: 12px 14px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none;
+    font-family: inherit;
   }
+  textarea { height: 100px; resize: none; }
   .btn {
     width: 100%; padding: 12px; border-radius: 10px; border: none;
     background: linear-gradient(135deg, #FF7FA8, #C99EFF); color: #2A0018;
@@ -63,58 +65,41 @@
   .partner-label { font-size: 11px; color: #C9A0B8; margin-bottom: 8px; text-align: left;}
   .partner-activity { font-size: 18px; font-weight: 700; color: #FF7FA8; z-index: 2; position: relative; text-align: left;}
 
-  /* MODAL SPIN THE WHEEL */
+  /* MODAL GENERAL */
   .modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000;
     display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
-    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow-y: auto;
   }
   .modal.show { opacity: 1; pointer-events: auto; }
-  .wheel-container { position: relative; width: 280px; height: 280px; margin-bottom: 20px; }
-  
+  .modal-content {
+    background: #2A1420; width: 100%; max-width: 380px; padding: 20px; border-radius: 20px;
+    border: 1px solid rgba(255,127,168,0.3); text-align: left;
+  }
+
   /* RODA PUTAR */
-  .wheel {
-    width: 100%; height: 100%; border-radius: 50%;
-    border: 8px solid #2A1420; box-shadow: 0 0 20px rgba(255,127,168,0.4);
-    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-    /* Bikin potongan roda pakai conic-gradient */
-    background: conic-gradient(
-      #FF7FA8 0deg 45deg, 
-      #C99EFF 45deg 90deg, 
-      #64FFDA 90deg 135deg, 
-      #FFD166 135deg 180deg, 
-      #FF6B6B 180deg 225deg, 
-      #4CAF50 225deg 270deg, 
-      #00B4D8 270deg 315deg, 
-      #E8C76A 315deg 360deg
-    );
+  .wheel-container { position: relative; width: 250px; height: 250px; margin: 0 auto 20px; }
+  .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #1A0B14; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF7FA8 0deg 45deg, #C99EFF 45deg 90deg, #64FFDA 90deg 135deg, #FFD166 135deg 180deg, #FF6B6B 180deg 225deg, #4CAF50 225deg 270deg, #00B4D8 270deg 315deg, #E8C76A 315deg 360deg); }
+  .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #FFF; z-index: 2; }
+  .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #2A1420; border-radius: 50%; display: grid; place-items: center; font-size: 20px; }
+  .result-text { font-size: 16px; font-weight: 800; color: #FFF; text-align: center; background: rgba(255,127,168,0.2); padding: 15px; border-radius: 15px; margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+
+  /* TIME CAPSULE UI */
+  .letter-item {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: left;
   }
-  .wheel-pointer {
-    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
-    border-top: 30px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
-  }
-  .wheel-center {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 50px; height: 50px; background: #2A1420; border-radius: 50%;
-    display: grid; place-items: center; font-size: 24px; box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  }
-  
-  .result-text {
-    font-size: 20px; font-weight: 800; color: #FFF; text-align: center;
-    background: rgba(255,127,168,0.2); padding: 15px 20px; border-radius: 15px;
-    border: 1px solid #FF7FA8; margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center;
-  }
+  .letter-item.locked { border-color: rgba(255,107,120,0.4); background: rgba(255,107,120,0.05); }
+  .letter-date { font-size: 11px; color: #C9A0B8; margin-bottom: 5px; }
+  .letter-content { font-size: 14px; color: #FFF; line-height: 1.6; white-space: pre-wrap; }
+  .letter-lock-msg { font-size: 13px; color: #FF6B6B; font-weight: 600; text-align: center; margin-top: 10px; }
 
   /* ANIMASI HATI */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
   @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
-  .screen-flash { position: fixed; inset: 0; background: rgba(255,127,168,0.4); z-index: 998; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
-  .screen-flash.active { opacity: 1; }
 </style>
 </head>
 <body>
-<div class="screen-flash" id="screenFlash"></div>
 
 <!-- LAYAR LOGIN -->
 <div class="card" id="authCard">
@@ -138,11 +123,15 @@
   </div>
 
   <div class="action-box" style="text-align:center;">
-    <div class="title-small" style="text-align:center;">Kangen Meter Kalian</div>
+    <div class="title-small" style="text-align:center;">Total Kangen Kalian</div>
     <div class="kangen-display" id="kangenScore">0</div>
     <button class="btn btn-kangen" id="btnKangen">❤️ Aku Kangen Kamu</button>
     <button class="btn btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
-    <button class="btn btn-primary" id="btnSpin" style="margin-top: 10px;">🎡 Putar Roda Tantangan</button>
+    
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:12px; padding: 10px;">🎡 Roda Tantangan</button>
+      <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:12px; padding: 10px; border-color:#C99EFF; color:#C99EFF;">📜 Surat Waktu</button>
+    </div>
   </div>
 
   <div class="my-status-box">
@@ -160,14 +149,40 @@
 
 <!-- MODAL SPIN THE WHEEL -->
 <div class="modal" id="spinModal">
-  <div class="wheel-container">
-    <div class="wheel-pointer"></div>
-    <div class="wheel" id="wheel"></div>
-    <div class="wheel-center">🎯</div>
+  <div class="modal-content">
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <div class="wheel" id="wheel"></div>
+      <div class="wheel-center">🎯</div>
+    </div>
+    <div class="result-text" id="spinResult">Tekan tombol di bawah untuk memutar!</div>
+    <button class="btn btn-primary" id="btnDoSpin">Putar Sekarang!</button>
+    <button class="btn btn-outline" id="btnCloseSpin" style="border-color: #FFF; color: #FFF;">Tutup</button>
   </div>
-  <div class="result-text" id="spinResult">Tekan tombol di bawah untuk memutar!</div>
-  <button class="btn btn-primary" id="btnDoSpin" style="width: 200px;">Putar Sekarang!</button>
-  <button class="btn btn-outline" id="btnCloseSpin" style="width: 200px; border-color: #FFF; color: #FFF; margin-top: 10px;">Tutup</button>
+</div>
+
+<!-- MODAL TIME CAPSULE (SURAT WAKTU) -->
+<div class="modal" id="capsuleModal">
+  <div class="modal-content">
+    <h2 style="color:#C99EFF; font-size:18px; margin-bottom:15px; text-align:center;">📜 Surat Masa Depan</h2>
+    
+    <!-- Form Nulis Surat -->
+    <div id="capsuleForm">
+      <textarea id="capsuleText" placeholder="Tulis surat panjang buat pacar lu di sini..."></textarea>
+      <label style="font-size:12px; color:#C9A0B8; display:block; margin-bottom:5px;">Tanggal Buka Surat:</label>
+      <input type="date" id="capsuleDate">
+      <button class="btn" id="btnSendCapsule" style="margin-top:10px; background:linear-gradient(135deg, #C99EFF, #8A2BE2); color:#FFF;">Kirim & Kunci Surat</button>
+    </div>
+
+    <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+      <h3 style="font-size:14px; margin-bottom:10px; color:#FFF;">📬 Kotak Masuk Surat</h3>
+      <div id="capsuleList" style="max-height: 200px; overflow-y: auto;">
+        <!-- List surat masuk bakal muncul di sini -->
+      </div>
+    </div>
+    
+    <button class="btn btn-outline" id="btnCloseCapsule" style="border-color: #FFF; color: #FFF;">Tutup</button>
+  </div>
 </div>
 
 <script>
@@ -203,11 +218,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseSpin = document.getElementById('btnCloseSpin');
   const spinResult = document.getElementById('spinResult');
 
+  // Elemen Time Capsule
+  const capsuleModal = document.getElementById('capsuleModal');
+  const btnOpenCapsule = document.getElementById('btnOpenCapsule');
+  const btnCloseCapsule = document.getElementById('btnCloseCapsule');
+  const btnSendCapsule = document.getElementById('btnSendCapsule');
+  const capsuleText = document.getElementById('capsuleText');
+  const capsuleDate = document.getElementById('capsuleDate');
+  const capsuleList = document.getElementById('capsuleList');
+
   let isLoginMode = true;
   let currentUser = null;
   let isSpinning = false;
+  
+  // Variabel penampung anti-bug
+  let lastSpinId = 0;
+  let lastPartnerScore = 0;
 
-  // DAFTAR TANTANGAN (8 SEGMEN)
+  // Tantangan Sesuai Request Lu
   const challenges = [
     "Kirim Pap 3 kali 📸",
     "Kirim Vn I Love You 🎙",
@@ -255,54 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
   });
 
-  // --- LOGIKA SPIN THE WHEEL ---
-  btnSpin.addEventListener('click', () => {
-    spinModal.classList.add('show');
-    spinResult.innerText = "Tekan tombol di bawah untuk memutar!";
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
-  });
-
-  btnCloseSpin.addEventListener('click', () => spinModal.classList.remove('show'));
-
-  btnDoSpin.addEventListener('click', async () => {
-    if (isSpinning) return;
-    isSpinning = true;
-    btnDoSpin.disabled = true;
-    btnDoSpin.innerText = "Memutar...";
-
-    // Pilih tantangan random (0-7)
-    const randomIndex = Math.floor(Math.random() * challenges.length);
-    const resultTeks = challenges[randomIndex];
-
-    // Kirim trigger ke Supabase (biar pacar ikut muter)
-    await supabaseClient.from('user_status').update({ spin_result: resultTeks }).eq('id', currentUser.id);
-    sendPushToPartner('Pacar lu muter roda tantangan! 🎡');
-
-    // Jalankan animasi roda
-    animateWheelTo(randomIndex, resultTeks);
-  });
-
-  function animateWheelTo(index, resultTeks) {
-    // Hitung derajat biar roda berhenti di tantangan yang dipilih
-    // Ada 8 segmen, berarti 1 segmen = 360/8 = 45 derajat.
-    // Setiap segmen punya titik tengah.
-    const segmentAngle = 360 / challenges.length;
-    const targetDeg = (360 * 5) + (360 - (index * segmentAngle) - (segmentAngle / 2)); 
-    
-    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-    wheel.style.transform = `rotate(${targetDeg}deg)`;
-
-    setTimeout(() => {
-      spinResult.innerHTML = `Tantangannya:<br><span style="color:#64FFDA">${resultTeks}</span>`;
-      navigator.vibrate([100, 50, 100]);
-      isSpinning = false;
-      btnDoSpin.disabled = false;
-      btnDoSpin.innerText = "Putar Lagi!";
-    }, 4200); // Tunggu animasi selesai
-  }
-
-  // --- AKSI LAINNYA ---
+  // --- AKSI STATUS ---
   document.querySelectorAll('.status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!currentUser) return;
@@ -314,11 +295,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // --- AKSI KANGEN (UDAH DIPERBAIKI) ---
   document.getElementById('btnKangen').addEventListener('click', async () => {
     if (!currentUser) return;
+    
+    // Ambil skor skrg, tambah 1
     const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).single();
     const newScore = (data?.kangen_score || 0) + 1;
+
     await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
+    
+    // Efek di layar sendiri (Angka langsung nambah)
+    kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText) + 1;
     spawnHearts(5);
     sendPushToPartner('Pacar lu ngirim Kangen ❤️');
   });
@@ -326,9 +314,137 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnTouch').addEventListener('click', async () => {
     if (!currentUser) return;
     navigator.vibrate([200, 100, 200]);
-    flashScreen();
     sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
+
+  // --- LOGIKA SPIN THE WHEEL (UDAH DIPERBAIKI) ---
+  btnSpin.addEventListener('click', () => {
+    spinModal.classList.add('show');
+    spinResult.innerText = "Tekan tombol di bawah untuk memutar!";
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+  });
+  btnCloseSpin.addEventListener('click', () => spinModal.classList.remove('show'));
+
+  btnDoSpin.addEventListener('click', async () => {
+    if (isSpinning) return;
+    isSpinning = true; btnDoSpin.disabled = true; btnDoSpin.innerText = "Memutar...";
+
+    const randomIndex = Math.floor(Math.random() * challenges.length);
+    const resultTeks = challenges[randomIndex];
+    
+    // Tambahin timestamp biar sistem tau ini putaran baru
+    const spinId = Date.now();
+    const spinData = resultTeks + '|' + spinId; 
+
+    await supabaseClient.from('user_status').update({ spin_result: spinData }).eq('id', currentUser.id);
+    sendPushToPartner('Pacar lu muter roda tantangan! 🎡');
+    animateWheelTo(randomIndex, resultTeks);
+  });
+
+  function animateWheelTo(index, resultTeks) {
+    const segmentAngle = 360 / challenges.length;
+    const targetDeg = (360 * 5) + (360 - (index * segmentAngle) - (segmentAngle / 2)); 
+    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+    wheel.style.transform = `rotate(${targetDeg}deg)`;
+
+    setTimeout(() => {
+      spinResult.innerHTML = `Tantangannya:<br><span style="color:#64FFDA">${resultTeks}</span>`;
+      navigator.vibrate([100, 50, 100]);
+      isSpinning = false; btnDoSpin.disabled = false; btnDoSpin.innerText = "Putar Lagi!";
+    }, 4200);
+  }
+
+  // --- LOGIKA TIME CAPSULE (UDAH DIPERBAIKI) ---
+  btnOpenCapsule.addEventListener('click', async () => {
+    capsuleModal.classList.add('show');
+    capsuleText.value = ''; capsuleDate.value = '';
+    await loadCapsules();
+  });
+  btnCloseCapsule.addEventListener('click', () => capsuleModal.classList.remove('show'));
+
+  btnSendCapsule.addEventListener('click', async () => {
+    const text = capsuleText.value.trim();
+    const date = capsuleDate.value;
+    
+    if (!text) return alert('Tulis suratnya dulu bro!');
+    if (!date) return alert('Pilih tanggal buka suratnya!');
+    
+    // Pengecekan tanggal lokal biar akurat
+    const todayObj = new Date();
+    const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
+    if (date < todayStr) return alert('Tanggal tidak boleh masa lalu!');
+
+    btnSendCapsule.innerText = 'Mengunci...'; btnSendCapsule.disabled = true;
+
+    const { error } = await supabaseClient.from('time_capsules').insert({
+      sender_id: currentUser.id,
+      sender_email: currentUser.email,
+      content: text,
+      unlock_date: date
+    });
+
+    btnSendCapsule.innerText = 'Kirim & Kunci Surat'; btnSendCapsule.disabled = false;
+
+    if (error) {
+      alert('Gagal ngirim surat: ' + error.message);
+    } else {
+      alert('Surat berhasil dikunci! Bakal kebuka otomatis tanggal ' + date);
+      capsuleText.value = ''; capsuleDate.value = '';
+      sendPushToPartner('Pacar lu ngirim Surat Masa Depan! 📜');
+      await loadCapsules(); 
+    }
+  });
+
+  async function loadCapsules() {
+    capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8;">Memuat surat...</div>';
+    
+    const { data, error } = await supabaseClient
+      .from('time_capsules')
+      .select('*')
+      .neq('sender_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      capsuleList.innerHTML = '<div style="color:#FF6B6B; font-size:12px;">Gagal memuat surat.</div>';
+      return;
+    }
+
+    if (data.length === 0) {
+      capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8;">Belum ada surat masuk.</div>';
+      return;
+    }
+
+    capsuleList.innerHTML = '';
+    
+    // Pengecekan tanggal pakai string YYYY-MM-DD lokal
+    const todayObj = new Date();
+    const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
+
+    data.forEach(letter => {
+      const isLocked = todayStr < letter.unlock_date;
+      
+      const dateObj = new Date(letter.unlock_date);
+      const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      const div = document.createElement('div');
+      div.className = `letter-item ${isLocked ? 'locked' : ''}`;
+      
+      if (isLocked) {
+        div.innerHTML = `
+          <div class="letter-date">Dikirim oleh: ${letter.sender_email}</div>
+          <div class="letter-content" style="filter: blur(5px); user-select: none;">Isi surat masih rahasia ya sayang...</div>
+          <div class="letter-lock-msg">🔒 Terkunci hingga ${dateStr}</div>
+        `;
+      } else {
+        div.innerHTML = `
+          <div class="letter-date">Dibuka pada: ${dateStr}</div>
+          <div class="letter-content">${letter.content}</div>
+        `;
+      }
+      capsuleList.appendChild(div);
+    });
+  }
 
   // --- FUNGSI PENDUKUNG ---
   function getActivityLabel(act) {
@@ -349,12 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function flashScreen() {
-    const flash = document.getElementById('screenFlash');
-    flash.classList.add('active');
-    setTimeout(() => flash.classList.remove('active'), 300);
-  }
-
   async function sendPushToPartner(pesan) {
     try {
       const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).single();
@@ -367,43 +477,62 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {}
   }
 
-  // --- SESSION & REALTIME (MENERIMA UPDATE DARI PACAR) ---
+  // --- SESSION & REALTIME ---
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (session) {
       currentUser = session.user;
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
+      // Ambil Data Diri & Data Pacar untuk sinkronisasi awal
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).single();
-      if (myData) kangenScoreEl.innerText = myData.kangen_score || 0;
+      const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).single();
+      
+      // Set skor kangen awal (total berdua) & skor terakhir pacar
+      let totalKangen = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
+      kangenScoreEl.innerText = totalKangen;
+      lastPartnerScore = partnerData?.kangen_score || 0;
+
+      // Simpan timestamp putaran terakhir pacar biar ga muter sendiri pas aplikasi baru dibuka
+      if (partnerData && partnerData.spin_result) {
+          const parts = partnerData.spin_result.split('|');
+          lastSpinId = parseInt(parts[1] || 0);
+      }
 
       OneSignalDeferred.push(async function(OneSignal) {
         const playerId = await OneSignal.getUserId();
         if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
       });
 
+      // REALTIME LISTENER
       window.statusChannel = supabaseClient.channel('realtime_status')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           
           if (newData.id !== currentUser.id) {
-            // Kalau pacar update Kangen Score
-            if(newData.kangen_score) {
-                kangenScoreEl.innerText = newData.kangen_score;
-                spawnHearts(3); // Munculin hati di layar kita
+            
+            // LOGIKA UPDATE KANGEN
+            if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
+                lastPartnerScore = newData.kangen_score;
+                kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText) + 1;
+                spawnHearts(3);
             }
 
-            // Kalau pacar muter roda tantangan
+            // LOGIKA UPDATE RODA PUTAR
             if (newData.spin_result) {
-               const index = challenges.indexOf(newData.spin_result);
-               if (index !== -1) {
-                 spinModal.classList.add('show');
-                 spinResult.innerText = "Pacar lu muter rodanya!";
-                 
-                 // Kasih delay dikit biar user sadar modalnya kebuka
-                 setTimeout(() => {
-                    animateWheelTo(index, newData.spin_result);
-                 }, 500);
+               const parts = newData.spin_result.split('|');
+               const teks = parts[0];
+               const receivedSpinId = parseInt(parts[1] || 0);
+
+               // Cuma jalan kalau ini ID putaran yang beneran baru
+               if (receivedSpinId > lastSpinId) {
+                 lastSpinId = receivedSpinId;
+                 const index = challenges.indexOf(teks);
+                 if (index !== -1) {
+                   spinModal.classList.add('show');
+                   spinResult.innerText = "Pacar lu muter rodanya!";
+                   setTimeout(() => { animateWheelTo(index, teks); }, 500);
+                 }
                }
             }
           }
