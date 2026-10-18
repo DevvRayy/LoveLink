@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Time Capsule</title>
+<title>LoveLink - Bucket List</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
@@ -94,6 +94,22 @@
   .letter-content { font-size: 14px; color: #FFF; line-height: 1.6; white-space: pre-wrap; }
   .letter-lock-msg { font-size: 13px; color: #FF6B6B; font-weight: 600; text-align: center; margin-top: 10px; }
 
+  /* BUCKET LIST UI */
+  .bucket-item {
+    display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05);
+    padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.2s;
+  }
+  .bucket-item.done { opacity: 0.6; background: rgba(100, 255, 218, 0.05); border-color: rgba(100,255,218,0.3); }
+  .bucket-checkbox {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #C99EFF;
+    display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px;
+  }
+  .bucket-item.done .bucket-checkbox { background: #64FFDA; border-color: #64FFDA; color: #1A0B14; }
+  .bucket-text { flex: 1; font-size: 14px; color: #FFF; text-align: left; }
+  .bucket-item.done .bucket-text { text-decoration: line-through; color: #C9A0B8; }
+  .bucket-delete { background: transparent; border: none; color: #FF6B6B; cursor: pointer; font-size: 16px; padding: 5px; }
+
   /* ANIMASI HATI */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
   @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
@@ -128,9 +144,11 @@
     <button class="btn btn-kangen" id="btnKangen">❤️ Aku Kangen Kamu</button>
     <button class="btn btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
     
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
-      <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:12px; padding: 10px;">🎡 Roda Tantangan</button>
-      <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:12px; padding: 10px; border-color:#C99EFF; color:#C99EFF;">📜 Surat Waktu</button>
+    <!-- TOMBOL FITUR BARU -->
+    <div style="display: flex; gap: 8px; margin-top: 10px;">
+      <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px;">🎡 Tantangan</button>
+      <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#C99EFF; color:#C99EFF;">📜 Surat</button>
+      <button class="btn btn-outline" id="btnOpenBucket" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#FFD166; color:#FFD166;">🎯 Bucket List</button>
     </div>
   </div>
 
@@ -166,7 +184,6 @@
   <div class="modal-content">
     <h2 style="color:#C99EFF; font-size:18px; margin-bottom:15px; text-align:center;">📜 Surat Masa Depan</h2>
     
-    <!-- Form Nulis Surat -->
     <div id="capsuleForm">
       <textarea id="capsuleText" placeholder="Tulis surat panjang buat pacar lu di sini..."></textarea>
       <label style="font-size:12px; color:#C9A0B8; display:block; margin-bottom:5px;">Tanggal Buka Surat:</label>
@@ -176,12 +193,28 @@
 
     <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <h3 style="font-size:14px; margin-bottom:10px; color:#FFF;">📬 Kotak Masuk Surat</h3>
-      <div id="capsuleList" style="max-height: 200px; overflow-y: auto;">
-        <!-- List surat masuk bakal muncul di sini -->
-      </div>
+      <div id="capsuleList" style="max-height: 200px; overflow-y: auto;"></div>
     </div>
     
     <button class="btn btn-outline" id="btnCloseCapsule" style="border-color: #FFF; color: #FFF;">Tutup</button>
+  </div>
+</div>
+
+<!-- MODAL BUCKET LIST -->
+<div class="modal" id="bucketModal">
+  <div class="modal-content">
+    <h2 style="color:#FFD166; font-size:18px; margin-bottom:15px; text-align:center;">🎯 Bucket List Kita</h2>
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+      <input type="text" id="bucketInput" placeholder="Mau ngapain pas ketemu nanti?" style="margin-bottom:0;">
+      <button class="btn" id="btnAddBucket" style="width: auto; margin-top:0; padding: 0 15px; background: #FFD166; color: #1A0B14;">+</button>
+    </div>
+
+    <div id="bucketListContainer" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+      <!-- List bakal muncul di sini -->
+    </div>
+    
+    <button class="btn btn-outline" id="btnCloseBucket" style="border-color: #FFF; color: #FFF;">Tutup</button>
   </div>
 </div>
 
@@ -227,15 +260,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const capsuleDate = document.getElementById('capsuleDate');
   const capsuleList = document.getElementById('capsuleList');
 
+  // Elemen Bucket List
+  const bucketModal = document.getElementById('bucketModal');
+  const btnOpenBucket = document.getElementById('btnOpenBucket');
+  const btnCloseBucket = document.getElementById('btnCloseBucket');
+  const btnAddBucket = document.getElementById('btnAddBucket');
+  const bucketInput = document.getElementById('bucketInput');
+  const bucketListContainer = document.getElementById('bucketListContainer');
+
   let isLoginMode = true;
   let currentUser = null;
   let isSpinning = false;
   
-  // Variabel penampung anti-bug
   let lastSpinId = 0;
   let lastPartnerScore = 0;
 
-  // Tantangan Sesuai Request Lu
   const challenges = [
     "Kirim Pap 3 kali 📸",
     "Kirim Vn I Love You 🎙",
@@ -281,9 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
   btnLogout.addEventListener('click', async () => {
     await supabaseClient.auth.signOut();
     if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
+    if (window.bucketChannel) supabaseClient.removeChannel(window.bucketChannel);
   });
 
-  // --- AKSI STATUS ---
+  // --- AKSI STATUS & KANGEN & TOUCH ---
   document.querySelectorAll('.status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!currentUser) return;
@@ -295,17 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- AKSI KANGEN (UDAH DIPERBAIKI) ---
   document.getElementById('btnKangen').addEventListener('click', async () => {
     if (!currentUser) return;
-    
-    // Ambil skor skrg, tambah 1
     const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).single();
     const newScore = (data?.kangen_score || 0) + 1;
-
     await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
-    
-    // Efek di layar sendiri (Angka langsung nambah)
     kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText) + 1;
     spawnHearts(5);
     sendPushToPartner('Pacar lu ngirim Kangen ❤️');
@@ -317,12 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
     sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
 
-  // --- LOGIKA SPIN THE WHEEL (UDAH DIPERBAIKI) ---
+  // --- SPIN THE WHEEL LOGIC ---
   btnSpin.addEventListener('click', () => {
     spinModal.classList.add('show');
     spinResult.innerText = "Tekan tombol di bawah untuk memutar!";
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
+    wheel.style.transition = 'none'; wheel.style.transform = 'rotate(0deg)';
   });
   btnCloseSpin.addEventListener('click', () => spinModal.classList.remove('show'));
 
@@ -333,7 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const randomIndex = Math.floor(Math.random() * challenges.length);
     const resultTeks = challenges[randomIndex];
     
-    // Tambahin timestamp biar sistem tau ini putaran baru
     const spinId = Date.now();
     const spinData = resultTeks + '|' + spinId; 
 
@@ -355,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4200);
   }
 
-  // --- LOGIKA TIME CAPSULE (UDAH DIPERBAIKI) ---
+  // --- TIME CAPSULE LOGIC ---
   btnOpenCapsule.addEventListener('click', async () => {
     capsuleModal.classList.add('show');
     capsuleText.value = ''; capsuleDate.value = '';
@@ -370,7 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return alert('Tulis suratnya dulu bro!');
     if (!date) return alert('Pilih tanggal buka suratnya!');
     
-    // Pengecekan tanggal lokal biar akurat
     const todayObj = new Date();
     const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
     if (date < todayStr) return alert('Tanggal tidak boleh masa lalu!');
@@ -378,10 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSendCapsule.innerText = 'Mengunci...'; btnSendCapsule.disabled = true;
 
     const { error } = await supabaseClient.from('time_capsules').insert({
-      sender_id: currentUser.id,
-      sender_email: currentUser.email,
-      content: text,
-      unlock_date: date
+      sender_id: currentUser.id, sender_email: currentUser.email, content: text, unlock_date: date
     });
 
     btnSendCapsule.innerText = 'Kirim & Kunci Surat'; btnSendCapsule.disabled = false;
@@ -398,32 +426,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadCapsules() {
     capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8;">Memuat surat...</div>';
-    
-    const { data, error } = await supabaseClient
-      .from('time_capsules')
-      .select('*')
-      .neq('sender_id', currentUser.id)
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('time_capsules').select('*').neq('sender_id', currentUser.id).order('created_at', { ascending: false });
 
-    if (error) {
-      capsuleList.innerHTML = '<div style="color:#FF6B6B; font-size:12px;">Gagal memuat surat.</div>';
-      return;
-    }
-
-    if (data.length === 0) {
+    if (error || data.length === 0) {
       capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8;">Belum ada surat masuk.</div>';
       return;
     }
 
     capsuleList.innerHTML = '';
-    
-    // Pengecekan tanggal pakai string YYYY-MM-DD lokal
     const todayObj = new Date();
     const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
 
     data.forEach(letter => {
       const isLocked = todayStr < letter.unlock_date;
-      
       const dateObj = new Date(letter.unlock_date);
       const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -445,6 +460,65 @@ document.addEventListener('DOMContentLoaded', () => {
       capsuleList.appendChild(div);
     });
   }
+
+  // --- BUCKET LIST LOGIC ---
+  btnOpenBucket.addEventListener('click', async () => {
+    bucketModal.classList.add('show');
+    bucketInput.value = '';
+    await loadBucketList();
+  });
+  btnCloseBucket.addEventListener('click', () => bucketModal.classList.remove('show'));
+
+  btnAddBucket.addEventListener('click', async () => {
+    const content = bucketInput.value.trim();
+    if (!content) return;
+
+    bucketInput.value = ''; // Clear input immediately
+    await supabaseClient.from('bucket_list').insert({
+      content: content,
+      added_by: currentUser.id
+    });
+    sendPushToPartner('Pacar lu nambahin bucket list baru! 🎯');
+  });
+
+  async function loadBucketList() {
+    const { data, error } = await supabaseClient.from('bucket_list').select('*').order('created_at', { ascending: true });
+    if (error) return;
+    renderBucketList(data);
+  }
+
+  function renderBucketList(data) {
+    bucketListContainer.innerHTML = '';
+    if (data.length === 0) {
+      bucketListContainer.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8; padding:10px;">Belum ada rencana. Yuk tambahin!</div>';
+      return;
+    }
+
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
+      
+      const isMe = item.added_by === currentUser.id;
+      const badge = isMe ? ' (Lu)' : ' (Pacar)';
+
+      div.innerHTML = `
+        <div class="bucket-checkbox" onclick="toggleBucket('${item.id}', ${item.is_completed})">✓</div>
+        <div class="bucket-text">${item.content}<span style="font-size:10px; color:#C99EFF;">${badge}</span></div>
+        <button class="bucket-delete" onclick="deleteBucket('${item.id}')">✕</button>
+      `;
+      bucketListContainer.appendChild(div);
+    });
+  }
+
+  window.toggleBucket = async (id, currentStatus) => {
+    await supabaseClient.from('bucket_list').update({ is_completed: !currentStatus }).eq('id', id);
+    sendPushToPartner(!currentStatus ? 'Pacar lu nyentang bucket list! 🎉' : 'Bucket list dibatalin centangnya 😅');
+  };
+
+  window.deleteBucket = async (id) => {
+    if(!confirm('Hapus rencana ini?')) return;
+    await supabaseClient.from('bucket_list').delete().eq('id', id);
+  };
 
   // --- FUNGSI PENDUKUNG ---
   function getActivityLabel(act) {
@@ -484,16 +558,13 @@ document.addEventListener('DOMContentLoaded', () => {
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
-      // Ambil Data Diri & Data Pacar untuk sinkronisasi awal
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).single();
       const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).single();
       
-      // Set skor kangen awal (total berdua) & skor terakhir pacar
       let totalKangen = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
       kangenScoreEl.innerText = totalKangen;
       lastPartnerScore = partnerData?.kangen_score || 0;
 
-      // Simpan timestamp putaran terakhir pacar biar ga muter sendiri pas aplikasi baru dibuka
       if (partnerData && partnerData.spin_result) {
           const parts = partnerData.spin_result.split('|');
           lastSpinId = parseInt(parts[1] || 0);
@@ -504,27 +575,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
       });
 
-      // REALTIME LISTENER
+      // REALTIME: User Status (Kangen, Spin, Activity)
       window.statusChannel = supabaseClient.channel('realtime_status')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           
           if (newData.id !== currentUser.id) {
-            
-            // LOGIKA UPDATE KANGEN
             if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
                 lastPartnerScore = newData.kangen_score;
                 kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText) + 1;
                 spawnHearts(3);
             }
-
-            // LOGIKA UPDATE RODA PUTAR
             if (newData.spin_result) {
                const parts = newData.spin_result.split('|');
                const teks = parts[0];
                const receivedSpinId = parseInt(parts[1] || 0);
-
-               // Cuma jalan kalau ini ID putaran yang beneran baru
                if (receivedSpinId > lastSpinId) {
                  lastSpinId = receivedSpinId;
                  const index = challenges.indexOf(teks);
@@ -535,6 +600,16 @@ document.addEventListener('DOMContentLoaded', () => {
                  }
                }
             }
+          }
+        })
+        .subscribe();
+
+      // REALTIME: Bucket List
+      window.bucketChannel = supabaseClient.channel('realtime_bucket')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bucket_list' }, async () => {
+          // Kalau ada perubahan apa pun (tambah, centang, hapus), langsung tarik data terbaru
+          if (bucketModal.classList.contains('show')) {
+             await loadBucketList();
           }
         })
         .subscribe();
