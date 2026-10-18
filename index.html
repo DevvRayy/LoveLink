@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ytContainer = document.getElementById('ytContainer');
   const syncStatus = document.getElementById('syncStatus');
 
-  // === SYNC MUSIC DOM v2 ===
+  // === SYNC MUSIC DOM v3 ===
   const musicModal = document.getElementById('musicModal');
   const btnOpenMusic = document.getElementById('btnOpenMusic');
   const btnCloseMusic = document.getElementById('btnCloseMusic');
@@ -883,7 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSyncVideoId = null;
   let syncChannel = null;
 
-  // === MUSIC STATE v2 ===
+  // === MUSIC STATE v3 ===
   let musicYtPlayer = null;
   let musicChannel = null;
   let currentMusicVideoId = null;
@@ -891,9 +891,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let isRemoteMusicAction = false;
   let musicProgressInterval = null;
   
-  // NEW STATES
   let isShuffle = false;
-  let repeatMode = 'off'; // 'off', 'all', 'one'
+  let repeatMode = 'off';
   let currentVolume = 100;
 
   const relationshipStartDate = new Date('2026-01-01T00:00:00');
@@ -967,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnLoadVideo.addEventListener('click', () => { const url = ytUrlInput.value.trim(); if (!url) return alert('Paste link dulu!'); const vid = extractYouTubeId(url); if (!vid) return alert('Format invalid!'); loadNewVideo(vid); });
 
   // ==========================================
-  // === SYNC MUSIC LOGIC v2 ===
+  // === SYNC MUSIC LOGIC v3 ===
   // ==========================================
   function formatTime(sec) { if (!sec || isNaN(sec) || sec < 0) return '0:00'; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
 
@@ -979,21 +978,78 @@ document.addEventListener('DOMContentLoaded', () => {
     return { title: 'Unknown Track', artist: 'Unknown Artist', thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` };
   }
 
-  window.initMusicPlayer = function(videoId) {
-    if (!window.ytApiReady) { window.initMusicPlayerIfPending = () => window.initMusicPlayer(videoId); return; }
-    if (musicYtPlayer && typeof musicYtPlayer.loadVideoById === 'function') { 
-      try { musicYtPlayer.loadVideoById(videoId); musicYtPlayer.playVideo(); } catch(e) { console.warn('loadVideoById error:', e); } 
+  function safePlayVideo(seekTime = 0) {
+    if (!musicYtPlayer) return;
+    let attempts = 0;
+    if (window.musicPlayInterval) clearInterval(window.musicPlayInterval);
+    
+    window.musicPlayInterval = setInterval(() => {
+      attempts++;
+      try {
+        if (typeof musicYtPlayer.getPlayerState === 'function') {
+          const state = musicYtPlayer.getPlayerState();
+          
+          if (state !== YT.PlayerState.PLAYING) {
+            if (seekTime > 0 && Math.abs((musicYtPlayer.getCurrentTime() || 0) - seekTime) > 3) {
+              musicYtPlayer.seekTo(seekTime, true);
+            }
+            musicYtPlayer.playVideo();
+            
+            // Jika 5 kali mencoba tapi belum play, kasih hint
+            if (attempts === 5 && state !== YT.PlayerState.PLAYING) {
+               musicCurrentTime.innerText = 'Klik ▶️';
+            }
+          } else {
+            if (seekTime > 0 && Math.abs((musicYtPlayer.getCurrentTime() || 0) - seekTime) > 3) {
+              musicYtPlayer.seekTo(seekTime, true);
+            }
+            clearInterval(window.musicPlayInterval);
+          }
+        }
+      } catch(e) {}
+      
+      if (attempts >= 10) clearInterval(window.musicPlayInterval);
+    }, 500);
+  }
+
+  window.initMusicPlayer = function(videoId, startTime = 0) {
+    if (!window.ytApiReady) { 
+      window.initMusicPlayerIfPending = () => window.initMusicPlayer(videoId, startTime); 
       return; 
     }
+    
+    if (musicYtPlayer && typeof musicYtPlayer.loadVideoById === 'function') { 
+      try { 
+        musicYtPlayer.loadVideoById({ videoId: videoId, startSeconds: startTime }); 
+        safePlayVideo(startTime);
+      } catch(e) { console.warn('loadVideoById error:', e); } 
+      return; 
+    }
+    
     musicYtPlayer = new YT.Player('musicYtPlayer', {
       height: '1', width: '1', videoId: videoId,
-      playerVars: { playsinline: 1, controls: 0, disablekb: 1, modestbranding: 1, rel: 0, fs: 0, origin: window.location.origin },
+      playerVars: { 
+        playsinline: 1, 
+        controls: 0, 
+        disablekb: 1, 
+        modestbranding: 1, 
+        rel: 0, 
+        fs: 0, 
+        origin: window.location.origin,
+        autoplay: 1
+      },
       events: { 
-        'onReady': () => { 
-          try { musicYtPlayer.setVolume(currentVolume); if (currentMusicVideoId) musicYtPlayer.playVideo(); } catch(e){}
+        'onReady': (e) => { 
+          try { 
+            musicYtPlayer.setVolume(currentVolume); 
+            safePlayVideo(startTime);
+          } catch(e){}
         }, 
         'onStateChange': onMusicPlayerStateChange, 
-        'onError': (e) => console.warn('YT Music error:', e.data) 
+        'onError': (e) => {
+          console.warn('YT Music error:', e.data);
+          if (!isRemoteMusicAction) playNextMusic();
+        } 
       }
     });
   };
@@ -1009,15 +1065,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
+    
     if (isRemoteMusicAction || !musicChannel) return;
-    const time = musicYtPlayer.getCurrentTime();
-    if (event.data === YT.PlayerState.PLAYING) {
-      musicChannel.send({ type: 'broadcast', event: 'music_sync', payload: { action: 'play', time, videoId: currentMusicVideoId } });
-      updateMusicPlaying(true);
-    } else if (event.data === YT.PlayerState.PAUSED) {
-      musicChannel.send({ type: 'broadcast', event: 'music_sync', payload: { action: 'pause', time, videoId: currentMusicVideoId } });
-      updateMusicPlaying(false);
-    }
+    
+    try {
+      const time = musicYtPlayer.getCurrentTime();
+      if (event.data === YT.PlayerState.PLAYING) {
+        musicChannel.send({ type: 'broadcast', event: 'music_sync', payload: { action: 'play', time, videoId: currentMusicVideoId } });
+        updateMusicPlaying(true);
+      } else if (event.data === YT.PlayerState.PAUSED) {
+        musicChannel.send({ type: 'broadcast', event: 'music_sync', payload: { action: 'pause', time, videoId: currentMusicVideoId } });
+        updateMusicPlaying(false);
+      }
+    } catch(e){}
   }
 
   function updateMusicPlaying(isPlaying) {
@@ -1029,11 +1089,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateMusicProgress() {
     if (!musicYtPlayer || typeof musicYtPlayer.getCurrentTime !== 'function') return;
-    const curr = musicYtPlayer.getCurrentTime() || 0;
-    const dur = musicYtPlayer.getDuration() || 0;
-    musicProgressFill.style.width = dur > 0 ? `${(curr/dur)*100}%` : '0%';
-    musicCurrentTime.innerText = formatTime(curr);
-    musicDuration.innerText = formatTime(dur);
+    try {
+      const curr = musicYtPlayer.getCurrentTime() || 0;
+      const dur = musicYtPlayer.getDuration() || 0;
+      
+      if (dur === 0) {
+        musicDuration.innerText = '0:00';
+        if (musicCurrentTime.innerText !== 'Klik ▶️') {
+          musicCurrentTime.innerText = 'Memuat...';
+        }
+      } else {
+        musicProgressFill.style.width = `${(curr/dur)*100}%`;
+        musicCurrentTime.innerText = formatTime(curr);
+        musicDuration.innerText = formatTime(dur);
+      }
+    } catch(e) {}
   }
 
   function updateControlUI() {
@@ -1074,7 +1144,8 @@ document.addEventListener('DOMContentLoaded', () => {
     musicTitle.innerText = song.title;
     musicArtist.innerText = song.artist || '';
     musicCover.src = song.thumbnail;
-    window.initMusicPlayer(song.videoId);
+    
+    window.initMusicPlayer(song.videoId, 0);
     
     if (musicChannel) musicChannel.send({ type: 'broadcast', event: 'music_sync', payload: { action: 'play_song', videoId: song.videoId, meta: song, time: 0 } });
     if (currentUser) await supabaseClient.from('couple_settings').update({ sync_music_video_id: song.videoId }).eq('id', 1);
@@ -1146,29 +1217,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!musicChannel) {
       musicChannel = supabaseClient.channel('sync_music_room');
+      
       musicChannel.on('broadcast', { event: 'music_sync' }, async payload => {
         const { action, videoId, time, meta } = payload.payload;
         isRemoteMusicAction = true;
+        
         if (action === 'play_song') {
           currentMusicVideoId = videoId;
           musicTitle.innerText = meta?.title || 'Unknown';
           musicArtist.innerText = meta?.artist || '';
           musicCover.src = meta?.thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-          window.initMusicPlayer(videoId);
-          setTimeout(() => { try { if (musicYtPlayer && musicYtPlayer.seekTo) { musicYtPlayer.seekTo(time || 0, true); musicYtPlayer.playVideo(); } } catch(e){} }, 1200);
+          window.initMusicPlayer(videoId, time || 0);
           renderQueueUI();
         } else if (action === 'play' && musicYtPlayer) {
-          try { if (Math.abs(musicYtPlayer.getCurrentTime() - time) > 3) musicYtPlayer.seekTo(time, true); musicYtPlayer.playVideo(); } catch(e){}
+          safePlayVideo(time);
         } else if (action === 'pause' && musicYtPlayer) {
-          try { if (Math.abs(musicYtPlayer.getCurrentTime() - time) > 3) musicYtPlayer.seekTo(time, true); musicYtPlayer.pauseVideo(); } catch(e){}
+          try { 
+            if (Math.abs(musicYtPlayer.getCurrentTime() - time) > 3) musicYtPlayer.seekTo(time, true); 
+            musicYtPlayer.pauseVideo(); 
+          } catch(e){}
         } else if (action === 'seek' && musicYtPlayer) {
           try { musicYtPlayer.seekTo(time, true); } catch(e){}
         }
-        setTimeout(() => { isRemoteMusicAction = false; }, 1500);
+        
+        // Perpanjang jadi 3 detik biar ga infinite loop
+        setTimeout(() => { isRemoteMusicAction = false; }, 3000);
       });
+      
       musicChannel.on('broadcast', { event: 'music_queue' }, payload => { musicQueue = payload.payload.queue || []; renderQueueUI(); });
       
-      // NEW LISTENER: Sync state (shuffle, repeat, volume)
       musicChannel.on('broadcast', { event: 'music_state' }, payload => {
         const { isShuffle: s, repeatMode: r, volume: v } = payload.payload;
         isShuffle = s; repeatMode = r; currentVolume = v;
@@ -1176,7 +1253,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (musicYtPlayer && typeof musicYtPlayer.setVolume === 'function') { try { musicYtPlayer.setVolume(currentVolume); } catch(e){} }
       });
 
-      // NEW: Handshake to sync state when opening modal late
       musicChannel.on('broadcast', { event: 'request_state' }, () => {
         if (currentMusicVideoId) {
           musicChannel.send({ type: 'broadcast', event: 'reply_state', payload: { videoId: currentMusicVideoId, isPlaying: musicYtPlayer ? musicYtPlayer.getPlayerState() === 1 : false, time: musicYtPlayer ? musicYtPlayer.getCurrentTime() : 0, meta: musicQueue.find(q => q.videoId === currentMusicVideoId), queue: musicQueue, isShuffle, repeatMode, volume: currentVolume } });
@@ -1196,18 +1272,11 @@ document.addEventListener('DOMContentLoaded', () => {
           musicTitle.innerText = data.meta.title;
           musicArtist.innerText = data.meta.artist || '';
           musicCover.src = data.meta.thumbnail;
-          window.initMusicPlayer(currentMusicVideoId);
+          window.initMusicPlayer(currentMusicVideoId, data.time);
           
-          setTimeout(() => {
-            try {
-              if (musicYtPlayer) {
-                musicYtPlayer.setVolume(currentVolume);
-                musicYtPlayer.seekTo(data.time, true);
-                if (data.isPlaying) musicYtPlayer.playVideo();
-                else musicYtPlayer.pauseVideo();
-              }
-            } catch(e){}
-          }, 1500);
+          if (data.isPlaying) {
+             safePlayVideo(data.time);
+          }
         }
       });
 
@@ -1217,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
-    if (currentMusicVideoId && !musicYtPlayer) window.initMusicPlayer(currentMusicVideoId);
+    if (currentMusicVideoId && !musicYtPlayer) window.initMusicPlayer(currentMusicVideoId, 0);
     updateControlUI();
   });
   btnCloseMusic.addEventListener('click', () => musicModal.classList.remove('show'));
@@ -1269,27 +1338,14 @@ document.addEventListener('DOMContentLoaded', () => {
   btnMusicNext.addEventListener('click', playNextMusic);
   btnMusicPrev.addEventListener('click', playPrevMusic);
 
-  btnMusicShuffle.addEventListener('click', () => {
-    isShuffle = !isShuffle;
-    updateControlUI();
-    broadcastPlayerState();
-  });
-
-  btnMusicRepeat.addEventListener('click', () => {
-    if (repeatMode === 'off') repeatMode = 'all';
-    else if (repeatMode === 'all') repeatMode = 'one';
-    else repeatMode = 'off';
-    updateControlUI();
-    broadcastPlayerState();
-  });
+  btnMusicShuffle.addEventListener('click', () => { isShuffle = !isShuffle; updateControlUI(); broadcastPlayerState(); });
+  btnMusicRepeat.addEventListener('click', () => { if (repeatMode === 'off') repeatMode = 'all'; else if (repeatMode === 'all') repeatMode = 'one'; else repeatMode = 'off'; updateControlUI(); broadcastPlayerState(); });
 
   musicVolume.addEventListener('input', (e) => {
     currentVolume = parseInt(e.target.value);
     if (musicYtPlayer && typeof musicYtPlayer.setVolume === 'function') { try { musicYtPlayer.setVolume(currentVolume); } catch(e){} }
   });
-  musicVolume.addEventListener('change', () => {
-    broadcastPlayerState();
-  });
+  musicVolume.addEventListener('change', () => { broadcastPlayerState(); });
 
   musicProgressBar.addEventListener('click', (e) => {
     if (!musicYtPlayer || typeof musicYtPlayer.getDuration !== 'function') return;
@@ -1414,6 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnLogout.addEventListener('click', async () => {
     if (countdownInterval) clearInterval(countdownInterval); if (gaugeInterval) clearInterval(gaugeInterval); if (watchId) navigator.geolocation.clearWatch(watchId);
     if (musicProgressInterval) { clearInterval(musicProgressInterval); musicProgressInterval = null; }
+    if (window.musicPlayInterval) { clearInterval(window.musicPlayInterval); window.musicPlayInterval = null; }
     isTracking = false; resetTrackingButton();
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
@@ -1586,9 +1643,7 @@ document.addEventListener('DOMContentLoaded', () => {
       partnerAvatarImg.src = dbPartnerAvatar || cachedPartner || DEFAULT_PARTNER_AVATAR;
       if (dbPartnerAvatar) setCachedPartnerAvatar(dbPartnerAvatar);
 
-      // Load Sync Watch video ID
       if (settingsData && settingsData.sync_video_id) currentSyncVideoId = settingsData.sync_video_id;
-      // Load Sync Music video ID + queue
       if (settingsData && settingsData.sync_music_video_id) currentMusicVideoId = settingsData.sync_music_video_id;
       if (settingsData && Array.isArray(settingsData.music_queue)) { musicQueue = settingsData.music_queue; renderQueueUI(); }
 
@@ -1641,4 +1696,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-  </html>
+</html>
