@@ -191,7 +191,7 @@
   .modal.show .modal-content { transform: translateY(0); }
   .modal-content h2 { font-size: 20px; font-weight: 900; margin-bottom: 20px; text-align: center; color: var(--primary);}
 
-  #map { height: 250px; width: 100%; border-radius: var(--radius-md); margin-bottom: 16px; border: 2px solid var(--primary-glow); z-index: 1; }
+  #map { height: 250px; width: 100%; border-radius: var(--radius-md); margin-bottom: 12px; border: 2px solid var(--primary-glow); z-index: 1; }
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
   .mode-btn { padding: 14px; border-radius: var(--radius-md); border: 2px solid var(--glass-border); background: rgba(255,255,255,0.05); color: #FFF; font-size: 22px; cursor: pointer; transition: 0.2s; }
   .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #1A1118;}
@@ -313,6 +313,10 @@
   <div class="modal-content">
     <h2>📍 ShareLock Lokasi</h2>
     <div id="map"></div>
+    <!-- INFO JARAK -->
+    <div id="distanceInfo" style="text-align:center; font-weight:800; font-size:14px; color:var(--primary); margin-bottom:16px; display:none;">
+      Jarak: - km
+    </div>
     
     <div class="title-small" style="text-align:center;">Pilih Kendaraanmu:</div>
     <div class="mode-grid">
@@ -552,6 +556,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // FITUR BARU: Hitung Jarak (Haversine)
+  function hitungJarak(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius bumi dalam km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return (R * c).toFixed(2); // Hasil 2 desimal
+  }
+
+  // FITUR BARU: Update UI Jarak
+  function updateDistanceInfo() {
+    const distEl = document.getElementById('distanceInfo');
+    if (!distEl) return;
+    if (myMarker && partnerMarker) {
+      const myLatLng = myMarker.getLatLng();
+      const partnerLatLng = partnerMarker.getLatLng();
+      const dist = hitungJarak(myLatLng.lat, myLatLng.lng, partnerLatLng.lat, partnerLatLng.lng);
+      distEl.style.display = 'block';
+      distEl.innerHTML = `📍 Jarak kalian: <b>${dist} km</b>`;
+    } else {
+      distEl.style.display = 'none';
+    }
+  }
+
+  // FITUR BARU: Auto-Center Map
+  function centerMapToBoth() {
+    if (map && myMarker && partnerMarker) {
+      const bounds = L.latLngBounds([myMarker.getLatLng(), partnerMarker.getLatLng()]);
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+    }
+  }
+
   btnOpenShareLock.addEventListener('click', () => {
     shareLockModal.classList.add('show');
     setTimeout(() => {
@@ -562,13 +601,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (map) map.invalidateSize();
       if (lastPartnerLat && lastPartnerLng) updatePartnerMap(lastPartnerLat, lastPartnerLng, lastPartnerMode);
+      updateDistanceInfo();
+      centerMapToBoth();
     }, 300);
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
-            if (map) map.setView([latitude, longitude], 16);
-            if (!myMarker && map) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map);
+            if (map) {
+                if (!myMarker) myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map);
+                else myMarker.setLatLng([latitude, longitude]);
+                map.setView([latitude, longitude], 16);
+                updateDistanceInfo();
+                centerMapToBoth();
+            }
         }, (err) => console.log("GPS Error:", err), { enableHighAccuracy: true });
     }
   });
@@ -605,13 +651,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (map) {
             if (!myMarker) {
-               map.setView([latitude, longitude], 16);
                myMarker = L.marker([latitude, longitude], { icon: createCustomIcon(myMode) }).addTo(map);
+               map.setView([latitude, longitude], 16);
             } else {
                myMarker.setLatLng([latitude, longitude]);
                myMarker.setIcon(createCustomIcon(myMode));
-               map.panTo([latitude, longitude]);
+               // map.panTo dihapus biar map gak ngikutin lu terus kalau lu geser manual
             }
+            updateDistanceInfo();
+            centerMapToBoth();
           }
         },
         (err) => {
@@ -640,12 +688,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function updatePartnerMap(lat, lng, mode) {
     lastPartnerLat = lat; lastPartnerLng = lng; lastPartnerMode = mode;
     if (!map) return;
+    
     if (partnerMarker) {
       partnerMarker.setLatLng([lat, lng]);
       partnerMarker.setIcon(createCustomIcon(mode));
     } else {
       partnerMarker = L.marker([lat, lng], { icon: createCustomIcon(mode) }).addTo(map);
     }
+    
+    updateDistanceInfo();
+    centerMapToBoth();
   }
 
   // --- LOGIN LOGIC ---
@@ -687,10 +739,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btnToggleTracking.classList.add('btn-accent');
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
+    
     ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel'].forEach(ch => {
       if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; }
     });
-    // Reset map state biar bersih
+    
     if (map) { try { map.remove(); } catch(e){} map = null; }
     myMarker = null; partnerMarker = null; mapInitialized = false;
     lastPartnerLat = null; lastPartnerLng = null;
@@ -1028,7 +1081,6 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
     else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
     else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
-    // Update tombol status aktif
     document.querySelectorAll('.status-btn').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-act') === activity);
     });
@@ -1074,13 +1126,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (profilesData) partnerId = profilesData.id;
 
-      // Restore transport mode
       if (myData && myData.transport_mode) {
         myMode = myData.transport_mode;
         modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode));
       }
 
-      // Restore status button aktif (punyaku sendiri)
       if (myData && myData.activity) {
         document.querySelectorAll('.status-btn').forEach(b => {
           b.classList.toggle('active', b.getAttribute('data-act') === myData.activity);
@@ -1101,7 +1151,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       await loadGameState();
 
-      // Ambil OneSignal Player ID (v16 API)
       setTimeout(() => {
           OneSignalDeferred.push(async function(OneSignal) {
             try {
@@ -1111,6 +1160,15 @@ document.addEventListener('DOMContentLoaded', () => {
           });
       }, 1500);
 
+      // AUTO-START TRACKING (Cek izin lokasi)
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+          if (result.state === 'granted' && !isTracking) {
+            setTimeout(() => btnToggleTracking.click(), 1000);
+          }
+        }).catch(e => console.log('Permission check err:', e));
+      }
+
       window.sharelockChannel = supabaseClient.channel('realtime_sharelock')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
@@ -1119,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else {
               lastPartnerLat = null; lastPartnerLng = null;
               if (partnerMarker && map) { map.removeLayer(partnerMarker); partnerMarker = null; }
+              updateDistanceInfo();
             }
           }
         }).subscribe();
