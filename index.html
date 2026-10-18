@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Reminder & Ultimate LDR</title>
+<title>LoveLink - Games & Ultimate LDR</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
@@ -92,7 +92,7 @@
   }
 
   /* INCOMING REMINDER (POP-UP BESAR) */
-  #incomingReminderModal { z-index: 1050; } /* Biar selalu di atas modal lain */
+  #incomingReminderModal { z-index: 1050; }
   #incomingReminderModal .modal-content {
     background: linear-gradient(135deg, #FF7FA8, #C99EFF);
     color: #1A0B14; text-align: center; border: 4px solid #FFF;
@@ -103,6 +103,22 @@
   #incomingReminderModal h2 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
   #incomingReminderModal p { font-size: 16px; font-weight: 600; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.4); padding: 15px; border-radius: 10px; }
   #incomingReminderModal .btn { background: #1A0B14; color: #FFF; margin-top: 0; }
+
+  /* TIC TAC TOE UI */
+  .ttt-status { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 15px; color: #C99EFF; }
+  .ttt-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+    width: 240px; margin: 0 auto 20px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 10px;
+  }
+  .ttt-cell {
+    aspect-ratio: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; font-size: 40px; font-weight: 800; color: #FFF;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .ttt-cell:hover { background: rgba(255,255,255,0.1); }
+  .ttt-cell.x { color: #FF7FA8; }
+  .ttt-cell.o { color: #64FFDA; }
 
   /* RODA PUTAR */
   .wheel-container { position: relative; width: 250px; height: 250px; margin: 0 auto 20px; }
@@ -178,10 +194,11 @@
     <button class="btn btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
     <button class="btn" id="btnOpenReminder" style="background:linear-gradient(135deg, #64FFDA, #00B4D8); color:#1A0B14; margin-top: 8px;">📢 Kirim Pesan Semangat</button>
     
-    <div style="display: flex; gap: 8px; margin-top: 10px;">
+    <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
       <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px;">🎡 Tantangan</button>
       <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#C99EFF; color:#C99EFF;">📜 Surat</button>
       <button class="btn btn-outline" id="btnOpenBucket" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#FFD166; color:#FFD166;">🎯 Bucket List</button>
+      <button class="btn btn-outline" id="btnOpenGame" style="margin-top:0; flex:1 1 100%; font-size:11px; padding: 10px 5px; border-color:#FF7FA8; color:#FF7FA8;">🎮 Tic Tac Toe</button>
     </div>
   </div>
 
@@ -196,6 +213,17 @@
   </div>
   
   <button class="btn" style="background:rgba(255,100,100,0.15); color:#FF6B6B; border:1px solid rgba(255,100,100,0.3);" id="btnLogout">Logout</button>
+</div>
+
+<!-- MODAL TIC TAC TOE -->
+<div class="modal" id="gameModal">
+  <div class="modal-content">
+    <h2 style="color:#FF7FA8; font-size:18px; margin-bottom:15px; text-align:center;">🎮 Tic Tac Toe</h2>
+    <div class="ttt-status" id="tttStatus">Memuat game...</div>
+    <div class="ttt-grid" id="tttGrid"></div>
+    <button class="btn" id="btnResetGame" style="background:linear-gradient(135deg, #FF7FA8, #C99EFF); color:#1A0B14;">Mulai Game Baru</button>
+    <button class="btn btn-outline" id="btnCloseGame" style="border-color:#FFF; color:#FFF;">Tutup</button>
+  </div>
 </div>
 
 <!-- MODAL KIRIM REMINDER -->
@@ -298,6 +326,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const partnerAnim = document.getElementById('partnerAnim');
   const kangenScoreEl = document.getElementById('kangenScore');
   
+  // Game Elements
+  const gameModal = document.getElementById('gameModal');
+  const btnOpenGame = document.getElementById('btnOpenGame');
+  const btnCloseGame = document.getElementById('btnCloseGame');
+  const btnResetGame = document.getElementById('btnResetGame');
+  const tttGrid = document.getElementById('tttGrid');
+  const tttStatus = document.getElementById('tttStatus');
+  let gameState = null;
+  let isProcessingMove = false; // Mencegah spam klik
+
   // Reminder Elements
   const reminderModal = document.getElementById('reminderModal');
   const btnOpenReminder = document.getElementById('btnOpenReminder');
@@ -397,7 +435,117 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.bucketChannel) supabaseClient.removeChannel(window.bucketChannel);
     if (window.settingsChannel) supabaseClient.removeChannel(window.settingsChannel);
     if (window.reminderChannel) supabaseClient.removeChannel(window.reminderChannel);
+    if (window.gameChannel) supabaseClient.removeChannel(window.gameChannel);
   });
+
+  // --- GAME LOGIC ---
+  btnOpenGame.addEventListener('click', async () => {
+    gameModal.classList.add('show');
+    await loadGameState();
+  });
+  btnCloseGame.addEventListener('click', () => gameModal.classList.remove('show'));
+
+  btnResetGame.addEventListener('click', async () => {
+    if (!currentUser) return;
+    await supabaseClient.from('game_state').update({
+      player_x: currentUser.id,
+      board: ["", "", "", "", "", "", "", "", ""],
+      turn: 'X',
+      winner: ''
+    }).eq('id', 1);
+    sendPushToPartner('Pacar lu mulai game Tic Tac Toe baru! 🎮');
+  });
+
+  async function loadGameState() {
+    const { data } = await supabaseClient.from('game_state').select('*').eq('id', 1).maybeSingle();
+    if (data) {
+      gameState = data;
+      renderGame();
+    }
+  }
+
+  function renderGame() {
+    if (!gameState || !tttGrid) return;
+
+    // Render 9 Cells
+    tttGrid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const cellValue = gameState.board[i];
+      const div = document.createElement('div');
+      div.className = `ttt-cell ${cellValue === 'X' ? 'x' : cellValue === 'O' ? 'o' : ''}`;
+      div.innerText = cellValue;
+      div.onclick = () => playMove(i);
+      tttGrid.appendChild(div);
+    }
+
+    // Render Status Text
+    if (!gameState.player_x) {
+      tttStatus.innerText = "Klik Mulai Game Baru!";
+    } else {
+      const isMeX = currentUser.id === gameState.player_x;
+      const mySymbol = isMeX ? 'X' : 'O';
+      
+      if (gameState.winner) {
+        if (gameState.winner === 'Seri') {
+           tttStatus.innerText = "Game Selesai: Seri! 🤝";
+        } else if (gameState.winner === mySymbol) {
+           tttStatus.innerText = "GAME SELESAI: LU MENANG! 🎉";
+        } else {
+           tttStatus.innerText = "GAME SELESAI: PACAR LU MENANG 😭";
+        }
+      } else {
+        tttStatus.innerText = gameState.turn === mySymbol 
+          ? `Giliran LU (${mySymbol})` 
+          : `Giliran PACAR (${gameState.turn})`;
+      }
+    }
+  }
+
+  async function playMove(index) {
+    if (isProcessingMove) return;
+    if (!gameState || gameState.winner) return;
+    if (gameState.board[index] !== "") return; 
+    
+    const isMeX = currentUser.id === gameState.player_x;
+    const mySymbol = isMeX ? 'X' : 'O';
+    if (gameState.turn !== mySymbol) return; 
+
+    isProcessingMove = true;
+    const newBoard = [...gameState.board];
+    newBoard[index] = mySymbol;
+    
+    let newWinner = checkWinner(newBoard);
+    let newTurn = mySymbol === 'X' ? 'O' : 'X';
+
+    await supabaseClient.from('game_state').update({
+      board: newBoard,
+      turn: newTurn,
+      winner: newWinner
+    }).eq('id', 1);
+    
+    isProcessingMove = false;
+
+    if (newWinner) {
+        sendPushToPartner('Hasil Tic Tac Toe: ' + (newWinner === 'Seri' ? 'Seri!' : newWinner + ' Menang!'));
+    } else {
+        sendPushToPartner('Pacar lu jalan di Tic Tac Toe! 🎮');
+    }
+  }
+
+  function checkWinner(b) {
+    const lines = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
+    ];
+    for (let line of lines) {
+      if (b[line[0]] && b[line[0]] === b[line[1]] && b[line[0]] === b[line[2]]) {
+        return b[line[0]];
+      }
+    }
+    if (!b.includes('')) return 'Seri'; 
+    return '';
+  }
 
   // --- REMINDER LOGIC ---
   btnOpenReminder.addEventListener('click', () => {
@@ -410,7 +558,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const msg = reminderText.value.trim();
     if (!msg) return alert('Ketik pesannya dulu bro!');
     
-    // FIX BUG: Kalau partnerId belum ada di memori, cari ulang saat mau kirim
     if (!partnerId) {
        const { data: profilesData } = await supabaseClient.from('profiles').select('id').neq('id', currentUser.id).limit(1).maybeSingle();
        if (profilesData) partnerId = profilesData.id;
@@ -676,15 +823,30 @@ document.addEventListener('DOMContentLoaded', () => {
     data.forEach(item => {
       const div = document.createElement('div');
       div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
-      const isMe = item.added_by === currentUser.id;
-      const badge = isMe ? ' (Lu)' : ' (Pacar)';
-      const safeContent = escapeHTML(item.content);
+      
+      const checkbox = document.createElement('div');
+      checkbox.className = 'bucket-checkbox';
+      checkbox.innerText = '✓';
+      checkbox.onclick = () => toggleBucket(item.id, item.is_completed);
 
-      div.innerHTML = `
-        <div class="bucket-checkbox" onclick="toggleBucket('${item.id}', ${item.is_completed})">✓</div>
-        <div class="bucket-text">${safeContent}<span style="font-size:10px; color:#C99EFF;">${badge}</span></div>
-        <button class="bucket-delete" onclick="deleteBucket('${item.id}')">✕</button>
-      `;
+      const textContainer = document.createElement('div');
+      textContainer.className = 'bucket-text';
+      textContainer.innerText = item.content; // Aman dari XSS
+
+      const badge = document.createElement('span');
+      badge.style.fontSize = '10px';
+      badge.style.color = '#C99EFF';
+      badge.innerText = (item.added_by === currentUser.id) ? ' (Lu)' : ' (Pacar)';
+      textContainer.appendChild(badge);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'bucket-delete';
+      deleteBtn.innerText = '✕';
+      deleteBtn.onclick = () => deleteBucket(item.id);
+
+      div.appendChild(checkbox);
+      div.appendChild(textContainer);
+      div.appendChild(deleteBtn);
       bucketListContainer.appendChild(div);
     });
   }
@@ -750,9 +912,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).maybeSingle();
       const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).maybeSingle();
       const { data: settingsData } = await supabaseClient.from('couple_settings').select('*').eq('id', 1).maybeSingle();
-      
-      // FIX BUG: Ambil partnerId dari tabel profiles (lebih reliable)
       const { data: profilesData } = await supabaseClient.from('profiles').select('id').neq('id', currentUser.id).limit(1).maybeSingle();
+      
       if (profilesData) partnerId = profilesData.id;
 
       let totalKangen = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
@@ -773,10 +934,23 @@ document.addEventListener('DOMContentLoaded', () => {
           renderCountdown(null);
       }
 
+      await loadGameState();
+
       OneSignalDeferred.push(async function(OneSignal) {
         const playerId = await OneSignal.getUserId();
         if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
       });
+
+      // REALTIME: GAME
+      window.gameChannel = supabaseClient.channel('realtime_game')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_state' }, payload => {
+          gameState = payload.new;
+          renderGame();
+          if (gameState.winner && gameState.winner !== 'Seri') {
+            navigator.vibrate([200, 100, 200]);
+          }
+        })
+        .subscribe();
 
       // REALTIME: REMINDER BARU MASUK
       window.reminderChannel = supabaseClient.channel('realtime_reminders')
@@ -808,6 +982,8 @@ document.addEventListener('DOMContentLoaded', () => {
                const receivedSpinId = parseInt(parts[1] || 0);
                if (receivedSpinId > lastSpinId) {
                  lastSpinId = receivedSpinId;
+                 // Cegah gangguin kalau kita lagi muter
+                 if (isSpinning) return; 
                  const index = challenges.indexOf(teks);
                  if (index !== -1) {
                    spinModal.classList.add('show');
