@@ -8,6 +8,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -359,66 +360,20 @@
   @keyframes fallUp { 0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 1; } 100% { transform: translate3d(0, -150px, 0) scale(1.5); opacity: 0; } }
   
   /* AVATAR PICKER */
-  .avatar-preset-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .avatar-preset-btn {
-    aspect-ratio: 1;
-    border-radius: 16px;
-    border: 3px solid transparent;
-    background: linear-gradient(145deg, var(--surface), var(--bg));
-    padding: 3px;
-    cursor: pointer;
-    box-shadow: 0 4px 0 var(--border), inset 1px 1px 2px rgba(255,255,255,0.05);
-    transition: all 0.15s;
-    overflow: hidden;
-    position: relative;
-  }
-  .avatar-preset-btn img {
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-    object-fit: cover;
-    display: block;
-    background: var(--surface);
-  }
-  .avatar-preset-btn.active {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--primary-dark), 0 6px 12px rgba(229,185,142,0.4);
-  }
-  .avatar-preset-btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 var(--border);
-  }
-  .avatar-preset-label {
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 9px;
-    font-weight: 800;
-    color: var(--text-main);
-    background: rgba(0,0,0,0.55);
-    padding: 1px 6px;
-    border-radius: 8px;
-    white-space: nowrap;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-  }
-  .avatar-preview-wrap {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 16px;
-  }
-  .avatar-preview-img {
-    width: 110px; height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--bg);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 0 4px var(--surface), 0 0 0 6px var(--primary);
-  }
+  .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+  .avatar-preset-btn { aspect-ratio: 1; border-radius: 16px; border: 3px solid transparent; background: linear-gradient(145deg, var(--surface), var(--bg)); padding: 3px; cursor: pointer; box-shadow: 0 4px 0 var(--border), inset 1px 1px 2px rgba(255,255,255,0.05); transition: all 0.15s; overflow: hidden; position: relative; }
+  .avatar-preset-btn img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; display: block; background: var(--surface); }
+  .avatar-preset-btn.active { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-dark), 0 6px 12px rgba(229,185,142,0.4); }
+  .avatar-preset-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--border); }
+  .avatar-preset-label { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: var(--text-main); background: rgba(0,0,0,0.55); padding: 1px 6px; border-radius: 8px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+  .avatar-preview-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
+  .avatar-preview-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; background: var(--bg); box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 0 4px var(--surface), 0 0 0 6px var(--primary); }
+
+  /* SYNC WATCH */
+  .video-container { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: var(--radius-md); overflow: hidden; background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); margin-bottom: 16px; border: 2px solid var(--border); }
+  .video-container iframe, .video-container #ytPlayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+  .sync-status { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 10px; font-weight: 700; }
+  .sync-status.connected { color: var(--tertiary); }
 
   .hidden { display: none !important; }
   .error { color: var(--secondary); font-size: 13px; font-weight: 700; margin-top: 10px; min-height: 20px; text-align: center;}
@@ -523,6 +478,10 @@
       <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
     </div>
 
+    <button class="cute-action-btn" id="btnOpenSyncWatch">
+      <div class="icon-wrap"><div class="icon">🍿</div></div>
+      <div class="text">Sync Watch</div>
+    </button>
     <button class="cute-action-btn" id="btnOpenTimeline">
       <div class="icon-wrap"><div class="icon">📸</div></div>
       <div class="text">Memory Time</div>
@@ -573,6 +532,31 @@
     </div>
 
     <button class="btn span-full" style="background: var(--bg); color: var(--text-sub); margin-top: 10px; box-shadow: 0 4px 0 var(--border);" id="btnLogout">Keluar Akun</button>
+  </div>
+</div>
+
+<!-- MODAL SYNC WATCH -->
+<div class="modal" id="syncWatchModal">
+  <div class="modal-content">
+    <h2>🍿 Sync Watch</h2>
+    
+    <div class="video-container" id="ytContainer" style="display:none;">
+      <div id="ytPlayer"></div>
+    </div>
+
+    <div class="sync-status" id="syncStatus">Masukkan link YouTube untuk mulai nonton bareng.</div>
+
+    <div class="input-group" id="ytInputGroup" style="margin-bottom: 12px;">
+      <input type="text" id="ytUrlInput" placeholder="Paste link YouTube di sini...">
+    </div>
+    
+    <button class="btn btn-accent" id="btnLoadVideo" style="margin-bottom: 12px;">Putar Video 🎬</button>
+    
+    <p style="font-size: 11px; color: var(--text-sub); text-align: center; margin-bottom: 16px; font-weight: 700;">
+      *Play/Pause video ini akan otomatis tersinkronisasi ke HP pacar lu.
+    </p>
+    
+    <button class="btn" id="btnCloseSyncWatch">Tutup</button>
   </div>
 </div>
 
@@ -758,8 +742,14 @@
 </div>
 
 <script>
+// === YOUTUBE API GLOBAL CALLBACK ===
+window.onYouTubeIframeAPIReady = function() {
+  console.log('[YouTube API] Ready');
+  window.ytApiReady = true;
+  if (window.initYtPlayerIfPending) window.initYtPlayerIfPending();
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-  // === AVATAR DEFAULTS ===
   const AVATAR_BASE = 'https://api.dicebear.com/9.x/notionists/svg';
   const DEFAULT_MY_AVATAR = `${AVATAR_BASE}?seed=Max&backgroundColor=ffdfbf&beardProbability=100`;
   const DEFAULT_PARTNER_AVATAR = `${AVATAR_BASE}?seed=Lily&backgroundColor=ffd5dc&beardProbability=0`;
@@ -775,41 +765,16 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 'cewe4', label: '🐱 Cewe', url: `${AVATAR_BASE}?seed=Anna&backgroundColor=ffc8d0&beardProbability=0` },
   ];
 
-  // === AVATAR PERSISTENCE HELPERS ===
   const AVATAR_CACHE_PREFIX = 'lovelink_avatar_';
   const PARTNER_CACHE_KEY = 'lovelink_partner_avatar';
   const AVATAR_OVERRIDE_GUARD_MS = 15000;
   let lastAvatarSaveTime = 0;
 
-  function getCachedAvatar(userId) {
-    try { return localStorage.getItem(AVATAR_CACHE_PREFIX + userId) || null; } catch (e) { return null; }
-  }
-  function setCachedAvatar(userId, url) {
-    try {
-      if (!url) { localStorage.removeItem(AVATAR_CACHE_PREFIX + userId); return; }
-      localStorage.setItem(AVATAR_CACHE_PREFIX + userId, url);
-    } catch (e) { console.warn('[Avatar] Cache failed:', e); }
-  }
-  function getCachedPartnerAvatar() {
-    try { return localStorage.getItem(PARTNER_CACHE_KEY) || null; } catch (e) { return null; }
-  }
-  function setCachedPartnerAvatar(url) {
-    try {
-      if (!url) { localStorage.removeItem(PARTNER_CACHE_KEY); return; }
-      localStorage.setItem(PARTNER_CACHE_KEY, url);
-    } catch (e) { console.warn('[Avatar] Partner cache failed:', e); }
-  }
-  function dataURLtoBlob(dataUrl) {
-    const arr = dataUrl.split(',');
-    if (arr.length < 2) throw new Error('Invalid data URL');
-    const mimeMatch = arr[0].match(/:(.*?);/);
-    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new Blob([u8arr], { type: mime });
-  }
+  function getCachedAvatar(userId) { try { return localStorage.getItem(AVATAR_CACHE_PREFIX + userId) || null; } catch (e) { return null; } }
+  function setCachedAvatar(userId, url) { try { if (!url) { localStorage.removeItem(AVATAR_CACHE_PREFIX + userId); return; } localStorage.setItem(AVATAR_CACHE_PREFIX + userId, url); } catch (e) {} }
+  function getCachedPartnerAvatar() { try { return localStorage.getItem(PARTNER_CACHE_KEY) || null; } catch (e) { return null; } }
+  function setCachedPartnerAvatar(url) { try { if (!url) { localStorage.removeItem(PARTNER_CACHE_KEY); return; } localStorage.setItem(PARTNER_CACHE_KEY, url); } catch (e) {} }
+  function dataURLtoBlob(dataUrl) { const arr = dataUrl.split(','); if (arr.length < 2) throw new Error('Invalid data URL'); const mimeMatch = arr[0].match(/:(.*?);/); const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg'; const bstr = atob(arr[1]); let n = bstr.length; const u8arr = new Uint8Array(n); while (n--) u8arr[n] = bstr.charCodeAt(n); return new Blob([u8arr], { type: mime }); }
 
   // --- AUDIO MANAGER ---
   const AudioManager = {
@@ -957,7 +922,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === SAVE AVATAR (FIXED: storage first, verify, cache) ===
   btnSaveAvatar.addEventListener('click', async () => {
     if (!currentUser) return;
     if (!pendingAvatarData) return alert('Pilih preset atau upload foto dulu bro!');
@@ -969,34 +933,21 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       let finalUrl = pendingAvatarData;
       
-      // STEP 1: Kalau data URL (foto upload), coba Storage dulu
       if (pendingAvatarData.startsWith('data:image/')) {
         try {
-          console.log('[Avatar] Attempting storage upload...');
           const blob = dataURLtoBlob(pendingAvatarData);
           const fileName = `${currentUser.id}.jpg`;
-          const { error: upErr } = await supabaseClient.storage.from('avatars').upload(fileName, blob, {
-            contentType: 'image/jpeg',
-            upsert: true
-          });
+          const { error: upErr } = await supabaseClient.storage.from('avatars').upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
           if (!upErr) {
             const { data: pub } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
             finalUrl = pub.publicUrl + '?v=' + Date.now();
-            console.log('[Avatar] ✅ Uploaded to storage:', finalUrl);
           } else {
-            console.warn('[Avatar] ⚠️ Storage failed, using base64 fallback:', upErr.message);
+            console.warn('[Avatar] Storage failed, using base64 fallback:', upErr.message);
           }
-        } catch (e) {
-          console.warn('[Avatar] ⚠️ Storage exception, using base64:', e.message);
-        }
+        } catch (e) { console.warn('[Avatar] Storage exception, using base64:', e.message); }
       }
       
-      // STEP 2: Simpan ke database
-      console.log('[Avatar] Saving to DB (length:', finalUrl.length, 'chars)...');
-      const { error: dbErr } = await supabaseClient.from('user_status').upsert(
-        { id: currentUser.id, avatar_url: finalUrl },
-        { onConflict: 'id' }
-      );
+      const { error: dbErr } = await supabaseClient.from('user_status').upsert({ id: currentUser.id, avatar_url: finalUrl }, { onConflict: 'id' });
       
       if (dbErr) {
         if (dbErr.code === '42703' || (dbErr.message || '').toLowerCase().includes('avatar_url')) {
@@ -1006,34 +957,14 @@ document.addEventListener('DOMContentLoaded', () => {
         throw dbErr;
       }
       
-      // STEP 3: VERIFY — baca ulang dari DB untuk pastikan benar tersimpan
-      const { data: verify, error: verifyErr } = await supabaseClient
-        .from('user_status')
-        .select('avatar_url')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-      
-      if (verifyErr) {
-        console.warn('[Avatar] Verify failed:', verifyErr.message);
-      }
+      const { data: verify } = await supabaseClient.from('user_status').select('avatar_url').eq('id', currentUser.id).maybeSingle();
       
       if (!verify || !verify.avatar_url) {
-        console.error('[Avatar] ❌ Save reported success but DB is empty! RLS or trigger issue likely.');
-        alert(
-          '⚠️ Avatar TIDAK tersimpan di database!\n\n' +
-          'Kemungkinan penyebab:\n' +
-          '1. RLS policy user_status memblokir UPDATE/INSERT\n' +
-          '2. Ada trigger database yang mengosongkan avatar_url\n\n' +
-          '➡️ Jalankan SQL RLS setup yang gua kasih di chat.\n' +
-          '➡️ Buka DevTools > Console untuk detail.'
-        );
+        alert('⚠️ Avatar TIDAK tersimpan di database!\n\nJalankan SQL RLS policy yang gua kasih di chat sebelumnya.');
         return;
       }
       
-      console.log('[Avatar] ✅ Verified in DB. Length:', verify.avatar_url.length);
       finalUrl = verify.avatar_url;
-      
-      // STEP 4: Success — update UI + cache
       pendingAvatarData = finalUrl;
       myAvatarImg.src = finalUrl;
       setCachedAvatar(currentUser.id, finalUrl);
@@ -1045,7 +976,6 @@ document.addEventListener('DOMContentLoaded', () => {
       sendPushToPartner('Pacar lu ganti foto profil! 🖼️');
       
     } catch (err) {
-      console.error('[Avatar] Save error:', err);
       alert('Gagal simpan avatar: ' + (err.message || 'unknown error'));
     } finally {
       btnSaveAvatar.innerText = origText || 'Simpan Avatar';
@@ -1126,7 +1056,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const bucketInput = document.getElementById('bucketInput');
   const bucketListContainer = document.getElementById('bucketListContainer');
 
+  // === SYNC WATCH DOM ===
+  const syncWatchModal = document.getElementById('syncWatchModal');
+  const btnOpenSyncWatch = document.getElementById('btnOpenSyncWatch');
+  const btnCloseSyncWatch = document.getElementById('btnCloseSyncWatch');
+  const ytInputGroup = document.getElementById('ytInputGroup');
+  const ytUrlInput = document.getElementById('ytUrlInput');
+  const btnLoadVideo = document.getElementById('btnLoadVideo');
+  const ytContainer = document.getElementById('ytContainer');
+  const syncStatus = document.getElementById('syncStatus');
+
   let isLoginMode = true, currentUser = null, partnerId = null, isSpinning = false, lastSpinId = 0, lastPartnerScore = 0;
+  let currentSyncVideoId = null;
+  let syncChannel = null;
   
   const relationshipStartDate = new Date('2026-01-01T00:00:00');
   function updateDaysTogether() { const today = new Date(); const diffTime = Math.abs(today - relationshipStartDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); document.getElementById('daysTogether').innerText = diffDays; }
@@ -1167,6 +1109,132 @@ document.addEventListener('DOMContentLoaded', () => {
       reader.onerror = error => reject(error);
     });
   }
+
+  // ==========================================
+  // === SYNC WATCH LOGIC ===
+  // ==========================================
+  function extractYouTubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  function showSyncStatus(text, isConnected) {
+    syncStatus.innerText = text;
+    syncStatus.className = 'sync-status ' + (isConnected ? 'connected' : '');
+  }
+
+  window.isRemoteYtAction = false; // Prevent infinite loop
+  
+  function initYtPlayer(videoId) {
+    if (!window.ytApiReady) {
+      window.initYtPlayerIfPending = () => initYtPlayer(videoId);
+      return;
+    }
+    if (window.ytPlayer) {
+      try { window.ytPlayer.destroy(); } catch(e){}
+    }
+    ytContainer.style.display = 'block';
+    ytInputGroup.style.display = 'none';
+    btnLoadVideo.style.display = 'none';
+    
+    window.ytPlayer = new YT.Player('ytPlayer', {
+      height: '100%',
+      width: '100%',
+      videoId: videoId,
+      playerVars: { 
+        'playsinline': 1, 
+        'origin': window.location.origin,
+        'autoplay': 0
+      },
+      events: {
+        'onReady': () => showSyncStatus('Player siap. Tekan play untuk mulai.', true),
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+
+  function onPlayerStateChange(event) {
+    if (window.isRemoteYtAction || !syncChannel) return;
+    
+    const time = window.ytPlayer.getCurrentTime();
+    
+    if (event.data == YT.PlayerState.PLAYING) {
+      syncChannel.send({ type: 'broadcast', event: 'sync', payload: { action: 'play', time: time } });
+      showSyncStatus('▶️ Sedang diputar', true);
+    } else if (event.data == YT.PlayerState.PAUSED) {
+      syncChannel.send({ type: 'broadcast', event: 'sync', payload: { action: 'pause', time: time } });
+      showSyncStatus('⏸️ Di-pause', true);
+    } else if (event.data == YT.PlayerState.ENDED) {
+      showSyncStatus('Video selesai 🎉', true);
+    }
+  }
+
+  async function loadNewVideo(videoId, isRemote = false) {
+    if (!videoId) return alert('Link YouTube tidak valid bro!');
+    
+    if (!isRemote) {
+      // Save to DB
+      await supabaseClient.from('couple_settings').update({ sync_video_id: videoId }).eq('id', 1);
+      sendPushToPartner('Pacar lu ngajak nonton bareng! 🍿');
+      syncChannel.send({ type: 'broadcast', event: 'load_video', payload: { videoId: videoId } });
+    }
+    
+    currentSyncVideoId = videoId;
+    initYtPlayer(videoId);
+  }
+
+  btnOpenSyncWatch.addEventListener('click', async () => {
+    syncWatchModal.classList.add('show');
+    ytUrlInput.value = '';
+    
+    if (!syncChannel) {
+      syncChannel = supabaseClient.channel('sync_watch_room');
+      syncChannel.on('broadcast', { event: 'sync' }, payload => {
+        if (!window.ytPlayer || typeof window.ytPlayer.getCurrentTime !== 'function') return;
+        window.isRemoteYtAction = true;
+        
+        const { action, time } = payload.payload;
+        const currentTime = window.ytPlayer.getCurrentTime();
+        
+        if (action === 'play') {
+          if (Math.abs(currentTime - time) > 3) { window.ytPlayer.seekTo(time, true); } // Auto-correct drift
+          window.ytPlayer.playVideo();
+          showSyncStatus('▶️ Diputar oleh pacar', true);
+        } else if (action === 'pause') {
+          if (Math.abs(currentTime - time) > 3) { window.ytPlayer.seekTo(time, true); }
+          window.ytPlayer.pauseVideo();
+          showSyncStatus('⏸️ Di-pause oleh pacar', true);
+        }
+        
+        setTimeout(() => { window.isRemoteYtAction = false; }, 800); // Reset guard
+      });
+      
+      syncChannel.on('broadcast', { event: 'load_video' }, payload => {
+        loadNewVideo(payload.payload.videoId, true);
+        showSyncStatus('Pacar lu milih video baru! 🎬', true);
+        safeVibrate([100, 50, 100]);
+      });
+      
+      syncChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          showSyncStatus(currentSyncVideoId ? 'Terhubung. Menunggu aksi...' : 'Terhubung. Pilih video!', true);
+        }
+      });
+    }
+  });
+
+  btnCloseSyncWatch.addEventListener('click', () => syncWatchModal.classList.remove('show'));
+
+  btnLoadVideo.addEventListener('click', () => {
+    const url = ytUrlInput.value.trim();
+    if (!url) return alert('Paste link YouTube dulu!');
+    const vid = extractYouTubeId(url);
+    if (!vid) return alert('Format link tidak valid. Contoh: https://youtu.be/dQw4w9WgXcQ');
+    loadNewVideo(vid);
+  });
+
+  // ==========================================
 
   function generateCinematicMemory(memories, monthYear) {
     const titles = memories.map(m => m.title);
@@ -1395,11 +1463,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
     ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel','memoriesChannel'].forEach(ch => { if (window[ch]) { try { supabaseClient.removeChannel(window[ch]); } catch(e){} window[ch] = null; } });
+    if (syncChannel) { try { supabaseClient.removeChannel(syncChannel); syncChannel = null; } catch(e){} }
     if (map) { try { map.remove(); } catch(e){} map = null; } 
     const mapEl = document.getElementById('map');
     if (mapEl) { mapEl.innerHTML = ''; mapEl.removeAttribute('_leaflet_id'); mapEl.className = ''; }
     myMarker = null; partnerMarker = null; mapInitialized = false; lastPartnerLat = null; lastPartnerLng = null;
-    // JANGAN hapus cache avatar — biar tetap ada saat login lagi
+    if (window.ytPlayer) { try { window.ytPlayer.destroy(); } catch(e){} window.ytPlayer = null; }
+    currentSyncVideoId = null;
   });
 
   // --- GAME ---
@@ -1654,29 +1724,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (myData && myData.transport_mode) { myMode = myData.transport_mode; modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode)); }
       if (myData && myData.activity) { document.querySelectorAll('.status-btn').forEach(b => { b.classList.toggle('active', b.getAttribute('data-act') === myData.activity); }); }
 
-      // === AVATAR LOAD WITH OVERRIDE GUARD ===
+      // LOAD AVATAR & SYNC VIDEO STATE
       const cachedAvatar = getCachedAvatar(currentUser.id);
       const dbAvatar = myData?.avatar_url;
       const justSaved = (Date.now() - lastAvatarSaveTime) < AVATAR_OVERRIDE_GUARD_MS;
       
       if (justSaved) {
-        // Baru saja save, jangan override dari DB (replication lag)
-        const trusted = cachedAvatar || dbAvatar || DEFAULT_MY_AVATAR;
-        myAvatarImg.src = trusted;
-        console.log('[Avatar] Recent save detected, using cache:', trusted.substring(0, 50));
+        myAvatarImg.src = cachedAvatar || dbAvatar || DEFAULT_MY_AVATAR;
       } else {
-        // Normal: DB > cache > default
-        const resolved = dbAvatar || cachedAvatar || DEFAULT_MY_AVATAR;
-        myAvatarImg.src = resolved;
+        myAvatarImg.src = dbAvatar || cachedAvatar || DEFAULT_MY_AVATAR;
         if (dbAvatar) setCachedAvatar(currentUser.id, dbAvatar);
-        console.log('[Avatar] Loaded from:', dbAvatar ? 'DB' : (cachedAvatar ? 'cache' : 'default'));
       }
 
-      // === PARTNER AVATAR WITH CACHE ===
       const cachedPartner = getCachedPartnerAvatar();
       const dbPartnerAvatar = partnerData?.avatar_url;
       partnerAvatarImg.src = dbPartnerAvatar || cachedPartner || DEFAULT_PARTNER_AVATAR;
       if (dbPartnerAvatar) setCachedPartnerAvatar(dbPartnerAvatar);
+
+      if (settingsData && settingsData.sync_video_id) {
+        currentSyncVideoId = settingsData.sync_video_id;
+      }
 
       const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0); 
       updateKangenGauge(totalScore, true); 
@@ -1716,7 +1783,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newData = payload.new;
         if (!newData || newData.id === currentUser.id) return;
         if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
-        // Partner avatar update
         if (newData.avatar_url !== undefined && newData.avatar_url) {
           partnerAvatarImg.src = newData.avatar_url;
           setCachedPartnerAvatar(newData.avatar_url);
@@ -1737,7 +1803,12 @@ document.addEventListener('DOMContentLoaded', () => {
       window.bucketChannel = supabaseClient.channel('realtime_bucket').on('postgres_changes', { event: '*', schema: 'public', table: 'bucket_list' }, async () => { if (bucketModal.classList.contains('show')) await loadBucketList(); }).subscribe();
 
       window.settingsChannel = supabaseClient.channel('realtime_settings').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'couple_settings' }, payload => {
-        const newSettings = payload.new; if (newSettings.meet_date) renderCountdown(newSettings.meet_date); else renderCountdown(null);
+        const newSettings = payload.new; 
+        if (newSettings.meet_date) renderCountdown(newSettings.meet_date); else renderCountdown(null);
+        if (newSettings.sync_video_id && newSettings.sync_video_id !== currentSyncVideoId) {
+           currentSyncVideoId = newSettings.sync_video_id;
+           if (syncWatchModal.classList.contains('show')) { loadNewVideo(currentSyncVideoId, true); }
+        }
       }).subscribe();
 
       window.notesChannel = supabaseClient.channel('realtime_notes').on('postgres_changes', { event: '*', schema: 'public', table: 'love_notes' }, async payload => {
@@ -1755,4 +1826,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+  </html>
