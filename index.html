@@ -17,32 +17,28 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@500;600;700&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
   
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
   
   :root {
-    --bg: #120D12; /* Deep Warm Dark */
-    --card-bg: rgba(40, 30, 40, 0.6); /* Warm Lofi Glass */
+    --bg: #120D12;
+    --card-bg: rgba(40, 30, 40, 0.6);
     --card-border: rgba(255, 200, 220, 0.15);
-    
     --text-main: #FFF0F5;
     --text-sub: #C0A8B8;
-    
-    --primary: #FF8BA7; /* Pastel Pink */
+    --primary: #FF8BA7;
     --primary-glow: rgba(255, 139, 167, 0.4);
-    --accent: #C99EFF; /* Pastel Purple */
+    --accent: #C99EFF;
     --accent-glow: rgba(201, 158, 255, 0.4);
     --mint: #64FFDA;
     --yellow: #FFD166;
     --peach: #FFB07C;
-    
     --danger: #FF6B6B;
     --success: #64FFDA;
-    
     --radius-lg: 28px;
     --radius-md: 20px;
     --radius-sm: 14px;
-    
     --transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     --smooth-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -51,10 +47,9 @@
     background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
     display: flex; justify-content: center; align-items: center; padding: 16px;
     overflow-x: hidden; position: relative; line-height: 1.5; 
-    transform: translate3d(0,0,0); /* Force GPU Rendering */
+    transform: translate3d(0,0,0); 
   }
 
-  /* --- ANIMATED BACKGROUND (OPTIMIZED) --- */
   .bg-shapes { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
   .shape { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.2; animation: float-bg 25s infinite ease-in-out alternate; will-change: transform; }
   .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; background: var(--primary); animation-duration: 20s; }
@@ -66,39 +61,34 @@
   .e1 { left: 10%; animation-delay: 0s; } .e2 { left: 30%; animation-delay: 3s; } .e3 { left: 60%; animation-delay: 6s; } .e4 { left: 80%; animation-delay: 9s; } .e5 { left: 45%; animation-delay: 12s; }
   @keyframes float-up { 0% { transform: translate3d(0, 100vh, 0) rotate(0deg); opacity: 0; } 10% { opacity: 0.3; } 90% { opacity: 0.3; } 100% { transform: translate3d(0, -100px, 0) rotate(360deg); opacity: 0; } }
 
-  /* --- UI CONTAINERS --- */
   .glass-panel { background: var(--card-bg); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 2px solid var(--card-border); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.1); position: relative; z-index: 10; }
   .card { width: 100%; max-width: 440px; border-radius: var(--radius-lg); padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 20px; animation: slide-up 0.6s var(--smooth-bounce) both; }
   @keyframes slide-up { from { transform: translate3d(0, 30px, 0); opacity: 0; } to { transform: translate3d(0, 0, 0); opacity: 1; } }
 
-  /* --- AUDIO CONTROL --- */
   .audio-toggle { position: fixed; top: 20px; right: 20px; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: #FFF; font-size: 20px; display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(10px); transition: 0.3s; }
   .audio-toggle.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); }
   .audio-toggle:active { transform: scale(0.9); }
 
-  /* --- TYPOGRAPHY --- */
   h1 { font-family: 'Fredoka', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
   p.sub { font-size: 14px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.5px; }
   .title-small { font-family: 'Fredoka', sans-serif; font-size: 14px; color: var(--text-sub); letter-spacing: 1px; font-weight: 500; margin-bottom: 12px; text-align: left; }
 
-  /* --- INPUTS --- */
   .input-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
   .input-group label { font-size: 13px; color: var(--text-sub); font-weight: 800; margin-left: 6px; }
   input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.05); color: #FFF; padding: 16px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; outline: none; transition: var(--transition); }
   input:focus, textarea:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px); }
   textarea { height: 100px; resize: none; }
+  input[type="file"] { padding: 10px; font-size: 13px; background: rgba(255,255,255,0.05); border: 2px dashed var(--card-border); cursor: pointer; }
+  input[type="file"]::file-selector-button { background: var(--primary); color: #120D12; border: none; border-radius: 8px; padding: 8px 12px; font-weight: 800; margin-right: 10px; cursor: pointer; }
 
-  /* --- BUTTONS --- */
   .btn { width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-weight: 800; font-size: 15px; cursor: pointer; transition: var(--transition); display: flex; justify-content: center; align-items: center; gap: 8px; will-change: transform; }
   .btn:active { transform: scale(0.95); }
   .btn-primary { background: linear-gradient(135deg, #FF8BA7, #FF6B9D); border: none; color: #120D12; box-shadow: 0 8px 24px var(--primary-glow); }
   .btn-accent { background: linear-gradient(135deg, #C99EFF, #A855F7); border: none; color: #120D12; box-shadow: 0 8px 24px var(--accent-glow); }
 
-  /* --- DASHBOARD LAYOUT --- */
   .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
   .span-full { grid-column: 1 / -1; }
 
-  /* --- PROFILE HEADER --- */
   .profile-header { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border: 2px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
   .profile-header::after { content: '✨'; position: absolute; right: 10px; top: 10px; font-size: 14px; opacity: 0.5; animation: twinkle 2s infinite alternate; }
   @keyframes twinkle { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
@@ -113,7 +103,6 @@
   .days-label { font-size: 10px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-  /* --- KANGEN GAUGE --- */
   .kangen-section { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05); }
   .gauge-container { position: relative; width: 160px; height: 160px; margin-bottom: 16px; }
   .gauge-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
@@ -125,7 +114,6 @@
   .action-row { display: flex; gap: 10px; width: 100%; }
   .action-row .btn { padding: 14px; font-size: 14px; border-radius: var(--radius-md); box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
 
-  /* --- COUNTDOWN --- */
   .countdown-box { background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.05); border-radius: var(--radius-lg); padding: 20px; position: relative; }
   .countdown-timer { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
   .time-block { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-md); min-width: 60px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);}
@@ -135,7 +123,6 @@
   .btn-edit-countdown:hover { background: rgba(255,255,255,0.15); transform: rotate(20deg) scale(1.1); }
   .meet-today { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); text-align: center; margin: 10px 0; text-shadow: 0 0 20px var(--accent-glow);}
 
-  /* --- PARTNER STATUS --- */
   .partner-status-box { background: linear-gradient(135deg, rgba(255, 139, 167, 0.1), rgba(201, 158, 255, 0.1)); border: 2px solid var(--card-border); padding: 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left; }
   .partner-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   .partner-activity { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; color: var(--primary); z-index: 2; position: relative; text-shadow: 0 0 10px var(--primary-glow);}
@@ -149,8 +136,6 @@
   .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 32px; animation: float 2s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
   .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
-
-  /* New Status Animations */
   .anim-scroll { position: absolute; top: 40%; right: 20px; font-size: 32px; animation: float 2s ease-in-out infinite; }
   .anim-makan { position: absolute; bottom: 15px; right: 25px; font-size: 32px; animation: float 2.5s ease-in-out infinite; }
   .anim-jajan { position: absolute; top: 20%; left: 25px; font-size: 32px; animation: ride 5s linear infinite; }
@@ -158,32 +143,27 @@
   .anim-ngobrol { position: absolute; top: 30%; left: 30px; font-size: 32px; animation: pulse 2s ease-in-out infinite; }
   .anim-beres { position: absolute; bottom: 20px; right: 30px; font-size: 32px; animation: write 1.5s ease-in-out infinite; }
 
-  /* --- STATUS GRID --- */
   .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .status-btn { padding: 12px 8px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 12px; font-weight: 800; cursor: pointer; transition: var(--smooth-bounce); display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center;}
   .status-btn:active { transform: scale(0.95); }
   .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.3), rgba(201, 158, 255, 0.3)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px);}
 
-  /* --- CUTE ACTION BUTTONS --- */
   .cute-action-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 10px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); cursor: pointer; transition: var(--smooth-bounce); box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
   .cute-action-btn:active { transform: scale(0.92); }
   .cute-action-btn .icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: 0.3s;}
   .cute-action-btn .text { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-main); letter-spacing: 0.5px;}
 
-  /* --- MODALS --- */
   .modal { position: fixed; inset: 0; background: rgba(10, 5, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; overflow-y: auto; }
   .modal.show { opacity: 1; pointer-events: auto; }
   .modal-content { background: linear-gradient(160deg, #2A202A, #1A1118); border: 2px solid var(--card-border); box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); width: 100%; max-width: 400px; padding: 24px; border-radius: var(--radius-lg); text-align: left; transform: translate3d(0, 30px, 0) scale(0.95); transition: var(--smooth-bounce); will-change: transform; }
   .modal.show .modal-content { transform: translate3d(0, 0, 0) scale(1); }
   .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 20px; text-align: center; color: var(--primary);}
 
-  /* --- LOVE NOTES --- */
   .note-color-picker { display: flex; gap: 10px; margin-bottom: 16px; justify-content: center; }
   .color-option { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: var(--smooth-bounce); }
   .color-option.active { transform: scale(1.2); border-color: #FFF; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
   .color-yellow { background: #FFE066; } .color-pink { background: #FF8BA7; }
   .color-blue { background: #64FFDA; } .color-purple { background: #C99EFF; }
-  
   .notes-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); }
   .sticky-note { padding: 16px; border-radius: 4px; color: #120D12; font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; box-shadow: 2px 4px 10px rgba(0,0,0,0.4); position: relative; word-wrap: break-word; transform: rotate(var(--rot)); transition: var(--smooth-bounce); cursor: pointer;}
   .sticky-note:hover { transform: scale(1.05) rotate(0deg); z-index: 10; box-shadow: 4px 8px 15px rgba(0,0,0,0.6); }
@@ -194,7 +174,22 @@
   .note-delete:hover { color: #FF6B6B; }
   .notes-empty { grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--text-sub); font-weight: 700; padding: 20px; }
 
-  /* --- SHARELOCK --- */
+  .timeline-container { max-height: 400px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); margin-bottom: 16px; }
+  .timeline-group { margin-bottom: 24px; position: relative; padding-left: 20px; }
+  .timeline-group::before { content: ''; position: absolute; left: 4px; top: 10px; bottom: -20px; width: 2px; background: rgba(255, 139, 167, 0.3); }
+  .timeline-group:last-child::before { display: none; }
+  .timeline-date { font-family: 'Fredoka', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 12px; position: relative; }
+  .timeline-date::before { content: '📍'; position: absolute; left: -24px; top: 2px; font-size: 16px; }
+  .memory-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; display: flex; gap: 12px; align-items: center; }
+  .memory-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
+  .memory-info { flex: 1; }
+  .memory-title { font-weight: 800; font-size: 14px; color: #FFF; }
+  .memory-desc { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+  .ai-cinematic-box { background: linear-gradient(135deg, rgba(255, 139, 167, 0.1), rgba(201, 158, 255, 0.1)); border: 1px solid var(--primary-glow); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; display: none; }
+  .ai-cinematic-box.show { display: block; animation: popIn 0.5s var(--smooth-bounce); }
+  .ai-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: var(--primary); margin-bottom: 8px; text-align: center; }
+  .ai-text { font-family: 'Playfair Display', serif; font-size: 15px; line-height: 1.6; color: #FFF; text-align: justify; text-indent: 20px; }
+
   #map { height: 220px; width: 100%; border-radius: var(--radius-md); margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.1); z-index: 1; }
   .distance-widget { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; border: 2px solid rgba(255,255,255,0.05); }
   .distance-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FFF; object-fit: cover; }
@@ -205,7 +200,6 @@
   .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #120D12; transform: scale(1.05);}
   .map-icon { font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-  /* --- GAME & WHEEL --- */
   .ttt-status { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 16px; color: var(--primary); }
   .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 260px; margin: 0 auto 20px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05);}
   .ttt-cell { aspect-ratio: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); font-size: 40px; font-weight: 900; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--smooth-bounce); }
@@ -218,7 +212,6 @@
   .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px; background: #120D12; border-radius: 50%; display: grid; place-items: center; font-size: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); border: 2px solid var(--primary);}
   .result-text { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; color: #FFF; text-align: center; background: rgba(0,0,0,0.4); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.05); }
 
-  /* --- CAPSULE & BUCKET --- */
   .letter-item { background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.05); padding: 16px; border-radius: var(--radius-md); margin-bottom: 12px; text-align: left; }
   .letter-item.locked { border-color: rgba(255, 107, 107, 0.2); background: rgba(255, 107, 107, 0.05); }
   .letter-date { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;}
@@ -233,7 +226,6 @@
   .bucket-delete { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; padding: 5px; transition: 0.2s;}
   .bucket-delete:hover { color: var(--danger); }
 
-  /* --- INCOMING NOTIFICATION --- */
   #incomingReminderModal { z-index: 1050; }
   #incomingReminderModal .modal-content { background: linear-gradient(135deg, #FF8BA7, #C99EFF); border: 3px solid #FFF; box-shadow: 0 0 50px var(--primary-glow); animation: popIn 0.5s var(--smooth-bounce); }
   @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -282,7 +274,6 @@
   <button class="btn btn-primary" id="btnAction" style="margin-top:10px;">Masuk</button>
   <button class="btn btn-outline" id="btnSwitch">Belum punya akun? Daftar</button>
   
-  <!-- Teks indikator remember device -->
   <p style="font-size: 11px; color: var(--text-sub); margin-top: 5px; font-weight: 700;">🔒 Sesi login aman & tersimpan di perangkat ini</p>
   
   <div class="error" id="errorMsg"></div>
@@ -344,6 +335,10 @@
     </div>
 
     <!-- CUTE ACTION BUTTONS -->
+    <button class="cute-action-btn" id="btnOpenTimeline">
+      <div class="icon">📸</div>
+      <div class="text">Memory Time</div>
+    </button>
     <button class="cute-action-btn" id="btnOpenLoveNotes">
       <div class="icon">📝</div>
       <div class="text">Love Notes</div>
@@ -394,29 +389,62 @@
   </div>
 </div>
 
+<!-- MODAL MEMORY TIMELINE -->
+<div class="modal" id="timelineModal">
+  <div class="modal-content">
+    <h2>📸 Memory Timeline</h2>
+    
+    <!-- Area AI Summary -->
+    <div class="ai-cinematic-box" id="aiCinematicBox">
+      <div class="ai-title">✨ Cinematic Memory ✨</div>
+      <div class="ai-text" id="aiCinematicText"></div>
+    </div>
+
+    <div class="timeline-container" id="timelineContainer">
+      <div class="notes-empty">Belum ada kenangan. Yuk abadikan momen pertamamu! 🥺</div>
+    </div>
+
+    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+      <div class="title-small" style="text-align:left; margin-bottom:8px;">Tambah Kenangan Baru:</div>
+      
+      <div class="input-group" style="margin-bottom: 8px;">
+        <input type="text" id="memTitle" placeholder="Judul (cth: Liburan ke Bali)">
+      </div>
+      <div class="input-group" style="margin-bottom: 8px;">
+        <input type="date" id="memDate">
+      </div>
+      <div class="input-group" style="margin-bottom: 8px;">
+        <input type="file" id="memFile" accept="image/*">
+      </div>
+      <div class="input-group" style="margin-bottom: 12px;">
+        <textarea id="memDesc" placeholder="Cerita singkat momen ini..." style="height: 60px;"></textarea>
+      </div>
+      
+      <button class="btn btn-accent" id="btnAddMemory">Simpan Kenangan 📸</button>
+    </div>
+    
+    <button class="btn" id="btnCloseTimeline" style="margin-top: 16px;">Tutup</button>
+  </div>
+</div>
+
 <!-- MODAL LOVE NOTES -->
 <div class="modal" id="loveNotesModal">
   <div class="modal-content">
     <h2>📝 Love Notes</h2>
-    
     <div class="notes-board" id="notesBoard">
       <div class="notes-empty">Belum ada notes. Tulis yang manis dong! 🥺</div>
     </div>
-
     <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
       <div class="title-small" style="text-align:left; margin-bottom:8px;">Tulis Notes Baru:</div>
       <textarea id="noteInput" placeholder="Tulis pesan manis buat pacar lu..." style="height: 80px; margin-bottom: 12px; font-family: 'Caveat', cursive; font-size: 20px;"></textarea>
-      
       <div class="note-color-picker">
         <div class="color-option color-yellow active" data-color="yellow"></div>
         <div class="color-option color-pink" data-color="pink"></div>
         <div class="color-option color-blue" data-color="blue"></div>
         <div class="color-option color-purple" data-color="purple"></div>
       </div>
-
       <button class="btn btn-primary" id="btnAddNote">Tempel Notes! 📌</button>
     </div>
-    
     <button class="btn" id="btnCloseLoveNotes" style="margin-top: 16px;">Tutup</button>
   </div>
 </div>
@@ -546,6 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
     playSuccess() { this.init(); this.playTone(523.25, 'triangle', 0.1, 0.1); setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.1), 100); setTimeout(() => this.playTone(783.99, 'triangle', 0.3, 0.1), 200); },
     playNotif() { this.init(); this.playTone(880, 'sine', 0.1, 0.1); setTimeout(() => this.playTone(1108.73, 'sine', 0.3, 0.1), 100); },
     playSticky() { this.init(); this.playTone(300, 'sine', 0.1, 0.1); this.playTone(500, 'sine', 0.2, 0.1); },
+    playCamera() { this.init(); this.playTone(1500, 'square', 0.05, 0.1); setTimeout(() => this.playTone(1200, 'square', 0.1, 0.1), 50); },
     playMilestone() { 
         this.init(); 
         this.playTone(1046.50, 'sine', 0.3, 0.1); 
@@ -570,14 +599,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
   const ONESIGNAL_REST_API_KEY = 'bc131dba-e4b5-4c2d-8291-f9a547603b92';
 
-  // FITUR REMEMBER DEVICE (AUTO LOGIN)
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: {
-      storage: window.localStorage,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
+    auth: { storage: window.localStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
   });
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -596,7 +619,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const partnerAnim = document.getElementById('partnerAnim');
   const kangenScoreEl = document.getElementById('kangenScore');
   const gaugeProgress = document.getElementById('gaugeProgress');
+  let gaugeInterval = null; // Prevent animation overlap
   
+  // Memory Timeline Elements
+  const timelineModal = document.getElementById('timelineModal');
+  const btnOpenTimeline = document.getElementById('btnOpenTimeline');
+  const btnCloseTimeline = document.getElementById('btnCloseTimeline');
+  const btnAddMemory = document.getElementById('btnAddMemory');
+  const timelineContainer = document.getElementById('timelineContainer');
+  const memTitle = document.getElementById('memTitle');
+  const memDate = document.getElementById('memDate');
+  const memFile = document.getElementById('memFile');
+  const memDesc = document.getElementById('memDesc');
+  const aiCinematicBox = document.getElementById('aiCinematicBox');
+  const aiCinematicText = document.getElementById('aiCinematicText');
+
   // Love Notes Elements
   const loveNotesModal = document.getElementById('loveNotesModal');
   const btnOpenLoveNotes = document.getElementById('btnOpenLoveNotes');
@@ -689,6 +726,207 @@ document.addEventListener('DOMContentLoaded', () => {
         }, i * 80);
     }
     safeVibrate([100, 50, 100, 50, 200]);
+  }
+
+  // --- FUNGSI KOMPRESI GAMBAR (CLIENT-SIDE) ---
+  function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = event => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+        };
+        img.onerror = error => reject(error);
+      };
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  // --- MEMORY TIMELINE LOGIC ---
+  function generateCinematicMemory(memories, monthYear) {
+      const titles = memories.map(m => m.title);
+      const openers = [
+          "Di bawah langit yang sama, tepat di bulan ",
+          "Waktu seakan berhenti, mencatat tinta emas kisah kita di bulan ",
+          "Sebuah babak baru terukir indah saat memasuki bulan ",
+          "Kenangan manis tercipta, membisikkan cerita cinta kita di bulan "
+      ];
+      const middles = [
+          " Kita merangkai tawa, melewati hari-hari dengan cerita tentang ",
+          " Ada kita yang saling menguatkan, diwarnai oleh momen ",
+          " Setiap detak jantung terasa selaras, saat kita menjalani ",
+          " Langkah kaki ini selalu beriringan, melukiskan memori tentang "
+      ];
+      const closers = [
+          " Semua itu bukan sekadar cerita, melainkan bukti bahwa kita selalu punya tempat untuk pulang.",
+          " Rangkaian momen ini akan selalu punya sudut spesial di dalam hati.",
+          " Semoga kisah ini tak pernah pudar, selamanya abadi dalam dekapan waktu.",
+          " Terima kasih sudah menjadi bagian terindah dari perjalanan ini."
+      ];
+      
+      const opener = openers[Math.floor(Math.random() * openers.length)] + monthYear + ".";
+      const middle = middles[Math.floor(Math.random() * middles.length)] + titles.join(", ") + ".";
+      const closer = closers[Math.floor(Math.random() * closers.length)];
+      
+      return opener + middle + closer;
+  }
+
+  btnOpenTimeline.addEventListener('click', async () => { timelineModal.classList.add('show'); memTitle.value=''; memDesc.value=''; memFile.value=''; aiCinematicBox.classList.remove('show'); await loadMemories(); });
+  btnCloseTimeline.addEventListener('click', () => timelineModal.classList.remove('show'));
+
+  btnAddMemory.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const title = memTitle.value.trim();
+    const date = memDate.value;
+    const desc = memDesc.value.trim();
+    const file = memFile.files[0];
+
+    if (!title || !date) return alert('Judul dan Tanggal wajib diisi bro!');
+
+    btnAddMemory.innerText = 'Menyimpan...'; btnAddMemory.disabled = true;
+    let imageUrl = '';
+
+    // Proses Upload Gambar jika ada
+    if (file) {
+      try {
+        btnAddMemory.innerText = 'Kompresi & Upload...';
+        const compressedBlob = await compressImage(file);
+        if (!compressedBlob) throw new Error("Gagal mengompres gambar");
+
+        const fileName = `${currentUser.id}-${Date.now()}.jpg`;
+
+        const { data, error: uploadError } = await supabaseClient.storage
+          .from('memory_images')
+          .upload(fileName, compressedBlob, { contentType: 'image/jpeg' });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabaseClient.storage
+          .from('memory_images')
+          .getPublicUrl(fileName);
+
+        imageUrl = urlData.publicUrl;
+      } catch (err) {
+        alert('Gagal upload gambar: ' + err.message);
+        btnAddMemory.innerText = 'Simpan Kenangan 📸';
+        btnAddMemory.disabled = false;
+        return;
+      }
+    }
+
+    // Simpan ke Database
+    const { error } = await supabaseClient.from('memories').insert({ sender_id: currentUser.id, title, description: desc, media_url: imageUrl, memory_date: date });
+    
+    btnAddMemory.innerText = 'Simpan Kenangan 📸'; btnAddMemory.disabled = false;
+    memFile.value = ''; // Reset input file
+
+    if (error) alert('Gagal simpan: ' + error.message);
+    else {
+      memTitle.value = ''; memDesc.value = '';
+      AudioManager.playCamera(); safeVibrate([50, 100, 50]);
+      sendPushToPartner('📸 Pacar lu nambahin kenangan baru di Timeline!');
+      await loadMemories();
+    }
+  });
+
+  async function loadMemories() {
+    if (!currentUser) return;
+    const { data, error } = await supabaseClient.from('memories').select('*').order('memory_date', { ascending: false });
+    
+    if (error) {
+      timelineContainer.innerHTML = `<div class="notes-empty">Gagal memuat: ${escapeHTML(error.message)}</div>`;
+      return;
+    }
+    
+    timelineContainer.innerHTML = '';
+    if (!data || data.length === 0) {
+      timelineContainer.innerHTML = '<div class="notes-empty">Belum ada kenangan. Yuk abadikan momen pertamamu! 🥺</div>';
+      return;
+    }
+
+    const grouped = {};
+    data.forEach(mem => {
+        const d = new Date(mem.memory_date);
+        const key = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(mem);
+    });
+
+    let firstGroup = true;
+    for (const [monthYear, mems] of Object.entries(grouped)) {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'timeline-group';
+        
+        const dateHeader = document.createElement('div');
+        dateHeader.className = 'timeline-date';
+        dateHeader.innerText = monthYear;
+        
+        const btnAI = document.createElement('button');
+        btnAI.className = 'btn btn-primary';
+        btnAI.style.padding = '8px';
+        btnAI.style.fontSize = '12px';
+        btnAI.style.marginBottom = '10px';
+        btnAI.innerText = '✨ Buat Kenangan Sinematik';
+        btnAI.onclick = () => {
+            const text = generateCinematicMemory(mems, monthYear);
+            aiCinematicText.innerText = text;
+            aiCinematicBox.classList.add('show');
+            timelineContainer.scrollTop = 0;
+            AudioManager.playSuccess();
+        };
+        
+        groupDiv.appendChild(dateHeader);
+        groupDiv.appendChild(btnAI);
+        
+        mems.forEach(mem => {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            
+            let imgHtml = '';
+            if (mem.media_url) {
+                imgHtml = `<img src="${escapeHTML(mem.media_url)}" class="memory-img" alt="Memory" onerror="this.style.display='none'">`;
+            }
+            
+            card.innerHTML = `
+                ${imgHtml}
+                <div class="memory-info">
+                    <div class="memory-title">${escapeHTML(mem.title)}</div>
+                    <div class="memory-desc">${escapeHTML(mem.description || '')}</div>
+                </div>
+            `;
+            groupDiv.appendChild(card);
+        });
+        
+        timelineContainer.appendChild(groupDiv);
+
+        if (firstGroup) {
+            const initialText = generateCinematicMemory(mems, monthYear);
+            aiCinematicText.innerText = initialText;
+            aiCinematicBox.classList.add('show');
+            firstGroup = false;
+        }
+    }
   }
 
   // --- LOVE NOTES LOGIC ---
@@ -863,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isTracking = false; btnToggleTracking.innerText = 'Mulai Bagikan Lokasi'; btnToggleTracking.style.background = ''; btnToggleTracking.classList.add('btn-accent');
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
-    ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
+    ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel','memoriesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
     if (map) { try { map.remove(); } catch(e){} map = null; } myMarker = null; partnerMarker = null; mapInitialized = false; lastPartnerLat = null; lastPartnerLng = null;
   });
 
@@ -965,8 +1203,9 @@ document.addEventListener('DOMContentLoaded', () => {
             spawnMilestoneEmojis();
         }
 
-        const interval = setInterval(() => {
-            if (currentNum >= score) { clearInterval(interval); return; }
+        if (gaugeInterval) clearInterval(gaugeInterval); // FIX: Cegah animasi tumpang tindih
+        gaugeInterval = setInterval(() => {
+            if (currentNum >= score) { clearInterval(gaugeInterval); gaugeInterval = null; return; }
             currentNum++;
             kangenScoreEl.innerText = currentNum;
             
@@ -975,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gaugeProgress.style.strokeDashoffset = 276 - (276 * tempPercentage) / 100;
         }, 30);
     } else {
+        if (gaugeInterval) clearInterval(gaugeInterval);
         kangenScoreEl.innerText = score;
         const finalVisual = score % 100;
         const finalPercent = (score > 0 && finalVisual === 0) ? 100 : finalVisual;
@@ -1107,10 +1347,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- SESSION & REALTIME ---
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    // Memastikan jika ada event SIGNED_IN atau INITIAL_SESSION dari cache, dashboard langsung muncul
     if (session) {
       currentUser = session.user; authCard.classList.add('hidden'); dashboardCard.classList.remove('hidden'); updateDaysTogether();
-      ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
+      ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel','memoriesChannel'].forEach(ch => { if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; } });
 
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).maybeSingle();
       const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).maybeSingle();
@@ -1190,12 +1429,22 @@ document.addEventListener('DOMContentLoaded', () => {
            }
         }).subscribe();
 
+      // Realtime Memory Timeline
+      window.memoriesChannel = supabaseClient.channel('realtime_memories')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'memories' }, async payload => {
+           if (timelineModal.classList.contains('show')) {
+               await loadMemories();
+               if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id) {
+                   AudioManager.playNotif(); 
+               }
+           }
+        }).subscribe();
+
     } else {
-      // Hanya tampil login kalau memang bener-bener belum login / abis logout
       currentUser = null; partnerId = null; authCard.classList.remove('hidden'); dashboardCard.classList.add('hidden');
     }
   });
 });
 </script>
 </body>
-</html>
+  </html>
