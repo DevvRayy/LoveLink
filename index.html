@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - ShareLock & Ultimate LDR</title>
+<title>LoveLink - Cozy Edition</title>
 <!-- Library Supabase & OneSignal -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -13,117 +13,154 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+  
+  :root {
+    --bg-color: #FFF0F5;
+    --text-dark: #5D4037; 
+    --text-muted: #A1887F; 
+    --primary: #FF8BA7; 
+    --primary-light: #FFC6D3;
+    --accent: #FFE5B4; 
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --shadow: 0 8px 20px rgba(255, 139, 167, 0.25);
+  }
+
   body {
-    background: linear-gradient(135deg, #1A0B14 0%, #2A1420 100%);
-    color: #FCF0F5; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
+    background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E1 100%);
+    color: var(--text-dark); 
+    min-height: 100vh; 
+    display: flex; justify-content: center; align-items: center; padding: 20px;
     overflow-x: hidden;
   }
+
   .card {
-    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 182, 210, 0.15);
-    border-radius: 20px; padding: 25px 20px; width: 100%; max-width: 400px;
-    backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
+    background: var(--card-bg); 
+    border: 2px solid rgba(255, 182, 193, 0.4);
+    border-radius: 28px; 
+    padding: 25px 20px; 
+    width: 100%; max-width: 400px;
+    backdrop-filter: blur(12px); 
+    box-shadow: var(--shadow); 
+    text-align: center;
     position: relative; z-index: 10;
   }
-  h1 { font-size: 24px; color: #FF7FA8; margin-bottom: 5px; }
-  p.sub { font-size: 12px; color: #C9A0B8; margin-bottom: 20px; }
+
+  h1 { font-size: 26px; color: var(--primary); margin-bottom: 5px; font-weight: 900; letter-spacing: 0.5px;}
+  p.sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600; }
   
   input, textarea {
-    width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,182,210,0.2);
-    color: #FFF; padding: 12px 14px; border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none;
-    font-family: inherit;
+    width: 100%; background: #FFF; border: 2px solid rgba(255, 182, 193, 0.5);
+    color: var(--text-dark); padding: 14px 16px; border-radius: 16px; font-size: 14px; margin-bottom: 12px; outline: none;
+    font-family: inherit; font-weight: 600; transition: 0.3s;
   }
+  input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(255, 139, 167, 0.3); }
   textarea { height: 100px; resize: none; }
+
   .btn {
-    width: 100%; padding: 12px; border-radius: 10px; border: none;
-    background: linear-gradient(135deg, #FF7FA8, #C99EFF); color: #2A0018;
-    font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px; transition: transform 0.1s;
+    width: 100%; padding: 14px; border-radius: 50px; border: none;
+    background: linear-gradient(135deg, var(--primary), #FF7A9E); color: #FFF;
+    font-weight: 800; font-size: 14px; cursor: pointer; margin-top: 10px; transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 139, 167, 0.4);
   }
-  .btn:active { transform: scale(0.97); }
-  .btn-outline { background: transparent; border: 1px solid #FF7FA8; color: #FF7FA8; margin-top: 12px; }
-  .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  
+  .btn-outline { background: #FFF; border: 2px solid var(--primary-light); color: var(--primary); box-shadow: none; margin-top: 12px; }
+  .error { color: #E57373; font-size: 12px; margin-top: 12px; min-height: 18px; font-weight: 700;}
   .hidden { display: none !important; }
 
-  /* COUNTDOWN & DASHBOARD UI */
-  .countdown-box { background: linear-gradient(135deg, rgba(255,127,168,0.15), rgba(201,158,255,0.1)); border: 1px solid #FF7FA8; border-radius: 15px; padding: 15px; margin-bottom: 15px; position: relative; overflow: hidden; }
-  .countdown-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #FF7FA8; font-weight: 700; margin-bottom: 10px; }
-  .countdown-timer { display: flex; justify-content: center; gap: 10px; }
-  .time-block { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 10px; min-width: 55px; }
-  .time-num { font-size: 20px; font-weight: 800; color: #FFF; }
-  .time-label { font-size: 9px; color: #C9A0B8; text-transform: uppercase; margin-top: 2px; }
-  .btn-edit-countdown { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: #FFF; font-size: 14px; cursor: pointer; opacity: 0.7; }
-  .meet-today { font-size: 22px; font-weight: 800; color: #64FFDA; text-align: center; margin: 10px 0; animation: pulse 1.5s infinite; }
+  /* COUNTDOWN UI */
+  .countdown-box { 
+    background: linear-gradient(135deg, rgba(255, 198, 211, 0.4), rgba(255, 229, 180, 0.3)); 
+    border: 2px solid #FFC6D3; 
+    border-radius: 22px; padding: 20px 15px; margin-bottom: 18px; 
+    position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(255, 139, 167, 0.15);
+  }
+  .countdown-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 800; margin-bottom: 12px; }
+  .countdown-timer { display: flex; justify-content: center; gap: 8px; }
+  .time-block { display: flex; flex-direction: column; align-items: center; background: #FFF; padding: 10px; border-radius: 16px; min-width: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+  .time-num { font-size: 22px; font-weight: 900; color: var(--primary); }
+  .time-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; font-weight: 700;}
+  .btn-edit-countdown { position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--primary); font-size: 16px; cursor: pointer; opacity: 0.8; }
+  .meet-today { font-size: 22px; font-weight: 900; color: #FF5252; text-align: center; margin: 10px 0; animation: pulse 1.5s infinite; }
 
-  .my-status-box, .action-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-  .title-small { font-size: 11px; color: #C9A0B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: left;}
-  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .status-btn { padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #FFF; font-size: 12px; cursor: pointer; transition: 0.2s; }
-  .status-btn.active { background: linear-gradient(135deg, rgba(255,127,168,0.3), rgba(201,158,255,0.3)); border-color: #FF7FA8; font-weight: 700; }
-  .kangen-display { font-size: 30px; font-weight: 800; color: #FF7FA8; margin: 10px 0; }
-  .btn-kangen { background: linear-gradient(135deg, #FF7FA8, #FF4D6D); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(255,77,109,0.3); margin-bottom: 8px;}
-  .btn-touch { background: linear-gradient(135deg, #C99EFF, #8A2BE2); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(138,43,226,0.3); }
-  .partner-status-box { background: linear-gradient(135deg, rgba(255,127,168,0.1), rgba(201,158,255,0.05)); border: 1px dashed #FF7FA8; padding: 20px 15px; border-radius: 15px; margin-bottom: 15px; position: relative; overflow: hidden; }
-  .partner-label { font-size: 11px; color: #C9A0B8; margin-bottom: 8px; text-align: left;}
-  .partner-activity { font-size: 18px; font-weight: 700; color: #FF7FA8; z-index: 2; position: relative; text-align: left;}
+  /* DASHBOARD UI */
+  .my-status-box, .action-box { background: rgba(255, 255, 255, 0.6); border: 2px solid #FFF; padding: 18px; border-radius: 22px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(255, 139, 167, 0.1);}
+  .title-small { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; text-align: left; font-weight: 800;}
+  
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .status-btn { padding: 12px; border-radius: 16px; border: 2px solid #FFF; background: #FFF; color: var(--text-dark); font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04);}
+  .status-btn.active { background: linear-gradient(135deg, var(--primary-light), #FFC6D3); color: #FFF; border-color: var(--primary); box-shadow: 0 4px 10px rgba(255, 139, 167, 0.3); }
+  
+  .kangen-display { font-size: 36px; font-weight: 900; color: var(--primary); margin: 10px 0; text-shadow: 2px 2px 0px #FFF; }
+  .btn-kangen { background: linear-gradient(135deg, #FF8BA7, #FF5252); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3); margin-bottom: 10px;}
+  .btn-touch { background: linear-gradient(135deg, #BA68C8, #9C27B0); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3); }
+
+  .partner-status-box { background: #FFF; border: 2px dashed #FFC6D3; padding: 20px 18px; border-radius: 22px; margin-bottom: 18px; position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(255, 139, 167, 0.1);}
+  .partner-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-align: left; font-weight: 700;}
+  .partner-activity { font-size: 20px; font-weight: 900; color: var(--text-dark); z-index: 2; position: relative; text-align: left;}
 
   /* MODAL GENERAL */
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow-y: auto; }
+  .modal { position: fixed; inset: 0; background: rgba(255, 192, 203, 0.7); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow-y: auto; backdrop-filter: blur(5px);}
   .modal.show { opacity: 1; pointer-events: auto; }
-  .modal-content { background: #2A1420; width: 100%; max-width: 380px; padding: 20px; border-radius: 20px; border: 1px solid rgba(255,127,168,0.3); text-align: left; }
+  .modal-content { background: #FFF; width: 100%; max-width: 380px; padding: 25px; border-radius: 28px; border: 3px solid #FFF0F5; box-shadow: 0 10px 40px rgba(255, 139, 167, 0.4); text-align: left; }
 
   /* SHARELOCK MAP UI */
-  #map { height: 250px; width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.2); z-index: 1; }
+  #map { height: 250px; width: 100%; border-radius: 20px; margin-bottom: 15px; border: 3px solid var(--primary-light); z-index: 1; }
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-  .mode-btn { padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #FFF; font-size: 18px; cursor: pointer; transition: 0.2s; }
-  .mode-btn.active { background: #FF7FA8; color: #1A0B14; border-color: #FFF; }
-  .map-icon { font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .mode-btn { padding: 12px; border-radius: 16px; border: 2px solid #FFF; background: #F5F5F5; color: #333; font-size: 20px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+  .mode-btn.active { background: var(--primary); color: #FFF; border-color: #FFF; box-shadow: 0 4px 10px rgba(255, 139, 167, 0.4); }
+  .map-icon { font-size: 26px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 
   /* TIC TAC TOE */
-  .ttt-status { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 15px; color: #C99EFF; }
-  .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 240px; margin: 0 auto 20px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 10px; }
-  .ttt-cell { aspect-ratio: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-size: 40px; font-weight: 800; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
-  .ttt-cell.x { color: #FF7FA8; }
-  .ttt-cell.o { color: #64FFDA; }
+  .ttt-status { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 15px; color: var(--primary); }
+  .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 250px; margin: 0 auto 20px; background: #FFF0F5; padding: 8px; border-radius: 20px; }
+  .ttt-cell { aspect-ratio: 1; background: #FFF; border: 2px solid #FFE4E1; border-radius: 14px; font-size: 40px; font-weight: 900; color: var(--text-dark); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+  .ttt-cell.x { color: var(--primary); }
+  .ttt-cell.o { color: #64B5F6; }
 
   /* SPIN & OTHERS */
-  .wheel-container { position: relative; width: 250px; height: 250px; margin: 0 auto 20px; }
-  .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #1A0B14; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF7FA8 0deg 45deg, #C99EFF 45deg 90deg, #64FFDA 90deg 135deg, #FFD166 135deg 180deg, #FF6B6B 180deg 225deg, #4CAF50 225deg 270deg, #00B4D8 270deg 315deg, #E8C76A 315deg 360deg); }
-  .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #FFF; z-index: 2; }
-  .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: #2A1420; border-radius: 50%; display: grid; place-items: center; font-size: 20px; }
-  .result-text { font-size: 16px; font-weight: 800; color: #FFF; text-align: center; background: rgba(255,127,168,0.2); padding: 15px; border-radius: 15px; margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+  .wheel-container { position: relative; width: 250px; height: 250px; margin: 0 auto 20px; border-radius: 50%; box-shadow: 0 8px 25px rgba(255, 139, 167, 0.4); }
+  .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #FFF; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #FFC6D3 45deg 90deg, #FFE5B4 90deg 135deg, #FFF0F5 135deg 180deg, #FF8BA7 180deg 225deg, #FFC6D3 225deg 270deg, #FFE5B4 270deg 315deg, #FFF0F5 315deg 360deg); }
+  .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid var(--primary); z-index: 2; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));}
+  .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #FFF; border-radius: 50%; display: grid; place-items: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+  .result-text { font-size: 16px; font-weight: 800; color: var(--text-dark); text-align: center; background: #FFF0F5; padding: 18px; border-radius: 20px; margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--primary-light); }
 
-  .letter-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: left; }
-  .letter-item.locked { border-color: rgba(255,107,120,0.4); background: rgba(255,107,120,0.05); }
-  .letter-date { font-size: 11px; color: #C9A0B8; margin-bottom: 5px; }
-  .letter-content { font-size: 14px; color: #FFF; line-height: 1.6; white-space: pre-wrap; }
-  .letter-lock-msg { font-size: 13px; color: #FF6B6B; font-weight: 600; text-align: center; margin-top: 10px; }
+  .letter-item { background: #FFF; border: 2px solid #FFE4E1; padding: 18px; border-radius: 18px; margin-bottom: 12px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+  .letter-item.locked { border-color: #FFCDD2; background: #FFF5F5; }
+  .letter-date { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700;}
+  .letter-content { font-size: 14px; color: var(--text-dark); line-height: 1.6; white-space: pre-wrap; font-weight: 600;}
+  .letter-lock-msg { font-size: 13px; color: #E57373; font-weight: 800; text-align: center; margin-top: 10px; }
 
-  .bucket-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
-  .bucket-item.done { opacity: 0.6; background: rgba(100, 255, 218, 0.05); border-color: rgba(100,255,218,0.3); }
-  .bucket-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #C99EFF; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px; }
-  .bucket-item.done .bucket-checkbox { background: #64FFDA; border-color: #64FFDA; color: #1A0B14; }
-  .bucket-text { flex: 1; font-size: 14px; color: #FFF; text-align: left; }
-  .bucket-item.done .bucket-text { text-decoration: line-through; color: #C9A0B8; }
-  .bucket-delete { background: transparent; border: none; color: #FF6B6B; cursor: pointer; font-size: 16px; padding: 5px; }
+  .bucket-item { display: flex; align-items: center; gap: 12px; background: #FFF; padding: 14px 18px; border-radius: 18px; margin-bottom: 10px; border: 2px solid #FFE4E1; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.03);}
+  .bucket-item.done { opacity: 0.7; background: #F0FFF0; border-color: #A5D6A7; }
+  .bucket-checkbox { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--primary-light); display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 14px; transition: 0.2s;}
+  .bucket-item.done .bucket-checkbox { background: #A5D6A7; border-color: #A5D6A7; color: #FFF; }
+  .bucket-text { flex: 1; font-size: 14px; color: var(--text-dark); text-align: left; font-weight: 700;}
+  .bucket-item.done .bucket-text { text-decoration: line-through; color: var(--text-muted); }
+  .bucket-delete { background: transparent; border: none; color: #E57373; cursor: pointer; font-size: 18px; padding: 5px; }
 
   #incomingReminderModal { z-index: 1050; }
-  #incomingReminderModal .modal-content { background: linear-gradient(135deg, #FF7FA8, #C99EFF); color: #1A0B14; text-align: center; border: 4px solid #FFF; box-shadow: 0 0 30px rgba(255,127,168,0.6); animation: popIn 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
+  #incomingReminderModal .modal-content { background: linear-gradient(135deg, #FFE4E1, #FFF0F5); color: var(--text-dark); text-align: center; border: 4px solid #FFF; box-shadow: 0 0 30px rgba(255, 139, 167, 0.5); animation: popIn 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
   @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  #incomingReminderModal h2 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
-  #incomingReminderModal p { font-size: 16px; font-weight: 600; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.4); padding: 15px; border-radius: 10px; }
-  #incomingReminderModal .btn { background: #1A0B14; color: #FFF; margin-top: 0; }
+  #incomingReminderModal h2 { font-size: 22px; font-weight: 900; margin-bottom: 10px; color: var(--primary); }
+  #incomingReminderModal p { font-size: 16px; font-weight: 800; line-height: 1.5; margin-bottom: 20px; background: #FFF; padding: 18px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+  #incomingReminderModal .btn { background: var(--primary); color: #FFF; margin-top: 0; }
 
-  .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
+  /* ANIMASI HATI & STATUS */
+  .heart { position: fixed; font-size: 28px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
   @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
   
-  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
+  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.8; z-index: 1; }
   @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(380px); } }
-  .anim-motor { position: absolute; bottom: 10px; font-size: 30px; animation: ride 3s linear infinite; }
+  .anim-motor { position: absolute; bottom: 10px; font-size: 32px; animation: ride 3s linear infinite; }
   @keyframes write { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
-  .anim-nugas { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); font-size: 30px; animation: write 1s ease-in-out infinite; }
+  .anim-nugas { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); font-size: 32px; animation: write 1s ease-in-out infinite; }
   @keyframes float { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 1; } }
-  .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 30px; animation: float 2s ease-in-out infinite; }
+  .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 32px; animation: float 2s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
   .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
 </style>
@@ -132,7 +169,7 @@
 
 <!-- LAYAR LOGIN -->
 <div class="card" id="authCard">
-  <h1>LoveLink 💌</h1>
+  <h1>LoveLink 🎀</h1>
   <p class="sub" id="subtitle">Masuk ke ruang rahasia kalian</p>
   <input type="email" id="email" placeholder="Alamat Email">
   <input type="password" id="password" placeholder="Password">
@@ -143,7 +180,7 @@
 
 <!-- LAYAR DASHBOARD -->
 <div class="card hidden" id="dashboardCard">
-  <h1>LoveLink 💌</h1>
+  <h1>LoveLink 🎀</h1>
   <p class="sub">Real-time Connection</p>
   
   <div class="countdown-box" id="countdownBox">
@@ -163,14 +200,14 @@
     <div class="kangen-display" id="kangenScore">0</div>
     <button class="btn btn-kangen" id="btnKangen">❤️ Aku Kangen Kamu</button>
     <button class="btn btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
-    <button class="btn" id="btnOpenReminder" style="background:linear-gradient(135deg, #64FFDA, #00B4D8); color:#1A0B14; margin-top: 8px;">📢 Kirim Pesan Semangat</button>
-    <button class="btn" id="btnOpenShareLock" style="background:linear-gradient(135deg, #FFD166, #F4A261); color:#1A0B14; margin-top: 8px;">📍 ShareLock (Lokasi)</button>
+    <button class="btn" id="btnOpenReminder" style="background:linear-gradient(135deg, #81C784, #4CAF50); color:#FFF; margin-top: 8px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">📢 Kirim Pesan Semangat</button>
+    <button class="btn" id="btnOpenShareLock" style="background:linear-gradient(135deg, #FFD54F, #FFB300); color:#FFF; margin-top: 8px; box-shadow: 0 4px 15px rgba(255, 179, 0, 0.3);">📍 ShareLock (Lokasi)</button>
     
-    <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-      <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px;">🎡 Tantangan</button>
-      <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#C99EFF; color:#C99EFF;">📜 Surat</button>
-      <button class="btn btn-outline" id="btnOpenBucket" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#FFD166; color:#FFD166;">🎯 Bucket List</button>
-      <button class="btn btn-outline" id="btnOpenGame" style="margin-top:0; flex:1 1 100%; font-size:11px; padding: 10px 5px; border-color:#FF7FA8; color:#FF7FA8;">🎮 Tic Tac Toe</button>
+    <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+      <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:12px; padding: 12px 5px; background: linear-gradient(135deg, #CE93D8, #AB47BC); box-shadow: 0 4px 15px rgba(171, 71, 188, 0.3);">🎡 Tantangan</button>
+      <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:12px; padding: 12px 5px; border-color:#CE93D8; color:#AB47BC;">📜 Surat</button>
+      <button class="btn btn-outline" id="btnOpenBucket" style="margin-top:0; flex:1; font-size:12px; padding: 12px 5px; border-color:#FFD54F; color:#FFB300;">🎯 Bucket List</button>
+      <button class="btn btn-outline" id="btnOpenGame" style="margin-top:0; flex:1 1 100%; font-size:12px; padding: 12px 5px; border-color:var(--primary); color:var(--primary);">🎮 Tic Tac Toe</button>
     </div>
   </div>
 
@@ -184,13 +221,13 @@
     </div>
   </div>
   
-  <button class="btn" style="background:rgba(255,100,100,0.15); color:#FF6B6B; border:1px solid rgba(255,100,100,0.3);" id="btnLogout">Logout</button>
+  <button class="btn" style="background:#FFF; color:#E57373; border:2px solid #FFCDD2; box-shadow:none;" id="btnLogout">Logout</button>
 </div>
 
 <!-- MODAL SHARELOCK -->
 <div class="modal" id="shareLockModal">
   <div class="modal-content">
-    <h2 style="color:#FFD166; font-size:18px; margin-bottom:15px; text-align:center;">📍 ShareLock Lokasi</h2>
+    <h2 style="color:var(--primary); font-size:20px; margin-bottom:15px; text-align:center; font-weight:900;">📍 ShareLock Lokasi</h2>
     <div id="map"></div>
     
     <div class="title-small" style="text-align:center;">Pilih Kendaraanmu:</div>
@@ -200,29 +237,29 @@
       <button class="mode-btn" data-mode="mobil">🚗</button>
     </div>
 
-    <button class="btn" id="btnToggleTracking" style="background:linear-gradient(135deg, #64FFDA, #00B4D8); color:#1A0B14;">Mulai Bagikan Lokasi</button>
-    <button class="btn btn-outline" id="btnCloseShareLock" style="border-color:#FFF; color:#FFF;">Tutup</button>
+    <button class="btn" id="btnToggleTracking" style="background:linear-gradient(135deg, #81C784, #4CAF50); color:#FFF;">Mulai Bagikan Lokasi</button>
+    <button class="btn btn-outline" id="btnCloseShareLock" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
 <!-- MODAL TIC TAC TOE -->
 <div class="modal" id="gameModal">
   <div class="modal-content">
-    <h2 style="color:#FF7FA8; font-size:18px; margin-bottom:15px; text-align:center;">🎮 Tic Tac Toe</h2>
+    <h2 style="color:var(--primary); font-size:20px; margin-bottom:15px; text-align:center; font-weight:900;">🎮 Tic Tac Toe</h2>
     <div class="ttt-status" id="tttStatus">Memuat game...</div>
     <div class="ttt-grid" id="tttGrid"></div>
-    <button class="btn" id="btnResetGame" style="background:linear-gradient(135deg, #FF7FA8, #C99EFF); color:#1A0B14;">Mulai Game Baru</button>
-    <button class="btn btn-outline" id="btnCloseGame" style="border-color:#FFF; color:#FFF;">Tutup</button>
+    <button class="btn" id="btnResetGame" style="background:linear-gradient(135deg, #CE93D8, #AB47BC); color:#FFF;">Mulai Game Baru</button>
+    <button class="btn btn-outline" id="btnCloseGame" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
 <!-- MODAL KIRIM REMINDER -->
 <div class="modal" id="reminderModal">
   <div class="modal-content">
-    <h2 style="color:#64FFDA; font-size:18px; margin-bottom:15px; text-align:center;">📢 Kirim Pesan</h2>
+    <h2 style="color:#4CAF50; font-size:20px; margin-bottom:15px; text-align:center; font-weight:900;">📢 Kirim Pesan</h2>
     <textarea id="reminderText" placeholder="Contoh: Jangan lupa sarapan yaa, semangat hari ini! ❤️"></textarea>
-    <button class="btn" id="btnSendReminder" style="background:linear-gradient(135deg, #64FFDA, #00B4D8); color:#1A0B14;">Kirim Pesan</button>
-    <button class="btn btn-outline" id="btnCloseReminder" style="border-color:#FFF; color:#FFF;">Tutup</button>
+    <button class="btn" id="btnSendReminder" style="background:linear-gradient(135deg, #81C784, #4CAF50); color:#FFF;">Kirim Pesan</button>
+    <button class="btn btn-outline" id="btnCloseReminder" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
@@ -238,10 +275,10 @@
 <!-- MODAL EDIT COUNTDOWN -->
 <div class="modal" id="countdownModal">
   <div class="modal-content">
-    <h2 style="color:#FF7FA8; font-size:18px; margin-bottom:15px; text-align:center;">Kapan Kita Ketemu?</h2>
-    <input type="datetime-local" id="meetDateInput" style="color-scheme: dark;">
-    <button class="btn btn-primary" id="btnSaveCountdown">Simpan Tanggal</button>
-    <button class="btn btn-outline" id="btnCloseCountdown" style="border-color:#FFF; color:#FFF;">Tutup</button>
+    <h2 style="color:var(--primary); font-size:20px; margin-bottom:15px; text-align:center; font-weight:900;">Kapan Kita Ketemu?</h2>
+    <input type="datetime-local" id="meetDateInput" style="color:var(--text-dark); font-weight:700;">
+    <button class="btn" id="btnSaveCountdown">Simpan Tanggal</button>
+    <button class="btn btn-outline" id="btnCloseCountdown" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
@@ -254,39 +291,39 @@
       <div class="wheel-center">🎯</div>
     </div>
     <div class="result-text" id="spinResult">Tekan tombol di bawah untuk memutar!</div>
-    <button class="btn btn-primary" id="btnDoSpin">Putar Sekarang!</button>
-    <button class="btn btn-outline" id="btnCloseSpin" style="border-color: #FFF; color: #FFF;">Tutup</button>
+    <button class="btn" id="btnDoSpin" style="background:linear-gradient(135deg, #CE93D8, #AB47BC);">Putar Sekarang!</button>
+    <button class="btn btn-outline" id="btnCloseSpin" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
 <!-- MODAL TIME CAPSULE -->
 <div class="modal" id="capsuleModal">
   <div class="modal-content">
-    <h2 style="color:#C99EFF; font-size:18px; margin-bottom:15px; text-align:center;">📜 Surat Masa Depan</h2>
+    <h2 style="color:#AB47BC; font-size:20px; margin-bottom:15px; text-align:center; font-weight:900;">📜 Surat Masa Depan</h2>
     <div id="capsuleForm">
       <textarea id="capsuleText" placeholder="Tulis surat panjang buat pacar lu di sini..."></textarea>
-      <label style="font-size:12px; color:#C9A0B8; display:block; margin-bottom:5px;">Tanggal Buka Surat:</label>
-      <input type="date" id="capsuleDate">
-      <button class="btn" id="btnSendCapsule" style="margin-top:10px; background:linear-gradient(135deg, #C99EFF, #8A2BE2); color:#FFF;">Kirim & Kunci Surat</button>
+      <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:5px; font-weight:700;">Tanggal Buka Surat:</label>
+      <input type="date" id="capsuleDate" style="color:var(--text-dark); font-weight:700;">
+      <button class="btn" id="btnSendCapsule" style="margin-top:10px; background:linear-gradient(135deg, #CE93D8, #AB47BC); color:#FFF;">Kirim & Kunci Surat</button>
     </div>
-    <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-      <h3 style="font-size:14px; margin-bottom:10px; color:#FFF;">📬 Kotak Masuk Surat</h3>
+    <div style="margin: 20px 0; border-top: 2px dashed #E0E0E0; padding-top: 15px;">
+      <h3 style="font-size:14px; margin-bottom:10px; color:var(--text-dark); font-weight:800;">📬 Kotak Masuk Surat</h3>
       <div id="capsuleList" style="max-height: 200px; overflow-y: auto;"></div>
     </div>
-    <button class="btn btn-outline" id="btnCloseCapsule" style="border-color: #FFF; color: #FFF;">Tutup</button>
+    <button class="btn btn-outline" id="btnCloseCapsule" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
 <!-- MODAL BUCKET LIST -->
 <div class="modal" id="bucketModal">
   <div class="modal-content">
-    <h2 style="color:#FFD166; font-size:18px; margin-bottom:15px; text-align:center;">🎯 Bucket List Kita</h2>
+    <h2 style="color:#FFB300; font-size:20px; margin-bottom:15px; text-align:center; font-weight:900;">🎯 Bucket List Kita</h2>
     <div style="display: flex; gap: 8px; margin-bottom: 15px;">
       <input type="text" id="bucketInput" placeholder="Mau ngapain pas ketemu nanti?" style="margin-bottom:0;">
-      <button class="btn" id="btnAddBucket" style="width: auto; margin-top:0; padding: 0 15px; background: #FFD166; color: #1A0B14;">+</button>
+      <button class="btn" id="btnAddBucket" style="width: auto; margin-top:0; padding: 0 18px; background: #FFD54F; color: #FFF; font-size: 20px;">+</button>
     </div>
     <div id="bucketListContainer" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
-    <button class="btn btn-outline" id="btnCloseBucket" style="border-color: #FFF; color: #FFF;">Tutup</button>
+    <button class="btn btn-outline" id="btnCloseBucket" style="border-color:var(--primary-light); color:var(--primary);">Tutup</button>
   </div>
 </div>
 
@@ -417,24 +454,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnOpenShareLock.addEventListener('click', () => {
     shareLockModal.classList.add('show');
+    
     setTimeout(() => {
       if (!mapInitialized) {
-        // Mulai dari Jakarta sebagai default (kalau GPS belum dapet)
+        // Default map
         map = L.map('map').setView([-6.175392, 106.827153], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap'
         }).addTo(map);
         mapInitialized = true;
-
-        // Kalau data pacar udah ada dari realtime, render
-        if (lastPartnerLat && lastPartnerLng) {
-            updatePartnerMap(lastPartnerLat, lastPartnerLng, lastPartnerMode);
-        }
       }
-      map.invalidateSize(); 
+      
+      // FIX BUG LEAFLET: Memastikan peta render sempurna saat modal dibuka
+      if (map) map.invalidateSize();
+      
+      if (lastPartnerLat && lastPartnerLng) {
+          updatePartnerMap(lastPartnerLat, lastPartnerLng, lastPartnerMode);
+      }
     }, 300);
     
-    // FIX: Langsung tarik GPS saat modal dibuka buat lihat posisi lu sekarang
+    // Ambil posisi saat ini
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
@@ -470,16 +509,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!navigator.geolocation) return alert('HP lu nggak support GPS bro!');
       
       btnToggleTracking.innerText = 'Mencari Sinyal GPS...';
-      btnToggleTracking.style.background = '#FFD166';
-      btnToggleTracking.style.color = '#1A0B14';
+      btnToggleTracking.style.background = '#FFD54F';
+      btnToggleTracking.style.color = '#FFF';
       
       watchId = navigator.geolocation.watchPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
           
-          // Kalau dapet sinyal GPS pertama kali
           btnToggleTracking.innerText = 'Berhenti Bagikan Lokasi';
-          btnToggleTracking.style.background = '#FF6B6B';
+          btnToggleTracking.style.background = '#E57373';
           btnToggleTracking.style.color = '#FFF';
 
           await supabaseClient.from('user_status').update({ 
@@ -499,24 +537,25 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         (err) => {
           console.log(err);
-          if (err.code === 1) { // PERMISSION_DENIED
+          if (err.code === 1) { 
              alert("Izin lokasi ditolak! Pastikan buka via HTTPS (GitHub Pages) dan izinkan akses lokasi di browser/APK.");
              isTracking = false;
              btnToggleTracking.innerText = 'Mulai Bagikan Lokasi';
-             btnToggleTracking.style.background = 'linear-gradient(135deg, #64FFDA, #00B4D8)';
-             btnToggleTracking.style.color = '#1A0B14';
-          } else if (err.code === 3) { // TIMEOUT
+             btnToggleTracking.style.background = 'linear-gradient(135deg, #81C784, #4CAF50)';
+             btnToggleTracking.style.color = '#FFF';
+          } else if (err.code === 3) { 
              btnToggleTracking.innerText = 'Sinyal GPS Lemah. Coba Lagi.';
           }
         },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        // FIX BUG BATERAI: maximumAge diubah ke 5000 agar tidak terlalu sering tarik GPS
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
       );
       sendPushToPartner('Pacar lu mulai ShareLock lokasi! 📍');
     } else {
       if (watchId) navigator.geolocation.clearWatch(watchId);
       btnToggleTracking.innerText = 'Mulai Bagikan Lokasi';
-      btnToggleTracking.style.background = 'linear-gradient(135deg, #64FFDA, #00B4D8)';
-      btnToggleTracking.style.color = '#1A0B14';
+      btnToggleTracking.style.background = 'linear-gradient(135deg, #81C784, #4CAF50)';
+      btnToggleTracking.style.color = '#FFF';
       supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     }
   });
@@ -719,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMeetDate = meetDate;
     if (countdownInterval) clearInterval(countdownInterval);
     if (!meetDate) {
-      countdownDisplay.innerHTML = '<div style="font-size:12px; color:#C9A0B8;">Belum diatur. Klik ikon pensil!</div>';
+      countdownDisplay.innerHTML = '<div style="font-size:12px; color:var(--text-muted);">Belum diatur. Klik ikon pensil!</div>';
       return;
     }
     function updateTimer() {
@@ -796,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
     wheel.style.transform = `rotate(${targetDeg}deg)`;
     setTimeout(() => {
-      spinResult.innerHTML = `Tantangannya:<br><span style="color:#64FFDA">${resultTeks}</span>`;
+      spinResult.innerHTML = `Tantangannya:<br><span style="color:#AB47BC">${resultTeks}</span>`;
       navigator.vibrate([100, 50, 100]);
       isSpinning = false; btnDoSpin.disabled = false; btnDoSpin.innerText = "Putar Lagi!";
     }, 4200);
@@ -829,9 +868,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function loadCapsules() {
-    capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8;">Memuat surat...</div>';
+    capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">Memuat surat...</div>';
     const { data, error } = await supabaseClient.from('time_capsules').select('*').neq('sender_id', currentUser.id).order('created_at', { ascending: false });
-    if (error || data.length === 0) { capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8;">Belum ada surat masuk.</div>'; return; }
+    if (error || data.length === 0) { capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);">Belum ada surat masuk.</div>'; return; }
     capsuleList.innerHTML = '';
     const todayObj = new Date();
     const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
@@ -867,13 +906,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderBucketList(data) {
     bucketListContainer.innerHTML = '';
-    if (data.length === 0) { bucketListContainer.innerHTML = '<div style="text-align:center; font-size:12px; color:#C9A0B8; padding:10px;">Belum ada rencana. Yuk tambahin!</div>'; return; }
+    if (data.length === 0) { bucketListContainer.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted); padding:10px;">Belum ada rencana. Yuk tambahin!</div>'; return; }
     data.forEach(item => {
       const div = document.createElement('div');
       div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
       const checkbox = document.createElement('div'); checkbox.className = 'bucket-checkbox'; checkbox.innerText = '✓'; checkbox.onclick = () => toggleBucket(item.id, item.is_completed);
       const textContainer = document.createElement('div'); textContainer.className = 'bucket-text'; textContainer.innerText = item.content;
-      const badge = document.createElement('span'); badge.style.fontSize = '10px'; badge.style.color = '#C99EFF'; badge.innerText = (item.added_by === currentUser.id) ? ' (Lu)' : ' (Pacar)';
+      const badge = document.createElement('span'); badge.style.fontSize = '10px'; badge.style.color = '#AB47BC'; badge.style.fontWeight = '800'; badge.innerText = (item.added_by === currentUser.id) ? ' (Lu)' : ' (Pacar)';
       textContainer.appendChild(badge);
       const deleteBtn = document.createElement('button'); deleteBtn.className = 'bucket-delete'; deleteBtn.innerText = '✕'; deleteBtn.onclick = () => deleteBucket(item.id);
       div.appendChild(checkbox); div.appendChild(textContainer); div.appendChild(deleteBtn); bucketListContainer.appendChild(div);
@@ -901,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function spawnHearts(count) {
     for(let i=0; i<count; i++) {
       setTimeout(() => {
-        const heart = document.createElement('div'); heart.className = 'heart'; heart.innerText = '❤️';
+        const heart = document.createElement('div'); heart.className = 'heart'; heart.innerText = '💖';
         heart.style.left = (Math.random() * 80 + 10) + '%'; heart.style.bottom = (Math.random() * 20 + 10) + '%';
         document.body.appendChild(heart); setTimeout(() => heart.remove(), 2000);
       }, i * 150);
@@ -914,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!partnerData || !partnerData.onesignal_id) return;
       fetch('https://onesignal.com/api/v1/notifications', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + ONESIGNAL_REST_API_KEY },
-        body: JSON.stringify({ app_id: ONESIGNAL_APP_ID, include_player_ids: [partnerData.onesignal_id], headings: { en: 'LoveLink 💌' }, contents: { en: pesan } })
+        body: JSON.stringify({ app_id: ONESIGNAL_APP_ID, include_player_ids: [partnerData.onesignal_id], headings: { en: 'LoveLink 🎀' }, contents: { en: pesan } })
       });
     } catch (err) {}
   }
@@ -956,10 +995,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       await loadGameState();
 
-      OneSignalDeferred.push(async function(OneSignal) {
-        const playerId = await OneSignal.getUserId();
-        if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
-      });
+      // FIX BUG ONESIGNAL: Delay sedikit biar ID pasti dapet
+      setTimeout(() => {
+          OneSignalDeferred.push(async function(OneSignal) {
+            const playerId = await OneSignal.getUserId();
+            if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
+          });
+      }, 1500);
 
       window.sharelockChannel = supabaseClient.channel('realtime_sharelock')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
@@ -1045,4 +1087,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+</html>q
