@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Ultimate LDR App</title>
+<title>LoveLink - Countdown & Ultimate LDR</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
   body {
     background: linear-gradient(135deg, #1A0B14 0%, #2A1420 100%);
@@ -39,6 +39,20 @@
   .btn-outline { background: transparent; border: 1px solid #FF7FA8; color: #FF7FA8; margin-top: 12px; }
   .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; }
   .hidden { display: none !important; }
+
+  /* COUNTDOWN UI */
+  .countdown-box {
+    background: linear-gradient(135deg, rgba(255,127,168,0.15), rgba(201,158,255,0.1));
+    border: 1px solid #FF7FA8; border-radius: 15px; padding: 15px; margin-bottom: 15px;
+    position: relative; overflow: hidden;
+  }
+  .countdown-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #FF7FA8; font-weight: 700; margin-bottom: 10px; }
+  .countdown-timer { display: flex; justify-content: center; gap: 10px; }
+  .time-block { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 10px; min-width: 55px; }
+  .time-num { font-size: 20px; font-weight: 800; color: #FFF; }
+  .time-label { font-size: 9px; color: #C9A0B8; text-transform: uppercase; margin-top: 2px; }
+  .btn-edit-countdown { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: #FFF; font-size: 14px; cursor: pointer; opacity: 0.7; }
+  .meet-today { font-size: 22px; font-weight: 800; color: #64FFDA; text-align: center; margin: 10px 0; animation: pulse 1.5s infinite; }
 
   /* DASHBOARD UI */
   .my-status-box, .action-box {
@@ -85,36 +99,25 @@
   .result-text { font-size: 16px; font-weight: 800; color: #FFF; text-align: center; background: rgba(255,127,168,0.2); padding: 15px; border-radius: 15px; margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
 
   /* TIME CAPSULE UI */
-  .letter-item {
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-    padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: left;
-  }
+  .letter-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: left; }
   .letter-item.locked { border-color: rgba(255,107,120,0.4); background: rgba(255,107,120,0.05); }
   .letter-date { font-size: 11px; color: #C9A0B8; margin-bottom: 5px; }
   .letter-content { font-size: 14px; color: #FFF; line-height: 1.6; white-space: pre-wrap; }
   .letter-lock-msg { font-size: 13px; color: #FF6B6B; font-weight: 600; text-align: center; margin-top: 10px; }
 
   /* BUCKET LIST UI */
-  .bucket-item {
-    display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05);
-    padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.2s;
-  }
+  .bucket-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
   .bucket-item.done { opacity: 0.6; background: rgba(100, 255, 218, 0.05); border-color: rgba(100,255,218,0.3); }
-  .bucket-checkbox {
-    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #C99EFF;
-    display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px;
-  }
+  .bucket-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #C99EFF; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px; }
   .bucket-item.done .bucket-checkbox { background: #64FFDA; border-color: #64FFDA; color: #1A0B14; }
   .bucket-text { flex: 1; font-size: 14px; color: #FFF; text-align: left; }
   .bucket-item.done .bucket-text { text-decoration: line-through; color: #C9A0B8; }
   .bucket-delete { background: transparent; border: none; color: #FF6B6B; cursor: pointer; font-size: 16px; padding: 5px; }
 
-  /* ANIMASI HATI */
+  /* ANIMASI */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
   @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
   
-  /* ANIMASI STATUS */
   .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
   @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(380px); } }
   .anim-motor { position: absolute; bottom: 10px; font-size: 30px; animation: ride 3s linear infinite; }
@@ -144,6 +147,12 @@
   <h1>LoveLink 💌</h1>
   <p class="sub">Real-time Connection</p>
   
+  <div class="countdown-box" id="countdownBox">
+    <button class="btn-edit-countdown" id="btnEditCountdown">✏️</button>
+    <div class="countdown-title">Menuju Ketemuan</div>
+    <div id="countdownDisplay" class="countdown-timer"></div>
+  </div>
+
   <div class="partner-status-box">
     <div class="anim-container" id="partnerAnim"></div>
     <div class="partner-label">Pacar lu lagi:</div>
@@ -174,6 +183,16 @@
   </div>
   
   <button class="btn" style="background:rgba(255,100,100,0.15); color:#FF6B6B; border:1px solid rgba(255,100,100,0.3);" id="btnLogout">Logout</button>
+</div>
+
+<!-- MODAL EDIT COUNTDOWN -->
+<div class="modal" id="countdownModal">
+  <div class="modal-content">
+    <h2 style="color:#FF7FA8; font-size:18px; margin-bottom:15px; text-align:center;">Kapan Kita Ketemu?</h2>
+    <input type="datetime-local" id="meetDateInput" style="color-scheme: dark;">
+    <button class="btn btn-primary" id="btnSaveCountdown">Simpan Tanggal</button>
+    <button class="btn btn-outline" id="btnCloseCountdown" style="border-color:#FFF; color:#FFF;">Tutup</button>
+  </div>
 </div>
 
 <!-- MODAL SPIN THE WHEEL -->
@@ -223,7 +242,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // KONFIGURASI
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
@@ -237,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await OneSignal.Slidedown.promptPush(); 
   });
 
-  // Elemen UI
+  // --- DOM ELEMENTS ---
   const authCard = document.getElementById('authCard');
   const dashboardCard = document.getElementById('dashboardCard');
   const btnAction = document.getElementById('btnAction');
@@ -248,7 +266,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const partnerAnim = document.getElementById('partnerAnim');
   const kangenScoreEl = document.getElementById('kangenScore');
   
-  // Elemen Spin
+  // Countdown
+  const countdownDisplay = document.getElementById('countdownDisplay');
+  const btnEditCountdown = document.getElementById('btnEditCountdown');
+  const countdownModal = document.getElementById('countdownModal');
+  const meetDateInput = document.getElementById('meetDateInput');
+  const btnSaveCountdown = document.getElementById('btnSaveCountdown');
+  const btnCloseCountdown = document.getElementById('btnCloseCountdown');
+  let countdownInterval = null;
+  let currentMeetDate = null;
+
+  // Fitur Lain
   const spinModal = document.getElementById('spinModal');
   const wheel = document.getElementById('wheel');
   const btnSpin = document.getElementById('btnSpin');
@@ -256,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseSpin = document.getElementById('btnCloseSpin');
   const spinResult = document.getElementById('spinResult');
 
-  // Elemen Time Capsule
   const capsuleModal = document.getElementById('capsuleModal');
   const btnOpenCapsule = document.getElementById('btnOpenCapsule');
   const btnCloseCapsule = document.getElementById('btnCloseCapsule');
@@ -265,7 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const capsuleDate = document.getElementById('capsuleDate');
   const capsuleList = document.getElementById('capsuleList');
 
-  // Elemen Bucket List
   const bucketModal = document.getElementById('bucketModal');
   const btnOpenBucket = document.getElementById('btnOpenBucket');
   const btnCloseBucket = document.getElementById('btnCloseBucket');
@@ -284,11 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
     "Kirim Foto Selfie Di Posisi Sekarang 📸", "Teken Tombol Aku Kangen Kamu 💗", "Pelukan Virtual 10 Detik 🫂", "Tukeran Wallpaper 1 Hari 🖼️"
   ];
 
-  // --- HELPER: CEGAH XSS (HTML Injection) ---
   function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
-      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-    );
+    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
   }
 
   // --- LOGIN LOGIC ---
@@ -323,20 +346,86 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnLogout.addEventListener('click', async () => {
+    // Bersihin Timer biar ga memory leak
+    if (countdownInterval) clearInterval(countdownInterval);
+    
     await supabaseClient.auth.signOut();
     if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
     if (window.bucketChannel) supabaseClient.removeChannel(window.bucketChannel);
+    if (window.settingsChannel) supabaseClient.removeChannel(window.settingsChannel);
   });
 
-  // --- AKSI STATUS & KANGEN & TOUCH ---
+  // --- COUNTDOWN LOGIC ---
+  btnEditCountdown.addEventListener('click', () => {
+    countdownModal.classList.add('show');
+    if(currentMeetDate) {
+      // Format ke lokal time (WIB) biar input datetime-local bener
+      const d = new Date(currentMeetDate);
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      meetDateInput.value = d.toISOString().slice(0,16);
+    } else {
+      meetDateInput.value = '';
+    }
+  });
+  
+  btnCloseCountdown.addEventListener('click', () => countdownModal.classList.remove('show'));
+
+  btnSaveCountdown.addEventListener('click', async () => {
+    const val = meetDateInput.value;
+    if (!val) {
+       await supabaseClient.from('couple_settings').update({ meet_date: null }).eq('id', 1);
+    } else {
+       // Ubah ke ISO string (UTC) biar database paham
+       const isoDate = new Date(val).toISOString();
+       await supabaseClient.from('couple_settings').update({ meet_date: isoDate }).eq('id', 1);
+    }
+    countdownModal.classList.remove('show');
+    sendPushToPartner('Pacar lu update jadwal ketemuan! 🗓️');
+  });
+
+  function renderCountdown(meetDate) {
+    currentMeetDate = meetDate;
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    if (!meetDate) {
+      countdownDisplay.innerHTML = '<div style="font-size:12px; color:#C9A0B8;">Belum diatur. Klik ikon pensil!</div>';
+      return;
+    }
+
+    function updateTimer() {
+      const now = new Date().getTime();
+      const distance = new Date(meetDate).getTime() - now;
+
+      if (distance < 0) {
+        countdownDisplay.innerHTML = '<div class="meet-today">HARI INI KETEMUAN! 🎉</div>';
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      countdownDisplay.innerHTML = `
+        <div class="time-block"><div class="time-num">${days}</div><div class="time-label">Hari</div></div>
+        <div class="time-block"><div class="time-num">${hours}</div><div class="time-label">Jam</div></div>
+        <div class="time-block"><div class="time-num">${minutes}</div><div class="time-label">Menit</div></div>
+        <div class="time-block"><div class="time-num">${seconds}</div><div class="time-label">Detik</div></div>
+      `;
+    }
+
+    updateTimer();
+    countdownInterval = setInterval(updateTimer, 1000);
+  }
+
+  // --- AKSI LAINNYA ---
   document.querySelectorAll('.status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!currentUser) return;
       const act = btn.getAttribute('data-act');
       document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
-      // Upsert untuk mastiin row-nya ada atau keupdate
       await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act });
       sendPushToPartner('Pacar lu sekarang: ' + getActivityLabel(act));
     });
@@ -344,13 +433,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnKangen').addEventListener('click', async () => {
     if (!currentUser) return;
-    // Ambil skor terbaru dari database biar ga NaN
     const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).maybeSingle();
     const newScore = (data?.kangen_score || 0) + 1;
-    
     await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
-    
-    // Efek di layar sendiri
     kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText || 0) + 1;
     spawnHearts(5);
     sendPushToPartner('Pacar lu ngirim Kangen ❤️');
@@ -362,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
 
-  // --- SPIN THE WHEEL LOGIC ---
+  // SPIN
   btnSpin.addEventListener('click', () => {
     spinModal.classList.add('show');
     spinResult.innerText = "Tekan tombol di bawah untuk memutar!";
@@ -376,8 +461,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const randomIndex = Math.floor(Math.random() * challenges.length);
     const resultTeks = challenges[randomIndex];
-    
-    // Pakai Date.now() biar sistem tau ini putaran baru
     const spinId = Date.now();
     const spinData = resultTeks + '|' + spinId; 
 
@@ -399,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4200);
   }
 
-  // --- TIME CAPSULE LOGIC ---
+  // CAPSULE
   btnOpenCapsule.addEventListener('click', async () => {
     capsuleModal.classList.add('show');
     capsuleText.value = ''; capsuleDate.value = '';
@@ -451,7 +534,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     data.forEach(letter => {
       const isLocked = todayStr < letter.unlock_date;
-      // FIX BUG TIMEZONE: Tambahin T00:00:00 biar akurat
       const dateObj = new Date(letter.unlock_date + 'T00:00:00');
       const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -474,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- BUCKET LIST LOGIC ---
+  // BUCKET LIST
   btnOpenBucket.addEventListener('click', async () => {
     bucketModal.classList.add('show');
     bucketInput.value = '';
@@ -485,12 +567,8 @@ document.addEventListener('DOMContentLoaded', () => {
   btnAddBucket.addEventListener('click', async () => {
     const content = bucketInput.value.trim();
     if (!content) return;
-
     bucketInput.value = ''; 
-    await supabaseClient.from('bucket_list').insert({
-      content: content,
-      added_by: currentUser.id
-    });
+    await supabaseClient.from('bucket_list').insert({ content: content, added_by: currentUser.id });
     sendPushToPartner('Pacar lu nambahin bucket list baru! 🎯');
   });
 
@@ -510,11 +588,8 @@ document.addEventListener('DOMContentLoaded', () => {
     data.forEach(item => {
       const div = document.createElement('div');
       div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
-      
       const isMe = item.added_by === currentUser.id;
       const badge = isMe ? ' (Lu)' : ' (Pacar)';
-      
-      // Pake escapeHTML biar aman dari tag aneh-aneh
       const safeContent = escapeHTML(item.content);
 
       div.innerHTML = `
@@ -536,13 +611,12 @@ document.addEventListener('DOMContentLoaded', () => {
     await supabaseClient.from('bucket_list').delete().eq('id', id);
   };
 
-  // --- FUNGSI PENDUKUNG ---
+  // --- FUNGSI BANTU ---
   function getActivityLabel(act) {
     const labels = { 'idle': 'Lagi Santai', 'motor': 'Lagi Naik Motor', 'nugas': 'Lagi Nugas', 'tidur': 'Lagi Tidur' };
     return labels[act] || act;
   }
 
-  // FIX BUG: Fungsi ini tadi ilang, sekarang gua balikin
   function renderPartnerStatus(activity) {
     partnerActivity.innerText = getActivityLabel(activity);
     partnerAnim.innerHTML = '';
@@ -584,23 +658,26 @@ document.addEventListener('DOMContentLoaded', () => {
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
-      // FIX BUG: Pake maybeSingle() biar ga crash kalau pacar belum punya status
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).maybeSingle();
       const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).maybeSingle();
+      const { data: settingsData } = await supabaseClient.from('couple_settings').select('*').eq('id', 1).maybeSingle();
       
-      // Set UI awal pas login
       let totalKangen = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
       kangenScoreEl.innerText = totalKangen;
       lastPartnerScore = partnerData?.kangen_score || 0;
 
       if (partnerData) {
-          // FIX BUG: Tampilin status aktivitas pas pertama buka
           renderPartnerStatus(partnerData.activity || 'idle');
-          
           if (partnerData.spin_result) {
               const parts = partnerData.spin_result.split('|');
               lastSpinId = parseInt(parts[1] || 0);
           }
+      }
+
+      if (settingsData && settingsData.meet_date) {
+          renderCountdown(settingsData.meet_date);
+      } else {
+          renderCountdown(null);
       }
 
       OneSignalDeferred.push(async function(OneSignal) {
@@ -608,23 +685,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
       });
 
-      // REALTIME LISTENER USER STATUS
+      // REALTIME LISTENERS
       window.statusChannel = supabaseClient.channel('realtime_status')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
-          
           if (newData.id !== currentUser.id) {
-            // FIX BUG: Panggil renderPartnerStatus pas pacar ganti status
-            if (newData.activity !== undefined) {
-                renderPartnerStatus(newData.activity);
-            }
-
+            if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
             if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
                 lastPartnerScore = newData.kangen_score;
                 kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText || 0) + 1;
                 spawnHearts(3);
             }
-            
             if (newData.spin_result) {
                const parts = newData.spin_result.split('|');
                const teks = parts[0];
@@ -643,12 +714,20 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .subscribe();
 
-      // REALTIME LISTENER BUCKET LIST
       window.bucketChannel = supabaseClient.channel('realtime_bucket')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'bucket_list' }, async () => {
-          if (bucketModal.classList.contains('show')) {
-             await loadBucketList();
-          }
+          if (bucketModal.classList.contains('show')) await loadBucketList();
+        })
+        .subscribe();
+
+      window.settingsChannel = supabaseClient.channel('realtime_settings')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'couple_settings' }, payload => {
+           const newSettings = payload.new;
+           if (newSettings.meet_date) {
+               renderCountdown(newSettings.meet_date);
+           } else {
+               renderCountdown(null);
+           }
         })
         .subscribe();
 
