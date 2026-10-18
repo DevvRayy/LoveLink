@@ -759,23 +759,57 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // === AVATAR DEFAULTS - NOTIONISTS (SOFT SKETCH, WARM PASTEL) ===
+  // === AVATAR DEFAULTS ===
   const AVATAR_BASE = 'https://api.dicebear.com/9.x/notionists/svg';
   const DEFAULT_MY_AVATAR = `${AVATAR_BASE}?seed=Max&backgroundColor=ffdfbf&beardProbability=100`;
   const DEFAULT_PARTNER_AVATAR = `${AVATAR_BASE}?seed=Lily&backgroundColor=ffd5dc&beardProbability=0`;
 
   const AVATAR_PRESETS = [
-    // 🐻 Cowo - warm peach/cream, beard to ensure male look
     { id: 'cowo1', label: '🐻 Cowo', url: `${AVATAR_BASE}?seed=Max&backgroundColor=ffe0c2&beardProbability=100` },
     { id: 'cowo2', label: '🦊 Cowo', url: `${AVATAR_BASE}?seed=Felix&backgroundColor=ffdfbf&beardProbability=100` },
     { id: 'cowo3', label: '🐯 Cowo', url: `${AVATAR_BASE}?seed=Leo&backgroundColor=f8d9b8&beardProbability=100` },
     { id: 'cowo4', label: '🐼 Cowo', url: `${AVATAR_BASE}?seed=Jack&backgroundColor=ffe8d0&beardProbability=100` },
-    // 🐰 Cewe - warm pink, no beard
     { id: 'cewe1', label: '🐰 Cewe', url: `${AVATAR_BASE}?seed=Lily&backgroundColor=ffd5dc&beardProbability=0` },
     { id: 'cewe2', label: '🦋 Cewe', url: `${AVATAR_BASE}?seed=Sophie&backgroundColor=f8d9d8&beardProbability=0` },
     { id: 'cewe3', label: '🌸 Cewe', url: `${AVATAR_BASE}?seed=Maria&backgroundColor=ffe0e6&beardProbability=0` },
     { id: 'cewe4', label: '🐱 Cewe', url: `${AVATAR_BASE}?seed=Anna&backgroundColor=ffc8d0&beardProbability=0` },
   ];
+
+  // === AVATAR PERSISTENCE HELPERS ===
+  const AVATAR_CACHE_PREFIX = 'lovelink_avatar_';
+  const PARTNER_CACHE_KEY = 'lovelink_partner_avatar';
+  const AVATAR_OVERRIDE_GUARD_MS = 15000;
+  let lastAvatarSaveTime = 0;
+
+  function getCachedAvatar(userId) {
+    try { return localStorage.getItem(AVATAR_CACHE_PREFIX + userId) || null; } catch (e) { return null; }
+  }
+  function setCachedAvatar(userId, url) {
+    try {
+      if (!url) { localStorage.removeItem(AVATAR_CACHE_PREFIX + userId); return; }
+      localStorage.setItem(AVATAR_CACHE_PREFIX + userId, url);
+    } catch (e) { console.warn('[Avatar] Cache failed:', e); }
+  }
+  function getCachedPartnerAvatar() {
+    try { return localStorage.getItem(PARTNER_CACHE_KEY) || null; } catch (e) { return null; }
+  }
+  function setCachedPartnerAvatar(url) {
+    try {
+      if (!url) { localStorage.removeItem(PARTNER_CACHE_KEY); return; }
+      localStorage.setItem(PARTNER_CACHE_KEY, url);
+    } catch (e) { console.warn('[Avatar] Partner cache failed:', e); }
+  }
+  function dataURLtoBlob(dataUrl) {
+    const arr = dataUrl.split(',');
+    if (arr.length < 2) throw new Error('Invalid data URL');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+  }
 
   // --- AUDIO MANAGER ---
   const AudioManager = {
@@ -839,7 +873,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const partnerAvatarImg = document.getElementById('partnerAvatarImg');
   let gaugeInterval = null;
 
-  // AVATAR MODAL
   const avatarModal = document.getElementById('avatarModal');
   const avatarPreviewImg = document.getElementById('avatarPreviewImg');
   const avatarPresetGrid = document.getElementById('avatarPresetGrid');
@@ -924,32 +957,98 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // === SAVE AVATAR (FIXED: storage first, verify, cache) ===
   btnSaveAvatar.addEventListener('click', async () => {
     if (!currentUser) return;
     if (!pendingAvatarData) return alert('Pilih preset atau upload foto dulu bro!');
+    
+    const origText = btnSaveAvatar.innerText;
     btnSaveAvatar.innerText = 'Menyimpan...';
     btnSaveAvatar.disabled = true;
+    
     try {
-      const { error } = await supabaseClient.from('user_status').upsert(
-        { id: currentUser.id, avatar_url: pendingAvatarData },
+      let finalUrl = pendingAvatarData;
+      
+      // STEP 1: Kalau data URL (foto upload), coba Storage dulu
+      if (pendingAvatarData.startsWith('data:image/')) {
+        try {
+          console.log('[Avatar] Attempting storage upload...');
+          const blob = dataURLtoBlob(pendingAvatarData);
+          const fileName = `${currentUser.id}.jpg`;
+          const { error: upErr } = await supabaseClient.storage.from('avatars').upload(fileName, blob, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
+          if (!upErr) {
+            const { data: pub } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
+            finalUrl = pub.publicUrl + '?v=' + Date.now();
+            console.log('[Avatar] ✅ Uploaded to storage:', finalUrl);
+          } else {
+            console.warn('[Avatar] ⚠️ Storage failed, using base64 fallback:', upErr.message);
+          }
+        } catch (e) {
+          console.warn('[Avatar] ⚠️ Storage exception, using base64:', e.message);
+        }
+      }
+      
+      // STEP 2: Simpan ke database
+      console.log('[Avatar] Saving to DB (length:', finalUrl.length, 'chars)...');
+      const { error: dbErr } = await supabaseClient.from('user_status').upsert(
+        { id: currentUser.id, avatar_url: finalUrl },
         { onConflict: 'id' }
       );
-      if (error) {
-        if (error.code === '42703' || (error.message || '').toLowerCase().includes('avatar_url')) {
-          alert('⚠️ Kolom avatar_url belum ada di tabel user_status.\n\nJalankan SQL ini di Supabase SQL Editor:\n\nALTER TABLE user_status ADD COLUMN IF NOT EXISTS avatar_url TEXT;\n\nSetelah itu coba simpan lagi.');
+      
+      if (dbErr) {
+        if (dbErr.code === '42703' || (dbErr.message || '').toLowerCase().includes('avatar_url')) {
+          alert('⚠️ Kolom avatar_url belum ada.\n\nJalankan SQL ini:\n\nALTER TABLE user_status ADD COLUMN IF NOT EXISTS avatar_url TEXT;');
           return;
         }
-        throw error;
+        throw dbErr;
       }
-      myAvatarImg.src = pendingAvatarData;
+      
+      // STEP 3: VERIFY — baca ulang dari DB untuk pastikan benar tersimpan
+      const { data: verify, error: verifyErr } = await supabaseClient
+        .from('user_status')
+        .select('avatar_url')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+      
+      if (verifyErr) {
+        console.warn('[Avatar] Verify failed:', verifyErr.message);
+      }
+      
+      if (!verify || !verify.avatar_url) {
+        console.error('[Avatar] ❌ Save reported success but DB is empty! RLS or trigger issue likely.');
+        alert(
+          '⚠️ Avatar TIDAK tersimpan di database!\n\n' +
+          'Kemungkinan penyebab:\n' +
+          '1. RLS policy user_status memblokir UPDATE/INSERT\n' +
+          '2. Ada trigger database yang mengosongkan avatar_url\n\n' +
+          '➡️ Jalankan SQL RLS setup yang gua kasih di chat.\n' +
+          '➡️ Buka DevTools > Console untuk detail.'
+        );
+        return;
+      }
+      
+      console.log('[Avatar] ✅ Verified in DB. Length:', verify.avatar_url.length);
+      finalUrl = verify.avatar_url;
+      
+      // STEP 4: Success — update UI + cache
+      pendingAvatarData = finalUrl;
+      myAvatarImg.src = finalUrl;
+      setCachedAvatar(currentUser.id, finalUrl);
+      lastAvatarSaveTime = Date.now();
+      
       avatarModal.classList.remove('show');
       AudioManager.playSuccess();
       safeVibrate([80, 40, 80]);
       sendPushToPartner('Pacar lu ganti foto profil! 🖼️');
+      
     } catch (err) {
+      console.error('[Avatar] Save error:', err);
       alert('Gagal simpan avatar: ' + (err.message || 'unknown error'));
     } finally {
-      btnSaveAvatar.innerText = 'Simpan Avatar';
+      btnSaveAvatar.innerText = origText || 'Simpan Avatar';
       btnSaveAvatar.disabled = false;
     }
   });
@@ -1029,7 +1128,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isLoginMode = true, currentUser = null, partnerId = null, isSpinning = false, lastSpinId = 0, lastPartnerScore = 0;
   
-  // === START DATE: 01-01-2026 ===
   const relationshipStartDate = new Date('2026-01-01T00:00:00');
   function updateDaysTogether() { const today = new Date(); const diffTime = Math.abs(today - relationshipStartDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); document.getElementById('daysTogether').innerText = diffDays; }
 
@@ -1173,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- SHARELOCK LOGIC ---
+  // --- SHARELOCK ---
   const modeIcons = { 'motor': '🏍️', 'jalan': '🚶', 'mobil': '🚗' };
   
   function createCustomAvatarIcon(mode, isPartner) {
@@ -1288,7 +1386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     catch (err) { errorEl.innerText = err.message; } finally { btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru'; btnAction.disabled = false; }
   });
 
-  // === FIXED: Complete map cleanup + remove all channels ===
   btnLogout.addEventListener('click', async () => {
     if (countdownInterval) clearInterval(countdownInterval); 
     if (gaugeInterval) clearInterval(gaugeInterval); 
@@ -1298,16 +1395,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
     ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel','memoriesChannel'].forEach(ch => { if (window[ch]) { try { supabaseClient.removeChannel(window[ch]); } catch(e){} window[ch] = null; } });
-    
-    // FIX: Complete map cleanup so it can be re-initialized on next login
     if (map) { try { map.remove(); } catch(e){} map = null; } 
     const mapEl = document.getElementById('map');
     if (mapEl) { mapEl.innerHTML = ''; mapEl.removeAttribute('_leaflet_id'); mapEl.className = ''; }
-    myMarker = null; 
-    partnerMarker = null; 
-    mapInitialized = false; 
-    lastPartnerLat = null; 
-    lastPartnerLng = null;
+    myMarker = null; partnerMarker = null; mapInitialized = false; lastPartnerLat = null; lastPartnerLng = null;
+    // JANGAN hapus cache avatar — biar tetap ada saat login lagi
   });
 
   // --- GAME ---
@@ -1393,7 +1485,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', async () => {
       if (!currentUser) return; const act = btn.getAttribute('data-act');
       document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-      await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act });
+      await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act }, { onConflict: 'id' });
       sendPushToPartner('Pacar lu sekarang: ' + getActivityLabel(act));
     });
   });
@@ -1472,7 +1564,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === FIXED: Bucket list with explicit reload ===
+  // BUCKET LIST
   btnOpenBucket.addEventListener('click', async () => { bucketModal.classList.add('show'); bucketInput.value = ''; await loadBucketList(); });
   btnCloseBucket.addEventListener('click', () => bucketModal.classList.remove('show'));
   btnAddBucket.addEventListener('click', async () => {
@@ -1486,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bucketInput.value = '';
     AudioManager.playPop(); 
     sendPushToPartner('Pacar lu nambahin bucket list baru! 🎯');
-    await loadBucketList(); // FIX: explicit reload
+    await loadBucketList();
   });
   async function loadBucketList() {
     if (!currentUser) return; 
@@ -1562,9 +1654,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (myData && myData.transport_mode) { myMode = myData.transport_mode; modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode)); }
       if (myData && myData.activity) { document.querySelectorAll('.status-btn').forEach(b => { b.classList.toggle('active', b.getAttribute('data-act') === myData.activity); }); }
 
-      // LOAD AVATAR
-      myAvatarImg.src = myData?.avatar_url || DEFAULT_MY_AVATAR;
-      partnerAvatarImg.src = partnerData?.avatar_url || DEFAULT_PARTNER_AVATAR;
+      // === AVATAR LOAD WITH OVERRIDE GUARD ===
+      const cachedAvatar = getCachedAvatar(currentUser.id);
+      const dbAvatar = myData?.avatar_url;
+      const justSaved = (Date.now() - lastAvatarSaveTime) < AVATAR_OVERRIDE_GUARD_MS;
+      
+      if (justSaved) {
+        // Baru saja save, jangan override dari DB (replication lag)
+        const trusted = cachedAvatar || dbAvatar || DEFAULT_MY_AVATAR;
+        myAvatarImg.src = trusted;
+        console.log('[Avatar] Recent save detected, using cache:', trusted.substring(0, 50));
+      } else {
+        // Normal: DB > cache > default
+        const resolved = dbAvatar || cachedAvatar || DEFAULT_MY_AVATAR;
+        myAvatarImg.src = resolved;
+        if (dbAvatar) setCachedAvatar(currentUser.id, dbAvatar);
+        console.log('[Avatar] Loaded from:', dbAvatar ? 'DB' : (cachedAvatar ? 'cache' : 'default'));
+      }
+
+      // === PARTNER AVATAR WITH CACHE ===
+      const cachedPartner = getCachedPartnerAvatar();
+      const dbPartnerAvatar = partnerData?.avatar_url;
+      partnerAvatarImg.src = dbPartnerAvatar || cachedPartner || DEFAULT_PARTNER_AVATAR;
+      if (dbPartnerAvatar) setCachedPartnerAvatar(dbPartnerAvatar);
 
       const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0); 
       updateKangenGauge(totalScore, true); 
@@ -1604,12 +1716,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const newData = payload.new;
         if (!newData || newData.id === currentUser.id) return;
         if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
-        // SYNC AVATAR PARTNER REAL-TIME
-        if (newData.avatar_url !== undefined) {
-          partnerAvatarImg.src = newData.avatar_url || DEFAULT_PARTNER_AVATAR;
+        // Partner avatar update
+        if (newData.avatar_url !== undefined && newData.avatar_url) {
+          partnerAvatarImg.src = newData.avatar_url;
+          setCachedPartnerAvatar(newData.avatar_url);
           if (partnerMarker) partnerMarker.setIcon(createCustomAvatarIcon(lastPartnerMode, true));
         }
-        // === FIXED: Kangen delta calculation ===
         if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) { 
           const delta = newData.kangen_score - lastPartnerScore;
           lastPartnerScore = newData.kangen_score; 
@@ -1643,4 +1755,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-  </html>
+</html>
