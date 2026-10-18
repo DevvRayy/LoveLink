@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#140E13">
-<title>LoveLink - Dark Cozy</title>
+<title>LoveLink - Cute Dark Cozy</title>
 
 <!-- Library Supabase & OneSignal -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,7 +15,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  /* Font Lucu & Modern */
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@500;600;700&display=swap');
   
   * { 
     box-sizing: border-box; margin: 0; padding: 0; 
@@ -25,16 +26,16 @@
   
   :root {
     --bg: #140E13; /* Deep warm dark */
-    --card-bg: rgba(36, 28, 36, 0.6);
-    --card-border: rgba(255, 180, 200, 0.1);
+    --card-bg: rgba(36, 26, 36, 0.6);
+    --card-border: rgba(255, 180, 200, 0.15);
     
     --text-main: #FFF0F5;
-    --text-sub: #A894A0;
+    --text-sub: #B49FAD;
     
     --primary: #FF8BA7;
-    --primary-glow: rgba(255, 139, 167, 0.4);
+    --primary-glow: rgba(255, 139, 167, 0.5);
     --accent: #C99EFF;
-    --accent-glow: rgba(201, 158, 255, 0.4);
+    --accent-glow: rgba(201, 158, 255, 0.5);
     
     --danger: #FF6B6B;
     --success: #64FFDA;
@@ -58,20 +59,33 @@
     line-height: 1.5;
   }
 
-  /* Ambient Glow - Warm Lofi Aesthetic */
-  body::before, body::after {
-    content: '';
-    position: fixed;
-    width: 100vw; height: 100vw;
-    border-radius: 50%;
-    filter: blur(100px);
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.25;
-    will-change: transform;
+  /* --- BACKGROUND ANIMASI LUCU & COZY --- */
+  .bg-shapes {
+    position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none;
   }
-  body::before { top: -20%; left: -30%; background: radial-gradient(circle, #FF8BA7 0%, transparent 60%); }
-  body::after { bottom: -20%; right: -30%; background: radial-gradient(circle, #8B6BFF 0%, transparent 60%); }
+  .shape {
+    position: absolute; background: var(--primary); border-radius: 50%;
+    filter: blur(80px); opacity: 0.15; animation: float-bg 20s infinite ease-in-out alternate;
+  }
+  .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; background: #FF8BA7; animation-duration: 25s; }
+  .shape:nth-child(2) { width: 400px; height: 400px; bottom: -20%; right: -20%; background: #8B6BFF; animation-duration: 30s; animation-delay: -5s; }
+  .shape:nth-child(3) { width: 200px; height: 200px; top: 40%; left: 60%; background: #FFD166; animation-duration: 15s; animation-delay: -10s; opacity: 0.1;}
+  @keyframes float-bg {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 50px) scale(1.1); }
+  }
+
+  /* Floating cute emojis di background */
+  .floating-emoji {
+    position: absolute; font-size: 24px; opacity: 0.15; animation: float-up 15s linear infinite;
+    filter: grayscale(20%);
+  }
+  @keyframes float-up {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.2; }
+    90% { opacity: 0.2; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
 
   /* --- UI CONTAINERS --- */
   .glass-panel {
@@ -79,7 +93,8 @@
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
     border: 2px solid var(--card-border);
-    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255,255,255,0.05);
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.08);
+    position: relative; z-index: 10;
   }
 
   .card {
@@ -87,14 +102,18 @@
     border-radius: var(--radius-lg); 
     padding: 24px;
     text-align: center;
-    position: relative; z-index: 10;
     display: flex; flex-direction: column; gap: 20px; 
+    animation: slide-up 0.6s var(--smooth-bounce) both;
+  }
+  @keyframes slide-up {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 
   /* --- TYPOGRAPHY --- */
-  h1 { font-size: 26px; font-weight: 900; letter-spacing: 0.5px; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
+  h1 { font-family: 'Fredoka', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
   p.sub { font-size: 14px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.5px; }
-  .title-small { font-size: 12px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin-bottom: 10px; text-align: left; }
+  .title-small { font-family: 'Fredoka', sans-serif; font-size: 14px; color: var(--text-sub); letter-spacing: 1px; font-weight: 500; margin-bottom: 12px; text-align: left; }
 
   /* --- INPUTS --- */
   .input-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
@@ -124,7 +143,7 @@
     will-change: transform, background-color;
   }
   .btn:hover { background: rgba(255,255,255,0.08); }
-  .btn:active { transform: scale(0.96); }
+  .btn:active { transform: scale(0.95); }
   
   .btn-primary {
     background: linear-gradient(135deg, #FF8BA7, #FF6B9D);
@@ -149,22 +168,30 @@
     border: 2px solid rgba(255,255,255,0.05);
     border-radius: var(--radius-lg); padding: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative; overflow: hidden;
   }
-  .avatar-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .profile-header::after {
+    content: '✨'; position: absolute; right: 10px; top: 10px; font-size: 14px; opacity: 0.5;
+    animation: twinkle 2s infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+  .avatar-box { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
   .avatar { 
-    width: 60px; height: 60px; border-radius: 50%; 
+    width: 64px; height: 64px; border-radius: 50%; 
     border: 3px solid var(--primary); padding: 2px;
-    background: #2A202A; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    object-fit: cover;
+    background: #2A202A; box-shadow: 0 4px 15px var(--primary-glow);
+    object-fit: cover; transition: var(--transition);
   }
-  .avatar-box.partner .avatar { border-color: var(--accent); }
+  .avatar:hover { transform: scale(1.1) rotate(5deg); }
+  .avatar-box.partner .avatar { border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); }
   .avatar-name { font-size: 13px; font-weight: 800; color: var(--text-main); }
   
-  .heart-connection { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .heart-pulse { font-size: 24px; animation: heartbeat 1.5s infinite; }
-  .days-count { font-size: 16px; font-weight: 900; color: var(--primary); }
-  .days-label { font-size: 10px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; }
-  @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  .heart-connection { display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 1;}
+  .heart-pulse { font-size: 28px; animation: heartbeat 1.5s infinite; filter: drop-shadow(0 0 10px #FF8BA7); }
+  .days-count { font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 700; color: var(--primary); }
+  .days-label { font-size: 10px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
+  @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
   /* --- KANGEN GAUGE (Circular Progress) --- */
   .kangen-section {
@@ -173,23 +200,23 @@
     border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.03);
     position: relative;
   }
-  .gauge-container { position: relative; width: 160px; height: 160px; margin-bottom: 12px; }
+  .gauge-container { position: relative; width: 160px; height: 160px; margin-bottom: 16px; }
   .gauge-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
   .gauge-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 12; }
   .gauge-progress { 
     fill: none; stroke: url(#gradient); stroke-width: 12; stroke-linecap: round;
     transition: stroke-dashoffset 1s var(--smooth-bounce);
-    filter: drop-shadow(0 0 8px var(--primary-glow));
+    filter: drop-shadow(0 0 10px var(--primary-glow));
   }
   .gauge-text {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
-  .gauge-num { font-size: 36px; font-weight: 900; color: #FFF; line-height: 1; }
-  .gauge-label { font-size: 11px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; margin-top: 4px; }
+  .gauge-num { font-family: 'Fredoka', sans-serif; font-size: 40px; font-weight: 700; color: #FFF; line-height: 1; }
+  .gauge-label { font-size: 11px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: 1px;}
   
   .action-row { display: flex; gap: 10px; width: 100%; }
-  .action-row .btn { padding: 12px; font-size: 14px; }
+  .action-row .btn { padding: 14px; font-size: 14px; border-radius: var(--radius-md); box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
 
   /* --- COUNTDOWN --- */
   .countdown-box { 
@@ -197,12 +224,12 @@
     border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden;
   }
   .countdown-timer { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
-  .time-block { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-md); min-width: 60px; border: 1px solid rgba(255,255,255,0.05); }
-  .time-num { font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1; }
+  .time-block { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-md); min-width: 60px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);}
+  .time-num { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); line-height: 1; }
   .time-label { font-size: 9px; color: var(--text-sub); text-transform: uppercase; margin-top: 6px; font-weight: 800; letter-spacing: 1px;}
-  .btn-edit-countdown { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.05); border: none; color: #FFF; padding: 8px; border-radius: 50%; cursor: pointer; transition: 0.2s;}
-  .btn-edit-countdown:hover { background: rgba(255,255,255,0.15); transform: rotate(15deg); }
-  .meet-today { font-size: 20px; font-weight: 900; color: var(--accent); text-align: center; margin: 10px 0; text-shadow: 0 0 20px var(--accent-glow);}
+  .btn-edit-countdown { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.05); border: none; color: #FFF; padding: 8px; border-radius: 50%; cursor: pointer; transition: var(--smooth-bounce);}
+  .btn-edit-countdown:hover { background: rgba(255,255,255,0.15); transform: rotate(20deg) scale(1.1); }
+  .meet-today { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); text-align: center; margin: 10px 0; text-shadow: 0 0 20px var(--accent-glow);}
 
   /* --- PARTNER STATUS --- */
   .partner-status-box { 
@@ -214,7 +241,7 @@
     min-height: 90px; text-align: left;
   }
   .partner-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
-  .partner-activity { font-size: 20px; font-weight: 900; color: var(--primary); z-index: 2; position: relative; text-shadow: 0 0 10px var(--primary-glow);}
+  .partner-activity { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; color: var(--primary); z-index: 2; position: relative; text-shadow: 0 0 10px var(--primary-glow);}
   
   .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.5; z-index: 1; }
   @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(450px); } }
@@ -228,13 +255,27 @@
 
   /* --- STATUS GRID --- */
   .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .status-btn { padding: 14px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 14px; font-weight: 800; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px;}
-  .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.2), rgba(201, 158, 255, 0.2)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+  .status-btn { padding: 14px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 14px; font-weight: 800; cursor: pointer; transition: var(--smooth-bounce); display: flex; align-items: center; justify-content: center; gap: 8px;}
+  .status-btn:active { transform: scale(0.95); }
+  .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.2), rgba(201, 158, 255, 0.2)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px);}
+
+  /* --- CUTE ACTION BUTTONS (Menu Utama) --- */
+  .cute-action-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px 10px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.03); cursor: pointer; transition: var(--smooth-bounce);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; overflow: hidden;
+  }
+  .cute-action-btn:hover { transform: translateY(-4px); background: rgba(255,255,255,0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+  .cute-action-btn:active { transform: translateY(0) scale(0.92); }
+  .cute-action-btn .icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: 0.3s;}
+  .cute-action-btn:hover .icon { transform: scale(1.2) rotate(10deg); }
+  .cute-action-btn .text { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-main); letter-spacing: 0.5px;}
 
   /* --- MODALS --- */
   .modal { 
     position: fixed; inset: 0; 
-    background: rgba(10, 5, 10, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(10, 5, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
     padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; overflow-y: auto;
   }
@@ -244,10 +285,11 @@
     border: 2px solid var(--card-border);
     box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
     width: 100%; max-width: 400px; padding: 24px; border-radius: var(--radius-lg); 
-    text-align: left; transform: translateY(30px) scale(0.95); transition: var(--transition); will-change: transform;
+    text-align: left; transform: translateY(30px) scale(0.95); transition: var(--smooth-bounce); will-change: transform;
+    position: relative;
   }
   .modal.show .modal-content { transform: translateY(0) scale(1); }
-  .modal-content h2 { font-size: 20px; font-weight: 900; margin-bottom: 20px; text-align: center; color: var(--primary);}
+  .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 20px; text-align: center; color: var(--primary);}
 
   /* --- SHARELOCK (Map & Distance) --- */
   #map { height: 220px; width: 100%; border-radius: var(--radius-md); margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.1); z-index: 1; }
@@ -256,20 +298,21 @@
     background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
     border: 2px solid rgba(255,255,255,0.05);
   }
-  .distance-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #FFF; object-fit: cover; }
+  .distance-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FFF; object-fit: cover; }
   .distance-line { flex: 1; height: 2px; border-bottom: 2px dashed rgba(255,255,255,0.2); margin: 0 12px; position: relative; }
-  .distance-text { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 900; color: var(--primary); background: #1A1118; padding: 0 6px; white-space: nowrap;}
+  .distance-text { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 13px; font-family: 'Fredoka'; font-weight: 600; color: var(--primary); background: #1A1118; padding: 2px 8px; border-radius: 10px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);}
   
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-  .mode-btn { padding: 12px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 22px; cursor: pointer; transition: var(--transition); }
-  .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #140E13;}
+  .mode-btn { padding: 12px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 24px; cursor: pointer; transition: var(--transition); }
+  .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #140E13; transform: scale(1.05);}
   .map-icon { font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
   /* --- GAME --- */
-  .ttt-status { font-size: 15px; font-weight: 800; text-align: center; margin-bottom: 16px; color: var(--primary); }
+  .ttt-status { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 16px; color: var(--primary); }
   .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 260px; margin: 0 auto 20px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05);}
-  .ttt-cell { aspect-ratio: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); font-size: 40px; font-weight: 900; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-  .ttt-cell:active { transform: scale(0.92); }
+  .ttt-cell { aspect-ratio: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); font-size: 40px; font-weight: 900; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--smooth-bounce); }
+  .ttt-cell:hover { background: rgba(255,255,255,0.08); }
+  .ttt-cell:active { transform: scale(0.85); }
   .ttt-cell.x { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
   .ttt-cell.o { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
 
@@ -278,7 +321,7 @@
   .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #C99EFF 45deg 90deg, #FFD166 90deg 135deg, #FF6B6B 135deg 180deg, #FF8BA7 180deg 225deg, #C99EFF 225deg 270deg, #FFD166 270deg 315deg, #FF6B6B 315deg 360deg); }
   .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));}
   .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px; background: #140E13; border-radius: 50%; display: grid; place-items: center; font-size: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); border: 2px solid var(--primary);}
-  .result-text { font-size: 15px; font-weight: 800; color: #FFF; text-align: center; background: rgba(0,0,0,0.4); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.05); }
+  .result-text { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; color: #FFF; text-align: center; background: rgba(0,0,0,0.4); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.05); }
 
   /* --- CAPSULE & BUCKET --- */
   .letter-item { background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.05); padding: 16px; border-radius: var(--radius-md); margin-bottom: 12px; text-align: left; }
@@ -313,6 +356,14 @@
 </style>
 </head>
 <body>
+
+<!-- BACKGROUND ELEMEN LUCU -->
+<div class="bg-shapes">
+  <div class="shape"></div>
+  <div class="shape"></div>
+  <div class="shape"></div>
+</div>
+<div id="floatingEmojis"></div>
 
 <!-- LAYAR LOGIN -->
 <div class="card glass-panel" id="authCard">
@@ -392,13 +443,31 @@
       <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
     </div>
 
-    <!-- Tombol Fitur (Grid 2 Kolom) -->
-    <button class="btn" id="btnOpenReminder" style="background: rgba(100, 255, 218, 0.08); border-color: rgba(100, 255, 218, 0.2); color: #64FFDA;">📢 Pesan</button>
-    <button class="btn" id="btnOpenShareLock" style="background: rgba(255, 209, 102, 0.08); border-color: rgba(255, 209, 102, 0.2); color: #FFD166;">📍 ShareLock</button>
-    <button class="btn" id="btnSpin">🎡 Tantangan</button>
-    <button class="btn" id="btnOpenGame">🎮 Tic Tac Toe</button>
-    <button class="btn" id="btnOpenCapsule">📜 Surat Waktu</button>
-    <button class="btn" id="btnOpenBucket">🎯 Bucket List</button>
+    <!-- CUTE ACTION BUTTONS (Grid 2 Kolom) -->
+    <button class="cute-action-btn" id="btnOpenReminder">
+      <div class="icon">🐰</div>
+      <div class="text">Pesan</div>
+    </button>
+    <button class="cute-action-btn" id="btnOpenShareLock">
+      <div class="icon">🐻</div>
+      <div class="text">ShareLock</div>
+    </button>
+    <button class="cute-action-btn" id="btnSpin">
+      <div class="icon">🎲</div>
+      <div class="text">Tantangan</div>
+    </button>
+    <button class="cute-action-btn" id="btnOpenGame">
+      <div class="icon">🐱</div>
+      <div class="text">Tic Tac Toe</div>
+    </button>
+    <button class="cute-action-btn" id="btnOpenCapsule">
+      <div class="icon">🐼</div>
+      <div class="text">Surat Waktu</div>
+    </button>
+    <button class="cute-action-btn" id="btnOpenBucket">
+      <div class="icon">🦊</div>
+      <div class="text">Bucket List</div>
+    </button>
 
     <!-- Update Status (Span Full) -->
     <div class="span-full" style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05);">
@@ -543,6 +612,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const ONESIGNAL_REST_API_KEY = 'bc131dba-e4b5-4c2d-8291-f9a547603b92';
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  // === GENERATE FLOATING EMOJIS ===
+  const emojiContainer = document.getElementById('floatingEmojis');
+  const emojis = ['💖', '✨', '🎀', '☁️', '🌸', '⭐'];
+  if (emojiContainer) {
+    for (let i = 0; i < 12; i++) {
+      const span = document.createElement('span');
+      span.className = 'floating-emoji';
+      span.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+      span.style.left = Math.random() * 100 + 'vw';
+      span.style.animationDuration = (Math.random() * 10 + 10) + 's';
+      span.style.animationDelay = (Math.random() * 5) + 's';
+      emojiContainer.appendChild(span);
+    }
+  }
 
   // === OneSignal v16 init ===
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -1053,14 +1137,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Update Kangen Gauge Function
   function updateKangenGauge(score) {
-    // Max score for full circle is 100 for visual purposes (you can adjust)
     const maxScore = 100; 
     const percentage = Math.min((score / maxScore) * 100, 100);
     const strokeDashoffset = 276 - (276 * percentage) / 100;
     
     gaugeProgress.style.strokeDashoffset = strokeDashoffset;
     
-    // Animate number
     let currentNum = parseInt(kangenScoreEl.innerText) || 0;
     if (score > currentNum) {
       const interval = setInterval(() => {
@@ -1079,7 +1161,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const newScore = (data?.kangen_score || 0) + 1;
     await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
     
-    // Optimistic UI update
     const currentTotal = parseInt(kangenScoreEl.innerText) || 0;
     updateKangenGauge(currentTotal + 1);
     
