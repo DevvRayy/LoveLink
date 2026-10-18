@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Bucket List</title>
+<title>LoveLink - Ultimate LDR App</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
@@ -113,6 +113,17 @@
   /* ANIMASI HATI */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
   @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
+  
+  /* ANIMASI STATUS */
+  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
+  @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(380px); } }
+  .anim-motor { position: absolute; bottom: 10px; font-size: 30px; animation: ride 3s linear infinite; }
+  @keyframes write { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
+  .anim-nugas { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); font-size: 30px; animation: write 1s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 1; } }
+  .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 30px; animation: float 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+  .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
 </style>
 </head>
 <body>
@@ -134,6 +145,7 @@
   <p class="sub">Real-time Connection</p>
   
   <div class="partner-status-box">
+    <div class="anim-container" id="partnerAnim"></div>
     <div class="partner-label">Pacar lu lagi:</div>
     <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
   </div>
@@ -144,7 +156,6 @@
     <button class="btn btn-kangen" id="btnKangen">❤️ Aku Kangen Kamu</button>
     <button class="btn btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
     
-    <!-- TOMBOL FITUR BARU -->
     <div style="display: flex; gap: 8px; margin-top: 10px;">
       <button class="btn btn-primary" id="btnSpin" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px;">🎡 Tantangan</button>
       <button class="btn btn-outline" id="btnOpenCapsule" style="margin-top:0; flex:1; font-size:11px; padding: 10px 5px; border-color:#C99EFF; color:#C99EFF;">📜 Surat</button>
@@ -179,23 +190,20 @@
   </div>
 </div>
 
-<!-- MODAL TIME CAPSULE (SURAT WAKTU) -->
+<!-- MODAL TIME CAPSULE -->
 <div class="modal" id="capsuleModal">
   <div class="modal-content">
     <h2 style="color:#C99EFF; font-size:18px; margin-bottom:15px; text-align:center;">📜 Surat Masa Depan</h2>
-    
     <div id="capsuleForm">
       <textarea id="capsuleText" placeholder="Tulis surat panjang buat pacar lu di sini..."></textarea>
       <label style="font-size:12px; color:#C9A0B8; display:block; margin-bottom:5px;">Tanggal Buka Surat:</label>
       <input type="date" id="capsuleDate">
       <button class="btn" id="btnSendCapsule" style="margin-top:10px; background:linear-gradient(135deg, #C99EFF, #8A2BE2); color:#FFF;">Kirim & Kunci Surat</button>
     </div>
-
     <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <h3 style="font-size:14px; margin-bottom:10px; color:#FFF;">📬 Kotak Masuk Surat</h3>
       <div id="capsuleList" style="max-height: 200px; overflow-y: auto;"></div>
     </div>
-    
     <button class="btn btn-outline" id="btnCloseCapsule" style="border-color: #FFF; color: #FFF;">Tutup</button>
   </div>
 </div>
@@ -204,22 +212,18 @@
 <div class="modal" id="bucketModal">
   <div class="modal-content">
     <h2 style="color:#FFD166; font-size:18px; margin-bottom:15px; text-align:center;">🎯 Bucket List Kita</h2>
-    
     <div style="display: flex; gap: 8px; margin-bottom: 15px;">
       <input type="text" id="bucketInput" placeholder="Mau ngapain pas ketemu nanti?" style="margin-bottom:0;">
       <button class="btn" id="btnAddBucket" style="width: auto; margin-top:0; padding: 0 15px; background: #FFD166; color: #1A0B14;">+</button>
     </div>
-
-    <div id="bucketListContainer" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
-      <!-- List bakal muncul di sini -->
-    </div>
-    
+    <div id="bucketListContainer" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
     <button class="btn btn-outline" id="btnCloseBucket" style="border-color: #FFF; color: #FFF;">Tutup</button>
   </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // KONFIGURASI
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
@@ -241,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogout = document.getElementById('btnLogout');
   const errorEl = document.getElementById('errorMsg');
   const partnerActivity = document.getElementById('partnerActivity');
+  const partnerAnim = document.getElementById('partnerAnim');
   const kangenScoreEl = document.getElementById('kangenScore');
   
   // Elemen Spin
@@ -271,20 +276,20 @@ document.addEventListener('DOMContentLoaded', () => {
   let isLoginMode = true;
   let currentUser = null;
   let isSpinning = false;
-  
   let lastSpinId = 0;
   let lastPartnerScore = 0;
 
   const challenges = [
-    "Kirim Pap 3 kali 📸",
-    "Kirim Vn I Love You 🎙",
-    "Bilang 'Aku Sayang Kamu' 3x 😻",
-    "Panggil Pacar Pake Nama Lucu🐣",
-    "Kirim Foto Selfie Di Posisi Sekarang  📸",
-    "Teken Tombol Aku Kangen Kamu 💗",
-    "Pelukan Virtual 10 Detik 🫂",
-    "Tukeran Wallpaper 1 Hari 🖼️"
+    "Kirim Pap 3 kali 📸", "Kirim Vn I Love You 🎙", "Bilang 'Aku Sayang Kamu' 3x 😻", "Panggil Pacar Pake Nama Lucu🐣",
+    "Kirim Foto Selfie Di Posisi Sekarang 📸", "Teken Tombol Aku Kangen Kamu 💗", "Pelukan Virtual 10 Detik 🫂", "Tukeran Wallpaper 1 Hari 🖼️"
   ];
+
+  // --- HELPER: CEGAH XSS (HTML Injection) ---
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
+  }
 
   // --- LOGIN LOGIC ---
   btnSwitch.addEventListener('click', () => {
@@ -330,6 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const act = btn.getAttribute('data-act');
       document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      
+      // Upsert untuk mastiin row-nya ada atau keupdate
       await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act });
       sendPushToPartner('Pacar lu sekarang: ' + getActivityLabel(act));
     });
@@ -337,10 +344,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnKangen').addEventListener('click', async () => {
     if (!currentUser) return;
-    const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).single();
+    // Ambil skor terbaru dari database biar ga NaN
+    const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).maybeSingle();
     const newScore = (data?.kangen_score || 0) + 1;
+    
     await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
-    kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText) + 1;
+    
+    // Efek di layar sendiri
+    kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText || 0) + 1;
     spawnHearts(5);
     sendPushToPartner('Pacar lu ngirim Kangen ❤️');
   });
@@ -366,6 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const randomIndex = Math.floor(Math.random() * challenges.length);
     const resultTeks = challenges[randomIndex];
     
+    // Pakai Date.now() biar sistem tau ini putaran baru
     const spinId = Date.now();
     const spinData = resultTeks + '|' + spinId; 
 
@@ -439,7 +451,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     data.forEach(letter => {
       const isLocked = todayStr < letter.unlock_date;
-      const dateObj = new Date(letter.unlock_date);
+      // FIX BUG TIMEZONE: Tambahin T00:00:00 biar akurat
+      const dateObj = new Date(letter.unlock_date + 'T00:00:00');
       const dateStr = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
       const div = document.createElement('div');
@@ -447,14 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (isLocked) {
         div.innerHTML = `
-          <div class="letter-date">Dikirim oleh: ${letter.sender_email}</div>
+          <div class="letter-date">Dikirim oleh: ${escapeHTML(letter.sender_email)}</div>
           <div class="letter-content" style="filter: blur(5px); user-select: none;">Isi surat masih rahasia ya sayang...</div>
           <div class="letter-lock-msg">🔒 Terkunci hingga ${dateStr}</div>
         `;
       } else {
         div.innerHTML = `
           <div class="letter-date">Dibuka pada: ${dateStr}</div>
-          <div class="letter-content">${letter.content}</div>
+          <div class="letter-content">${escapeHTML(letter.content)}</div>
         `;
       }
       capsuleList.appendChild(div);
@@ -473,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const content = bucketInput.value.trim();
     if (!content) return;
 
-    bucketInput.value = ''; // Clear input immediately
+    bucketInput.value = ''; 
     await supabaseClient.from('bucket_list').insert({
       content: content,
       added_by: currentUser.id
@@ -500,10 +513,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const isMe = item.added_by === currentUser.id;
       const badge = isMe ? ' (Lu)' : ' (Pacar)';
+      
+      // Pake escapeHTML biar aman dari tag aneh-aneh
+      const safeContent = escapeHTML(item.content);
 
       div.innerHTML = `
         <div class="bucket-checkbox" onclick="toggleBucket('${item.id}', ${item.is_completed})">✓</div>
-        <div class="bucket-text">${item.content}<span style="font-size:10px; color:#C99EFF;">${badge}</span></div>
+        <div class="bucket-text">${safeContent}<span style="font-size:10px; color:#C99EFF;">${badge}</span></div>
         <button class="bucket-delete" onclick="deleteBucket('${item.id}')">✕</button>
       `;
       bucketListContainer.appendChild(div);
@@ -526,6 +542,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return labels[act] || act;
   }
 
+  // FIX BUG: Fungsi ini tadi ilang, sekarang gua balikin
+  function renderPartnerStatus(activity) {
+    partnerActivity.innerText = getActivityLabel(activity);
+    partnerAnim.innerHTML = '';
+    if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
+    else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
+    else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
+    else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
+  }
+
   function spawnHearts(count) {
     for(let i=0; i<count; i++) {
       setTimeout(() => {
@@ -541,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function sendPushToPartner(pesan) {
     try {
-      const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).single();
+      const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).maybeSingle();
       if (!partnerData || !partnerData.onesignal_id) return;
       fetch('https://onesignal.com/api/v1/notifications', {
         method: 'POST',
@@ -558,16 +584,23 @@ document.addEventListener('DOMContentLoaded', () => {
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
-      const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).single();
-      const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).single();
+      // FIX BUG: Pake maybeSingle() biar ga crash kalau pacar belum punya status
+      const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).maybeSingle();
+      const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).maybeSingle();
       
+      // Set UI awal pas login
       let totalKangen = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
       kangenScoreEl.innerText = totalKangen;
       lastPartnerScore = partnerData?.kangen_score || 0;
 
-      if (partnerData && partnerData.spin_result) {
-          const parts = partnerData.spin_result.split('|');
-          lastSpinId = parseInt(parts[1] || 0);
+      if (partnerData) {
+          // FIX BUG: Tampilin status aktivitas pas pertama buka
+          renderPartnerStatus(partnerData.activity || 'idle');
+          
+          if (partnerData.spin_result) {
+              const parts = partnerData.spin_result.split('|');
+              lastSpinId = parseInt(parts[1] || 0);
+          }
       }
 
       OneSignalDeferred.push(async function(OneSignal) {
@@ -575,17 +608,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
       });
 
-      // REALTIME: User Status (Kangen, Spin, Activity)
+      // REALTIME LISTENER USER STATUS
       window.statusChannel = supabaseClient.channel('realtime_status')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           
           if (newData.id !== currentUser.id) {
+            // FIX BUG: Panggil renderPartnerStatus pas pacar ganti status
+            if (newData.activity !== undefined) {
+                renderPartnerStatus(newData.activity);
+            }
+
             if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
                 lastPartnerScore = newData.kangen_score;
-                kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText) + 1;
+                kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText || 0) + 1;
                 spawnHearts(3);
             }
+            
             if (newData.spin_result) {
                const parts = newData.spin_result.split('|');
                const teks = parts[0];
@@ -604,10 +643,9 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .subscribe();
 
-      // REALTIME: Bucket List
+      // REALTIME LISTENER BUCKET LIST
       window.bucketChannel = supabaseClient.channel('realtime_bucket')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'bucket_list' }, async () => {
-          // Kalau ada perubahan apa pun (tambah, centang, hapus), langsung tarik data terbaru
           if (bucketModal.classList.contains('show')) {
              await loadBucketList();
           }
