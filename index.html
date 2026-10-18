@@ -14,38 +14,26 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  /* Font Lucu & Bulat (Nunito) */
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
   
-  * { 
-    box-sizing: border-box; 
-    margin: 0; 
-    padding: 0; 
-    font-family: 'Nunito', sans-serif; 
-    -webkit-tap-highlight-color: transparent;
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
   
   :root {
-    --bg: #1A1118; /* Dark Plum */
+    --bg: #1A1118;
     --glass-bg: rgba(35, 25, 35, 0.5);
     --glass-border: rgba(255, 182, 193, 0.15);
     --glass-highlight: rgba(255, 182, 193, 0.3);
-    
-    --text-main: #FFF0F5; /* Lavender Blush */
-    --text-sub: #D8B4C4; /* Soft Pink Grey */
-    
-    --primary: #FF8BA7; /* Pastel Pink */
+    --text-main: #FFF0F5;
+    --text-sub: #D8B4C4;
+    --primary: #FF8BA7;
     --primary-glow: rgba(255, 139, 167, 0.5);
-    --accent: #C99EFF; /* Pastel Purple */
+    --accent: #C99EFF;
     --accent-glow: rgba(201, 158, 255, 0.4);
-    
     --danger: #FF6B6B;
     --warning: #FFD166;
-    
     --radius-lg: 28px;
     --radius-md: 20px;
     --radius-sm: 14px;
-    
     --transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
@@ -59,7 +47,6 @@
     position: relative;
   }
 
-  /* Ambient Glow Background (Lembut) */
   body::before, body::after {
     content: '';
     position: fixed;
@@ -71,24 +58,15 @@
     opacity: 0.3;
     will-change: transform;
   }
-  body::before {
-    top: -10%; left: -20%;
-    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-  }
-  body::after {
-    bottom: -10%; right: -20%;
-    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-  }
+  body::before { top: -10%; left: -20%; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); }
+  body::after { bottom: -10%; right: -20%; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); }
 
-  /* --- UI CONTAINERS (DARK LIQUID GLASS) --- */
   .glass-panel {
     background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
     border: 2px solid var(--glass-border);
-    box-shadow: 
-      0 10px 40px 0 rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 0 var(--glass-highlight);
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 var(--glass-highlight);
   }
 
   .card {
@@ -102,12 +80,10 @@
     gap: 16px; 
   }
 
-  /* --- TYPOGRAPHY --- */
   h1 { font-size: 28px; font-weight: 900; letter-spacing: 0.5px; color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
   p.sub { font-size: 14px; color: var(--text-sub); font-weight: 600; }
   .title-small { font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 8px; text-align: left;}
 
-  /* --- INPUTS --- */
   .input-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
   .input-group label { font-size: 13px; color: var(--text-sub); font-weight: 700; margin-left: 8px; }
   input, textarea {
@@ -125,7 +101,6 @@
   }
   textarea { height: 100px; resize: none; }
 
-  /* --- BUTTONS --- */
   .btn {
     width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid var(--glass-border);
     background: rgba(255,255,255,0.05); color: #FFF;
@@ -137,6 +112,12 @@
   }
   .btn:hover { background: rgba(255,255,255,0.1); }
   .btn:active { transform: scale(0.95); }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px dashed var(--glass-border);
+    color: var(--text-sub);
+  }
   
   .btn-primary {
     background: linear-gradient(135deg, #FF8BA7, #FF6B9D);
@@ -151,16 +132,9 @@
     box-shadow: 0 6px 20px var(--accent-glow);
   }
 
-  /* --- DASHBOARD GRID STRUCTURE --- */
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    width: 100%;
-  }
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
   .span-full { grid-column: 1 / -1; }
 
-  /* --- STATUS PACAR --- */
   .partner-status-box { 
     background: linear-gradient(135deg, rgba(255, 139, 167, 0.1), rgba(201, 158, 255, 0.1));
     border: 2px solid var(--primary-glow);
@@ -182,7 +156,6 @@
   @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
   .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
 
-  /* --- COUNTDOWN --- */
   .countdown-box { 
     background: rgba(0,0,0,0.3); border: 2px solid var(--glass-border);
     border-radius: var(--radius-lg); padding: 20px; position: relative; 
@@ -194,15 +167,12 @@
   .btn-edit-countdown { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.1); border: none; color: #FFF; padding: 8px; border-radius: 50%; cursor: pointer; transition: 0.2s;}
   .meet-today { font-size: 22px; font-weight: 900; color: var(--accent); text-align: center; margin: 10px 0; text-shadow: 0 0 20px var(--accent-glow);}
 
-  /* --- KANGEN METER --- */
   .kangen-display { font-size: 42px; font-weight: 900; color: #FFF; margin: 10px 0; background: linear-gradient(to right, #FF8BA7, #C99EFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
-  
-  /* --- STATUS GRID --- */
+
   .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .status-btn { padding: 14px; border-radius: var(--radius-md); border: 2px solid var(--glass-border); background: rgba(255,255,255,0.05); color: #FFF; font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
   .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.3), rgba(201, 158, 255, 0.3)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); color: #FFF; }
 
-  /* --- MODALS (DARK LIQUID GLASS) --- */
   .modal { 
     position: fixed; inset: 0; 
     background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -221,14 +191,12 @@
   .modal.show .modal-content { transform: translateY(0); }
   .modal-content h2 { font-size: 20px; font-weight: 900; margin-bottom: 20px; text-align: center; color: var(--primary);}
 
-  /* --- MAP --- */
   #map { height: 250px; width: 100%; border-radius: var(--radius-md); margin-bottom: 16px; border: 2px solid var(--primary-glow); z-index: 1; }
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
   .mode-btn { padding: 14px; border-radius: var(--radius-md); border: 2px solid var(--glass-border); background: rgba(255,255,255,0.05); color: #FFF; font-size: 22px; cursor: pointer; transition: 0.2s; }
   .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #1A1118;}
   .map-icon { font-size: 26px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-  /* --- TIC TAC TOE --- */
   .ttt-status { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 16px; color: var(--primary); }
   .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 260px; margin: 0 auto 20px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: var(--radius-lg); border: 2px solid var(--glass-border);}
   .ttt-cell { aspect-ratio: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); font-size: 40px; font-weight: 900; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
@@ -236,14 +204,12 @@
   .ttt-cell.x { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
   .ttt-cell.o { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
 
-  /* --- WHEEL --- */
   .wheel-container { position: relative; width: 260px; height: 260px; margin: 0 auto 20px; border-radius: 50%; box-shadow: 0 0 30px var(--primary-glow); }
   .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(255,255,255,0.2); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #C99EFF 45deg 90deg, #FFD166 90deg 135deg, #FF6B6B 135deg 180deg, #FF8BA7 180deg 225deg, #C99EFF 225deg 270deg, #FFD166 270deg 315deg, #FF6B6B 315deg 360deg); }
   .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));}
   .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #1A1118; border-radius: 50%; display: grid; place-items: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); border: 2px solid var(--primary);}
   .result-text { font-size: 16px; font-weight: 800; color: #FFF; text-align: center; background: rgba(0,0,0,0.4); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); }
 
-  /* --- OTHERS --- */
   .letter-item { background: rgba(255,255,255,0.05); border: 2px solid var(--glass-border); padding: 16px; border-radius: var(--radius-md); margin-bottom: 12px; text-align: left; }
   .letter-item.locked { border-color: rgba(255, 107, 107, 0.4); background: rgba(255, 107, 107, 0.05); }
   .letter-date { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; font-weight: 700;}
@@ -259,7 +225,6 @@
   .bucket-delete { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; padding: 5px; transition: 0.2s;}
   .bucket-delete:hover { color: var(--danger); }
 
-  /* INCOMING NOTIFICATION */
   #incomingReminderModal { z-index: 1050; }
   #incomingReminderModal .modal-content { background: linear-gradient(135deg, rgba(255, 139, 167, 0.95), rgba(201, 158, 255, 0.95)); border: 3px solid #FFF; box-shadow: 0 0 50px var(--primary-glow); animation: popIn 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
   @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -267,7 +232,6 @@
   #incomingReminderModal p { font-size: 16px; font-weight: 800; line-height: 1.5; margin-bottom: 24px; background: rgba(255,255,255,0.8); padding: 20px; border-radius: var(--radius-md); color: #1A1118; border: none;}
   #incomingReminderModal .btn { background: #1A1118; color: #FFF; font-weight: 800; border: none;}
 
-  /* ANIMASI HATI */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s ease-out forwards; }
   @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
   
@@ -302,21 +266,18 @@
   <p class="sub" style="margin-bottom: 10px;">Real-time Connection</p>
   
   <div class="dashboard-grid">
-    <!-- Countdown (Span Full) -->
     <div class="countdown-box span-full" id="countdownBox">
       <button class="btn-edit-countdown" id="btnEditCountdown">✏️</button>
       <div class="title-small" style="text-align:center; margin-bottom: 12px;">Menuju Ketemuan</div>
       <div id="countdownDisplay" class="countdown-timer"></div>
     </div>
 
-    <!-- Partner Status (Span Full) -->
     <div class="partner-status-box span-full">
       <div class="anim-container" id="partnerAnim"></div>
       <div class="partner-label">Pacar lu lagi:</div>
       <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
     </div>
 
-    <!-- Kangen Meter (Span Full) -->
     <div class="span-full" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: var(--radius-lg); border: 2px solid var(--glass-border); text-align: center;">
       <div class="title-small" style="text-align:center;">Total Kangen Kalian</div>
       <div class="kangen-display" id="kangenScore">0</div>
@@ -326,7 +287,6 @@
       </div>
     </div>
 
-    <!-- Tombol Fitur (Grid 2 Kolom) -->
     <button class="btn" id="btnOpenReminder" style="background: rgba(100, 255, 218, 0.1); border-color: rgba(100, 255, 218, 0.3); color: #64FFDA;">📢 Pesan</button>
     <button class="btn" id="btnOpenShareLock" style="background: rgba(255, 209, 102, 0.1); border-color: rgba(255, 209, 102, 0.3); color: #FFD166;">📍 ShareLock</button>
     <button class="btn" id="btnSpin">🎡 Tantangan</button>
@@ -334,7 +294,6 @@
     <button class="btn" id="btnOpenCapsule">📜 Surat Waktu</button>
     <button class="btn" id="btnOpenBucket">🎯 Bucket List</button>
 
-    <!-- Update Status (Span Full) -->
     <div class="span-full" style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: var(--radius-lg); border: 2px solid var(--glass-border);">
       <div class="title-small">Update Statusmu:</div>
       <div class="status-grid">
@@ -345,7 +304,6 @@
       </div>
     </div>
 
-    <!-- Logout (Span Full) -->
     <button class="btn span-full" style="background: rgba(255,255,255,0.05); color: var(--text-sub); margin-top: 10px;" id="btnLogout">Keluar Akun</button>
   </div>
 </div>
@@ -469,11 +427,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+  // === OneSignal v16 init ===
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: ONESIGNAL_APP_ID });
-    await OneSignal.Slidedown.promptPush(); 
+    try { await OneSignal.Notifications.requestPermission(); } catch (e) {}
   });
+
+  // === Safe vibrate (iOS tidak support) ===
+  function safeVibrate(pattern) {
+    if (typeof navigator.vibrate === 'function') {
+      try { navigator.vibrate(pattern); } catch (e) {}
+    }
+  }
 
   // DOM ELEMENTS
   const authCard = document.getElementById('authCard');
@@ -486,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const partnerAnim = document.getElementById('partnerAnim');
   const kangenScoreEl = document.getElementById('kangenScore');
   
-  // ShareLock Elements
+  // ShareLock
   const shareLockModal = document.getElementById('shareLockModal');
   const btnOpenShareLock = document.getElementById('btnOpenShareLock');
   const btnCloseShareLock = document.getElementById('btnCloseShareLock');
@@ -504,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastPartnerMode = 'motor';
   let mapInitialized = false;
 
-  // Game Elements
+  // Game
   const gameModal = document.getElementById('gameModal');
   const btnOpenGame = document.getElementById('btnOpenGame');
   const btnCloseGame = document.getElementById('btnCloseGame');
@@ -514,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let gameState = null;
   let isProcessingMove = false;
 
-  // Reminder Elements
+  // Reminder
   const reminderModal = document.getElementById('reminderModal');
   const btnOpenReminder = document.getElementById('btnOpenReminder');
   const btnCloseReminder = document.getElementById('btnCloseReminder');
@@ -536,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let countdownInterval = null;
   let currentMeetDate = null;
 
-  // Fitur Lain
+  // Fitur lain
   const spinModal = document.getElementById('spinModal');
   const wheel = document.getElementById('wheel');
   const btnSpin = document.getElementById('btnSpin');
@@ -572,7 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
   }
 
   // --- SHARELOCK LOGIC ---
@@ -613,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
       myMode = btn.getAttribute('data-mode');
       if (isTracking && currentUser) supabaseClient.from('user_status').update({ transport_mode: myMode }).eq('id', currentUser.id);
+      if (myMarker) myMarker.setIcon(createCustomIcon(myMode));
     });
   });
 
@@ -700,9 +668,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        const { error } = await supabaseClient.auth.signUp({ email, password });
         if (error) throw error;
-        if (data.session) btnSwitch.click();
       }
     } catch (err) { errorEl.innerText = err.message; } 
     finally {
@@ -714,14 +681,19 @@ document.addEventListener('DOMContentLoaded', () => {
   btnLogout.addEventListener('click', async () => {
     if (countdownInterval) clearInterval(countdownInterval);
     if (watchId) navigator.geolocation.clearWatch(watchId);
-    if (isTracking && currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
+    isTracking = false;
+    btnToggleTracking.innerText = 'Mulai Bagikan Lokasi';
+    btnToggleTracking.style.background = '';
+    btnToggleTracking.classList.add('btn-accent');
+    if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
-    if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
-    if (window.bucketChannel) supabaseClient.removeChannel(window.bucketChannel);
-    if (window.settingsChannel) supabaseClient.removeChannel(window.settingsChannel);
-    if (window.reminderChannel) supabaseClient.removeChannel(window.reminderChannel);
-    if (window.gameChannel) supabaseClient.removeChannel(window.gameChannel);
-    if (window.sharelockChannel) supabaseClient.removeChannel(window.sharelockChannel);
+    ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel'].forEach(ch => {
+      if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; }
+    });
+    // Reset map state biar bersih
+    if (map) { try { map.remove(); } catch(e){} map = null; }
+    myMarker = null; partnerMarker = null; mapInitialized = false;
+    lastPartnerLat = null; lastPartnerLng = null;
   });
 
   // --- GAME LOGIC ---
@@ -730,20 +702,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnResetGame.addEventListener('click', async () => {
     if (!currentUser) return;
-    await supabaseClient.from('game_state').upsert({ id: 1, player_x: currentUser.id, board: ["", "", "", "", "", "", "", "", ""], turn: 'X', winner: '' });
+    const { data, error } = await supabaseClient.from('game_state')
+      .upsert({ id: 1, player_x: currentUser.id, board: ["","","","","","","","",""], turn: 'X', winner: '' })
+      .select().maybeSingle();
+    if (error) { console.warn('Reset gagal:', error.message); return alert('Gagal reset game: ' + error.message); }
+    if (data) { gameState = data; renderGame(); }
     sendPushToPartner('Pacar lu mulai game Tic Tac Toe baru! 🎮');
   });
 
   async function loadGameState() {
-    const { data } = await supabaseClient.from('game_state').select('*').eq('id', 1).maybeSingle();
+    const { data, error } = await supabaseClient.from('game_state').select('*').eq('id', 1).maybeSingle();
+    if (error) { console.warn('Load game error:', error.message); }
     if (data) { gameState = data; renderGame(); }
+    else {
+      gameState = null;
+      if (tttStatus) tttStatus.innerText = "Klik 'Mulai Game Baru' untuk mulai!";
+      if (tttGrid) tttGrid.innerHTML = '';
+    }
   }
 
   function renderGame() {
-    if (!gameState || !tttGrid) return;
+    if (!gameState || !tttGrid) {
+      if (tttStatus) tttStatus.innerText = "Klik 'Mulai Game Baru' untuk mulai!";
+      if (tttGrid) tttGrid.innerHTML = '';
+      return;
+    }
     tttGrid.innerHTML = '';
+    const board = Array.isArray(gameState.board) ? gameState.board : ["","","","","","","","",""];
     for (let i = 0; i < 9; i++) {
-      const cellValue = gameState.board[i];
+      const cellValue = board[i] || '';
       const div = document.createElement('div');
       div.className = `ttt-cell ${cellValue === 'X' ? 'x' : cellValue === 'O' ? 'o' : ''}`;
       div.innerText = cellValue;
@@ -753,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!gameState.player_x) {
       tttStatus.innerText = "Klik Mulai Game Baru!";
     } else {
-      const isMeX = currentUser.id === gameState.player_x;
+      const isMeX = currentUser && currentUser.id === gameState.player_x;
       const mySymbol = isMeX ? 'X' : 'O';
       if (gameState.winner) {
         if (gameState.winner === 'Seri') tttStatus.innerText = "Game Selesai: Seri! 🤝";
@@ -766,20 +753,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function playMove(index) {
-    if (isProcessingMove || !gameState || gameState.winner || gameState.board[index] !== "") return; 
+    if (isProcessingMove || !gameState || gameState.winner || !currentUser) return;
+    const board = Array.isArray(gameState.board) ? gameState.board : ["","","","","","","","",""];
+    if (board[index] !== "") return;
+
     const isMeX = currentUser.id === gameState.player_x;
     const mySymbol = isMeX ? 'X' : 'O';
     if (gameState.turn !== mySymbol) return; 
 
     isProcessingMove = true;
-    const newBoard = [...gameState.board];
+    const newBoard = [...board];
     newBoard[index] = mySymbol;
-    let newWinner = checkWinner(newBoard);
-    let newTurn = mySymbol === 'X' ? 'O' : 'X';
+    const newWinner = checkWinner(newBoard);
+    const newTurn = mySymbol === 'X' ? 'O' : 'X';
 
-    await supabaseClient.from('game_state').update({ board: newBoard, turn: newTurn, winner: newWinner }).eq('id', 1);
+    const { data, error } = await supabaseClient.from('game_state')
+      .update({ board: newBoard, turn: newTurn, winner: newWinner })
+      .eq('id', 1).select().maybeSingle();
+
     isProcessingMove = false;
-    
+    if (error) { console.warn('Move gagal:', error.message); return; }
+    if (data) { gameState = data; renderGame(); }
+
     if (newWinner) sendPushToPartner('Hasil Tic Tac Toe: ' + (newWinner === 'Seri' ? 'Seri!' : newWinner + ' Menang!'));
     else sendPushToPartner('Pacar lu jalan di Tic Tac Toe! 🎮');
   }
@@ -798,6 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseReminder.addEventListener('click', () => reminderModal.classList.remove('show'));
 
   btnSendReminder.addEventListener('click', async () => {
+    if (!currentUser) return;
     const msg = reminderText.value.trim();
     if (!msg) return alert('Ketik pesannya dulu bro!');
     if (!partnerId) {
@@ -897,7 +893,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnTouch').addEventListener('click', async () => {
     if (!currentUser) return;
-    navigator.vibrate([200, 100, 200]);
+    safeVibrate([200, 100, 200]);
     sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
 
@@ -910,7 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseSpin.addEventListener('click', () => spinModal.classList.remove('show'));
 
   btnDoSpin.addEventListener('click', async () => {
-    if (isSpinning) return;
+    if (isSpinning || !currentUser) return;
     isSpinning = true; btnDoSpin.disabled = true; btnDoSpin.innerText = "Memutar...";
     const randomIndex = Math.floor(Math.random() * challenges.length);
     const resultTeks = challenges[randomIndex];
@@ -927,7 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wheel.style.transform = `rotate(${targetDeg}deg)`;
     setTimeout(() => {
       spinResult.innerHTML = `Tantangannya:<br><span style="color:var(--primary)">${resultTeks}</span>`;
-      navigator.vibrate([100, 50, 100]);
+      safeVibrate([100, 50, 100]);
       isSpinning = false; btnDoSpin.disabled = false; btnDoSpin.innerText = "Putar Lagi!";
     }, 4200);
   }
@@ -940,6 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseCapsule.addEventListener('click', () => capsuleModal.classList.remove('show'));
 
   btnSendCapsule.addEventListener('click', async () => {
+    if (!currentUser) return;
     const text = capsuleText.value.trim(); const date = capsuleDate.value;
     if (!text) return alert('Tulis suratnya dulu bro!');
     if (!date) return alert('Pilih tanggal buka suratnya!');
@@ -959,9 +956,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function loadCapsules() {
+    if (!currentUser) return;
     capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub);">Memuat surat...</div>';
     const { data, error } = await supabaseClient.from('time_capsules').select('*').neq('sender_id', currentUser.id).order('created_at', { ascending: false });
-    if (error || data.length === 0) { capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub);">Belum ada surat masuk.</div>'; return; }
+    if (error || !data || data.length === 0) { capsuleList.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub);">Belum ada surat masuk.</div>'; return; }
     capsuleList.innerHTML = '';
     const todayObj = new Date();
     const todayStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
@@ -982,6 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseBucket.addEventListener('click', () => bucketModal.classList.remove('show'));
 
   btnAddBucket.addEventListener('click', async () => {
+    if (!currentUser) return;
     const content = bucketInput.value.trim();
     if (!content) return;
     bucketInput.value = ''; 
@@ -990,14 +989,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function loadBucketList() {
+    if (!currentUser) return;
     const { data, error } = await supabaseClient.from('bucket_list').select('*').order('created_at', { ascending: true });
-    if (error) return;
+    if (error || !data) return;
     renderBucketList(data);
   }
 
   function renderBucketList(data) {
+    if (!currentUser) return;
     bucketListContainer.innerHTML = '';
-    if (data.length === 0) { bucketListContainer.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub); padding:10px;">Belum ada rencana. Yuk tambahin!</div>'; return; }
+    if (!data || data.length === 0) { bucketListContainer.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-sub); padding:10px;">Belum ada rencana. Yuk tambahin!</div>'; return; }
     data.forEach(item => {
       const div = document.createElement('div');
       div.className = `bucket-item ${item.is_completed ? 'done' : ''}`;
@@ -1016,16 +1017,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- FUNGSI BANTU ---
   function getActivityLabel(act) {
     const labels = { 'idle': 'Lagi Santai', 'motor': 'Lagi Naik Motor', 'nugas': 'Lagi Nugas', 'tidur': 'Lagi Tidur' };
-    return labels[act] || act;
+    return labels[act] || 'Lagi Santai';
   }
 
   function renderPartnerStatus(activity) {
+    activity = activity || 'idle';
     partnerActivity.innerText = getActivityLabel(activity);
     partnerAnim.innerHTML = '';
     if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
     else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
     else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
     else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
+    // Update tombol status aktif
+    document.querySelectorAll('.status-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-act') === activity);
+    });
   }
 
   function spawnHearts(count) {
@@ -1040,6 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function sendPushToPartner(pesan) {
     try {
+      if (!currentUser) return;
       const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).maybeSingle();
       if (!partnerData || !partnerData.onesignal_id) return;
       fetch('https://onesignal.com/api/v1/notifications', {
@@ -1056,12 +1063,9 @@ document.addEventListener('DOMContentLoaded', () => {
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
-      if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
-      if (window.bucketChannel) supabaseClient.removeChannel(window.bucketChannel);
-      if (window.settingsChannel) supabaseClient.removeChannel(window.settingsChannel);
-      if (window.reminderChannel) supabaseClient.removeChannel(window.reminderChannel);
-      if (window.gameChannel) supabaseClient.removeChannel(window.gameChannel);
-      if (window.sharelockChannel) supabaseClient.removeChannel(window.sharelockChannel);
+      ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel'].forEach(ch => {
+        if (window[ch]) { supabaseClient.removeChannel(window[ch]); window[ch] = null; }
+      });
 
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).maybeSingle();
       const { data: partnerData } = await supabaseClient.from('user_status').select('*').neq('id', currentUser.id).limit(1).maybeSingle();
@@ -1070,13 +1074,26 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (profilesData) partnerId = profilesData.id;
 
+      // Restore transport mode
+      if (myData && myData.transport_mode) {
+        myMode = myData.transport_mode;
+        modeBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-mode') === myMode));
+      }
+
+      // Restore status button aktif (punyaku sendiri)
+      if (myData && myData.activity) {
+        document.querySelectorAll('.status-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-act') === myData.activity);
+        });
+      }
+
       kangenScoreEl.innerText = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
       lastPartnerScore = partnerData?.kangen_score || 0;
 
       if (partnerData) {
           renderPartnerStatus(partnerData.activity || 'idle');
           if (partnerData.spin_result) lastSpinId = parseInt(partnerData.spin_result.split('|')[1] || 0);
-          if (partnerData.latitude && partnerData.longitude) updatePartnerMap(partnerData.latitude, partnerData.longitude, partnerData.transport_mode);
+          if (partnerData.latitude && partnerData.longitude) updatePartnerMap(partnerData.latitude, partnerData.longitude, partnerData.transport_mode || 'motor');
       }
 
       if (settingsData && settingsData.meet_date) renderCountdown(settingsData.meet_date);
@@ -1084,10 +1101,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       await loadGameState();
 
+      // Ambil OneSignal Player ID (v16 API)
       setTimeout(() => {
           OneSignalDeferred.push(async function(OneSignal) {
-            const playerId = await OneSignal.getUserId();
-            if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
+            try {
+              const playerId = OneSignal.User && OneSignal.User.PushSubscription ? OneSignal.User.PushSubscription.id : null;
+              if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
+            } catch (e) {}
           });
       }, 1500);
 
@@ -1095,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           if (newData.id !== currentUser.id) {
-            if (newData.latitude && newData.longitude) updatePartnerMap(newData.latitude, newData.longitude, newData.transport_mode);
+            if (newData.latitude && newData.longitude) updatePartnerMap(newData.latitude, newData.longitude, newData.transport_mode || 'motor');
             else {
               lastPartnerLat = null; lastPartnerLng = null;
               if (partnerMarker && map) { map.removeLayer(partnerMarker); partnerMarker = null; }
@@ -1104,9 +1124,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }).subscribe();
 
       window.gameChannel = supabaseClient.channel('realtime_game')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_state' }, payload => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'game_state' }, payload => {
           gameState = payload.new; renderGame();
-          if (gameState.winner && gameState.winner !== 'Seri') navigator.vibrate([200, 100, 200]);
+          if (gameState && gameState.winner && gameState.winner !== 'Seri') safeVibrate([200, 100, 200]);
         }).subscribe();
 
       window.reminderChannel = supabaseClient.channel('realtime_reminders')
@@ -1116,35 +1136,37 @@ document.addEventListener('DOMContentLoaded', () => {
              currentIncomingReminderId = newReminder.id;
              incomingReminderText.innerText = newReminder.message;
              incomingReminderModal.classList.add('show');
-             navigator.vibrate([300, 100, 300, 100, 300]); 
+             safeVibrate([300, 100, 300, 100, 300]); 
           }
         }).subscribe();
 
       window.statusChannel = supabaseClient.channel('realtime_status')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
-          if (newData.id !== currentUser.id) {
-            if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
-            if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
-                lastPartnerScore = newData.kangen_score;
-                kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText || 0) + 1;
-                spawnHearts(3);
-            }
-            if (newData.spin_result) {
-               const parts = newData.spin_result.split('|');
-               const teks = parts[0];
-               const receivedSpinId = parseInt(parts[1] || 0);
-               if (receivedSpinId > lastSpinId) {
-                 lastSpinId = receivedSpinId;
-                 if (isSpinning) return; 
-                 const index = challenges.indexOf(teks);
-                 if (index !== -1) {
-                   spinModal.classList.add('show');
-                   spinResult.innerText = "Pacar lu muter rodanya!";
-                   setTimeout(() => { animateWheelTo(index, teks); }, 500);
-                 }
+          if (!newData || newData.id === currentUser.id) return;
+          
+          if (newData.activity !== undefined) renderPartnerStatus(newData.activity);
+          
+          if (newData.kangen_score !== undefined && newData.kangen_score > lastPartnerScore) {
+              lastPartnerScore = newData.kangen_score;
+              kangenScoreEl.innerText = parseInt(kangenScoreEl.innerText || 0) + 1;
+              spawnHearts(3);
+          }
+
+          if (newData.spin_result) {
+             const parts = newData.spin_result.split('|');
+             const teks = parts[0];
+             const receivedSpinId = parseInt(parts[1] || 0);
+             if (receivedSpinId > lastSpinId) {
+               lastSpinId = receivedSpinId;
+               if (isSpinning) return; 
+               const index = challenges.indexOf(teks);
+               if (index !== -1) {
+                 spinModal.classList.add('show');
+                 spinResult.innerText = "Pacar lu muter rodanya!";
+                 setTimeout(() => { animateWheelTo(index, teks); }, 500);
                }
-            }
+             }
           }
         }).subscribe();
 
