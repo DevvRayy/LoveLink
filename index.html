@@ -25,8 +25,8 @@
   }
   
   :root {
-    --bg: #140E13; /* Deep warm dark */
-    --card-bg: rgba(36, 26, 36, 0.6);
+    --bg: #140E13;
+    --card-bg: rgba(36, 26, 36, 0.7);
     --card-border: rgba(255, 180, 200, 0.15);
     
     --text-main: #FFF0F5;
@@ -57,44 +57,46 @@
     overflow-x: hidden;
     position: relative;
     line-height: 1.5;
+    /* Optimasi GPU */
+    transform: translate3d(0,0,0); 
   }
 
-  /* --- BACKGROUND ANIMASI LUCU & COZY --- */
-  .bg-shapes {
-    position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none;
-  }
+  /* --- OPTIMASI BACKGROUND (CSS MURNI, NO JS) --- */
+  .bg-shapes { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
   .shape {
     position: absolute; background: var(--primary); border-radius: 50%;
     filter: blur(80px); opacity: 0.15; animation: float-bg 20s infinite ease-in-out alternate;
+    will-change: transform;
   }
   .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; background: #FF8BA7; animation-duration: 25s; }
   .shape:nth-child(2) { width: 400px; height: 400px; bottom: -20%; right: -20%; background: #8B6BFF; animation-duration: 30s; animation-delay: -5s; }
   .shape:nth-child(3) { width: 200px; height: 200px; top: 40%; left: 60%; background: #FFD166; animation-duration: 15s; animation-delay: -10s; opacity: 0.1;}
-  @keyframes float-bg {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(30px, 50px) scale(1.1); }
-  }
+  @keyframes float-bg { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(30px, 50px, 0) scale(1.1); } }
 
-  /* Floating cute emojis di background */
   .floating-emoji {
-    position: absolute; font-size: 24px; opacity: 0.15; animation: float-up 15s linear infinite;
-    filter: grayscale(20%);
+    position: absolute; font-size: 24px; opacity: 0; animation: float-up 15s linear infinite;
+    filter: grayscale(20%); will-change: transform, opacity;
   }
+  .e1 { left: 10%; animation-delay: 0s; } .e2 { left: 30%; animation-delay: 3s; }
+  .e3 { left: 60%; animation-delay: 6s; } .e4 { left: 80%; animation-delay: 9s; }
+  .e5 { left: 45%; animation-delay: 12s; }
   @keyframes float-up {
-    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    0% { transform: translate3d(0, 100vh, 0) rotate(0deg); opacity: 0; }
     10% { opacity: 0.2; }
     90% { opacity: 0.2; }
-    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+    100% { transform: translate3d(0, -100px, 0) rotate(360deg); opacity: 0; }
   }
 
   /* --- UI CONTAINERS --- */
   .glass-panel {
     background: var(--card-bg);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
     border: 2px solid var(--card-border);
     box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255,255,255,0.08);
     position: relative; z-index: 10;
+    /* Optimasi render */
+    transform: translate3d(0,0,0);
   }
 
   .card {
@@ -106,9 +108,20 @@
     animation: slide-up 0.6s var(--smooth-bounce) both;
   }
   @keyframes slide-up {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { transform: translate3d(0, 30px, 0); opacity: 0; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
   }
+
+  /* --- AUDIO CONTROL --- */
+  .audio-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
+    color: #FFF; font-size: 20px; display: grid; place-items: center;
+    cursor: pointer; backdrop-filter: blur(10px); transition: 0.3s;
+  }
+  .audio-toggle.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); }
+  .audio-toggle:active { transform: scale(0.9); }
 
   /* --- TYPOGRAPHY --- */
   h1 { font-family: 'Fredoka', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
@@ -126,36 +139,21 @@
     outline: none; transition: var(--transition);
   }
   input:focus, textarea:focus { 
-    border-color: var(--primary); 
-    background: rgba(0,0,0,0.5);
-    box-shadow: 0 0 20px var(--primary-glow); 
-    transform: translateY(-2px);
+    border-color: var(--primary); background: rgba(0,0,0,0.5);
+    box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px);
   }
   textarea { height: 100px; resize: none; }
 
   /* --- BUTTONS --- */
   .btn {
     width: 100%; padding: 16px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05);
-    background: rgba(255,255,255,0.03); color: #FFF;
-    font-weight: 800; font-size: 15px; cursor: pointer; 
-    transition: var(--transition); 
-    display: flex; justify-content: center; align-items: center; gap: 8px;
-    will-change: transform, background-color;
+    background: rgba(255,255,255,0.03); color: #FFF; font-weight: 800; font-size: 15px; cursor: pointer; 
+    transition: var(--transition); display: flex; justify-content: center; align-items: center; gap: 8px;
+    will-change: transform;
   }
-  .btn:hover { background: rgba(255,255,255,0.08); }
   .btn:active { transform: scale(0.95); }
-  
-  .btn-primary {
-    background: linear-gradient(135deg, #FF8BA7, #FF6B9D);
-    border: none; color: #140E13;
-    box-shadow: 0 8px 24px var(--primary-glow);
-  }
-  
-  .btn-accent {
-    background: linear-gradient(135deg, #C99EFF, #A855F7);
-    border: none; color: #140E13;
-    box-shadow: 0 8px 24px var(--accent-glow);
-  }
+  .btn-primary { background: linear-gradient(135deg, #FF8BA7, #FF6B9D); border: none; color: #140E13; box-shadow: 0 8px 24px var(--primary-glow); }
+  .btn-accent { background: linear-gradient(135deg, #C99EFF, #A855F7); border: none; color: #140E13; box-shadow: 0 8px 24px var(--accent-glow); }
 
   /* --- DASHBOARD LAYOUT --- */
   .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -167,22 +165,13 @@
     background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
     border: 2px solid rgba(255,255,255,0.05);
     border-radius: var(--radius-lg); padding: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    position: relative; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; overflow: hidden;
   }
-  .profile-header::after {
-    content: '✨'; position: absolute; right: 10px; top: 10px; font-size: 14px; opacity: 0.5;
-    animation: twinkle 2s infinite alternate;
-  }
+  .profile-header::after { content: '✨'; position: absolute; right: 10px; top: 10px; font-size: 14px; opacity: 0.5; animation: twinkle 2s infinite alternate; }
   @keyframes twinkle { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
 
   .avatar-box { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
-  .avatar { 
-    width: 64px; height: 64px; border-radius: 50%; 
-    border: 3px solid var(--primary); padding: 2px;
-    background: #2A202A; box-shadow: 0 4px 15px var(--primary-glow);
-    object-fit: cover; transition: var(--transition);
-  }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--primary); padding: 2px; background: #2A202A; box-shadow: 0 4px 15px var(--primary-glow); object-fit: cover; transition: var(--transition); }
   .avatar:hover { transform: scale(1.1) rotate(5deg); }
   .avatar-box.partner .avatar { border-color: var(--accent); box-shadow: 0 4px 15px var(--accent-glow); }
   .avatar-name { font-size: 13px; font-weight: 800; color: var(--text-main); }
@@ -193,25 +182,21 @@
   .days-label { font-size: 10px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-  /* --- KANGEN GAUGE (Circular Progress) --- */
+  /* --- KANGEN GAUGE --- */
   .kangen-section {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 24px; background: rgba(0,0,0,0.2);
-    border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.03);
-    position: relative;
+    padding: 24px; background: rgba(0,0,0,0.2); border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.03);
   }
   .gauge-container { position: relative; width: 160px; height: 160px; margin-bottom: 16px; }
   .gauge-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
   .gauge-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 12; }
   .gauge-progress { 
     fill: none; stroke: url(#gradient); stroke-width: 12; stroke-linecap: round;
+    /* Optimasi Animasi Gauge */
     transition: stroke-dashoffset 1s var(--smooth-bounce);
-    filter: drop-shadow(0 0 10px var(--primary-glow));
+    filter: drop-shadow(0 0 10px var(--primary-glow)); will-change: stroke-dashoffset;
   }
-  .gauge-text {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
+  .gauge-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .gauge-num { font-family: 'Fredoka', sans-serif; font-size: 40px; font-weight: 700; color: #FFF; line-height: 1; }
   .gauge-label { font-size: 11px; color: var(--text-sub); font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: 1px;}
   
@@ -219,10 +204,7 @@
   .action-row .btn { padding: 14px; font-size: 14px; border-radius: var(--radius-md); box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
 
   /* --- COUNTDOWN --- */
-  .countdown-box { 
-    background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.05);
-    border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden;
-  }
+  .countdown-box { background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.05); border-radius: var(--radius-lg); padding: 20px; position: relative; }
   .countdown-timer { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
   .time-block { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: var(--radius-md); min-width: 60px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);}
   .time-num { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); line-height: 1; }
@@ -233,16 +215,11 @@
 
   /* --- PARTNER STATUS --- */
   .partner-status-box { 
-    background: linear-gradient(135deg, rgba(255, 139, 167, 0.08), rgba(201, 158, 255, 0.08));
-    border: 2px solid var(--card-border);
-    padding: 20px; border-radius: var(--radius-lg); 
-    position: relative; overflow: hidden; 
-    display: flex; flex-direction: column; justify-content: center;
-    min-height: 90px; text-align: left;
+    background: linear-gradient(135deg, rgba(255, 139, 167, 0.08), rgba(201, 158, 255, 0.08)); border: 2px solid var(--card-border);
+    padding: 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; min-height: 90px; text-align: left;
   }
   .partner-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
   .partner-activity { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; color: var(--primary); z-index: 2; position: relative; text-shadow: 0 0 10px var(--primary-glow);}
-  
   .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.5; z-index: 1; }
   @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(450px); } }
   .anim-motor { position: absolute; bottom: 10px; font-size: 32px; animation: ride 4s linear infinite; }
@@ -259,66 +236,54 @@
   .status-btn:active { transform: scale(0.95); }
   .status-btn.active { background: linear-gradient(135deg, rgba(255, 139, 167, 0.2), rgba(201, 158, 255, 0.2)); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); transform: translateY(-2px);}
 
-  /* --- CUTE ACTION BUTTONS (Menu Utama) --- */
+  /* --- CUTE ACTION BUTTONS --- */
   .cute-action-btn {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 16px 10px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05);
     background: rgba(255,255,255,0.03); cursor: pointer; transition: var(--smooth-bounce);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; overflow: hidden;
   }
-  .cute-action-btn:hover { transform: translateY(-4px); background: rgba(255,255,255,0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-  .cute-action-btn:active { transform: translateY(0) scale(0.92); }
+  .cute-action-btn:active { transform: scale(0.92); }
   .cute-action-btn .icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: 0.3s;}
-  .cute-action-btn:hover .icon { transform: scale(1.2) rotate(10deg); }
   .cute-action-btn .text { font-family: 'Fredoka', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-main); letter-spacing: 0.5px;}
 
   /* --- MODALS --- */
   .modal { 
-    position: fixed; inset: 0; 
-    background: rgba(10, 5, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    position: fixed; inset: 0; background: rgba(10, 5, 10, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
     padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; overflow-y: auto;
   }
   .modal.show { opacity: 1; pointer-events: auto; }
   .modal-content { 
-    background: linear-gradient(160deg, #2A202A, #1A1118); 
-    border: 2px solid var(--card-border);
+    background: linear-gradient(160deg, #2A202A, #1A1118); border: 2px solid var(--card-border);
     box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
     width: 100%; max-width: 400px; padding: 24px; border-radius: var(--radius-lg); 
-    text-align: left; transform: translateY(30px) scale(0.95); transition: var(--smooth-bounce); will-change: transform;
-    position: relative;
+    text-align: left; transform: translate3d(0, 30px, 0) scale(0.95); transition: var(--smooth-bounce); will-change: transform;
   }
-  .modal.show .modal-content { transform: translateY(0) scale(1); }
+  .modal.show .modal-content { transform: translate3d(0, 0, 0) scale(1); }
   .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 600; margin-bottom: 20px; text-align: center; color: var(--primary);}
 
-  /* --- SHARELOCK (Map & Distance) --- */
+  /* --- SHARELOCK --- */
   #map { height: 220px; width: 100%; border-radius: var(--radius-md); margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.1); z-index: 1; }
-  .distance-widget {
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
-    border: 2px solid rgba(255,255,255,0.05);
-  }
+  .distance-widget { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; border: 2px solid rgba(255,255,255,0.05); }
   .distance-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FFF; object-fit: cover; }
   .distance-line { flex: 1; height: 2px; border-bottom: 2px dashed rgba(255,255,255,0.2); margin: 0 12px; position: relative; }
   .distance-text { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 13px; font-family: 'Fredoka'; font-weight: 600; color: var(--primary); background: #1A1118; padding: 2px 8px; border-radius: 10px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);}
-  
   .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
   .mode-btn { padding: 12px; border-radius: var(--radius-md); border: 2px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03); color: #FFF; font-size: 24px; cursor: pointer; transition: var(--transition); }
   .mode-btn.active { background: var(--primary); border-color: #FFF; box-shadow: 0 0 15px var(--primary-glow); color: #140E13; transform: scale(1.05);}
   .map-icon { font-size: 24px; text-align: center; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-  /* --- GAME --- */
+  /* --- GAME & WHEEL --- */
   .ttt-status { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 16px; color: var(--primary); }
   .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 260px; margin: 0 auto 20px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: var(--radius-lg); border: 2px solid rgba(255,255,255,0.05);}
   .ttt-cell { aspect-ratio: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); font-size: 40px; font-weight: 900; color: #FFF; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--smooth-bounce); }
-  .ttt-cell:hover { background: rgba(255,255,255,0.08); }
   .ttt-cell:active { transform: scale(0.85); }
   .ttt-cell.x { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
   .ttt-cell.o { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
-
-  /* --- WHEEL --- */
+  
   .wheel-container { position: relative; width: 240px; height: 240px; margin: 0 auto 20px; border-radius: 50%; box-shadow: 0 0 30px var(--primary-glow); }
-  .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #C99EFF 45deg 90deg, #FFD166 90deg 135deg, #FF6B6B 135deg 180deg, #FF8BA7 180deg 225deg, #C99EFF 225deg 270deg, #FFD166 270deg 315deg, #FF6B6B 315deg 360deg); }
+  .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#FF8BA7 0deg 45deg, #C99EFF 45deg 90deg, #FFD166 90deg 135deg, #FF6B6B 135deg 180deg, #FF8BA7 180deg 225deg, #C99EFF 225deg 270deg, #FFD166 270deg 315deg, #FF6B6B 315deg 360deg); will-change: transform;}
   .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));}
   .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px; background: #140E13; border-radius: 50%; display: grid; place-items: center; font-size: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); border: 2px solid var(--primary);}
   .result-text { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500; color: #FFF; text-align: center; background: rgba(0,0,0,0.4); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.05); }
@@ -329,7 +294,7 @@
   .letter-date { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;}
   .letter-content { font-size: 14px; color: #FFF; line-height: 1.6; white-space: pre-wrap; font-weight: 600;}
   .letter-lock-msg { font-size: 12px; color: var(--danger); font-weight: 800; text-align: center; margin-top: 10px; }
-
+  
   .bucket-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: var(--radius-md); margin-bottom: 10px; border: 2px solid rgba(255,255,255,0.05); transition: 0.3s; }
   .bucket-item.done { opacity: 0.5; background: rgba(201, 158, 255, 0.05); border-color: rgba(201, 158, 255, 0.2); }
   .bucket-checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--text-sub); display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 12px; transition: var(--smooth-bounce);}
@@ -349,7 +314,7 @@
 
   /* --- ANIMATIONS --- */
   .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s ease-out forwards; }
-  @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
+  @keyframes fallUp { 0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 1; } 100% { transform: translate3d(0, -150px, 0) scale(1.5); opacity: 0; } }
   
   .hidden { display: none !important; }
   .error { color: var(--danger); font-size: 13px; font-weight: 700; margin-top: 10px; min-height: 20px;}
@@ -357,13 +322,22 @@
 </head>
 <body>
 
-<!-- BACKGROUND ELEMEN LUCU -->
+<!-- AUDIO CONTROL -->
+<button class="audio-toggle" id="audioToggle" title="Musik On/Off">🎵</button>
+
+<!-- BACKGROUND ELEMEN LUCU (CSS OPTIMIZED) -->
 <div class="bg-shapes">
   <div class="shape"></div>
   <div class="shape"></div>
   <div class="shape"></div>
 </div>
-<div id="floatingEmojis"></div>
+<div class="bg-shapes">
+  <div class="floating-emoji e1">💖</div>
+  <div class="floating-emoji e2">✨</div>
+  <div class="floating-emoji e3">🎀</div>
+  <div class="floating-emoji e4">☁️</div>
+  <div class="floating-emoji e5">🌸</div>
+</div>
 
 <!-- LAYAR LOGIN -->
 <div class="card glass-panel" id="authCard">
@@ -606,27 +580,97 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // --- AUDIO MANAGER (Web Audio API & BGM) ---
+  const AudioManager = {
+    ctx: null,
+    bgm: null,
+    isBgmPlaying: false,
+    isInitialized: false,
+    
+    init() {
+      if (this.isInitialized) return;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) this.ctx = new AudioContext();
+      this.isInitialized = true;
+    },
+
+    playTone(freq, type, duration, vol) {
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    },
+
+    playClick() { this.init(); this.playTone(800, 'sine', 0.1, 0.05); },
+    playPop() { this.init(); this.playTone(400, 'sine', 0.15, 0.1); this.playTone(600, 'sine', 0.2, 0.05); },
+    playSuccess() { this.init(); this.playTone(523.25, 'triangle', 0.1, 0.1); setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.1), 100); setTimeout(() => this.playTone(783.99, 'triangle', 0.3, 0.1), 200); },
+    playNotif() { this.init(); this.playTone(880, 'sine', 0.1, 0.1); setTimeout(() => this.playTone(1108.73, 'sine', 0.3, 0.1), 100); },
+    
+    toggleBgm() {
+      this.init();
+      if (!this.bgm) {
+        // Lofi Cozy Beat (Reliable CDN)
+        this.bgm = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3');
+        this.bgm.loop = true;
+        this.bgm.volume = 0.3;
+      }
+      
+      if (this.isBgmPlaying) {
+        this.bgm.pause();
+        this.isBgmPlaying = false;
+        document.getElementById('audioToggle').classList.remove('active');
+        document.getElementById('audioToggle').innerText = '🔇';
+      } else {
+        this.bgm.play().then(() => {
+          this.isBgmPlaying = true;
+          document.getElementById('audioToggle').classList.add('active');
+          document.getElementById('audioToggle').innerText = '🎵';
+        }).catch(e => console.log("Audio play blocked:", e));
+      }
+    }
+  };
+
+  // Interaksi Pertama untuk buka izin Audio
+  document.body.addEventListener('click', () => {
+    AudioManager.init();
+    if (!AudioManager.isBgmPlaying && !document.getElementById('audioToggle').classList.contains('active')) {
+      // Auto start BGM on first click for better UX
+      AudioManager.toggleBgm();
+    }
+  }, { once: true });
+
+  document.getElementById('audioToggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    AudioManager.toggleBgm();
+  });
+
+  // Add SFX to all buttons
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.id === 'audioToggle') return;
+      if (btn.classList.contains('btn-primary') || btn.classList.contains('cute-action-btn')) {
+        AudioManager.playPop();
+      } else {
+        AudioManager.playClick();
+      }
+    });
+  });
+
+  // --- SUPABASE & KONFIGURASI ---
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
   const ONESIGNAL_REST_API_KEY = 'bc131dba-e4b5-4c2d-8291-f9a547603b92';
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-  // === GENERATE FLOATING EMOJIS ===
-  const emojiContainer = document.getElementById('floatingEmojis');
-  const emojis = ['💖', '✨', '🎀', '☁️', '🌸', '⭐'];
-  if (emojiContainer) {
-    for (let i = 0; i < 12; i++) {
-      const span = document.createElement('span');
-      span.className = 'floating-emoji';
-      span.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      span.style.left = Math.random() * 100 + 'vw';
-      span.style.animationDuration = (Math.random() * 10 + 10) + 's';
-      span.style.animationDelay = (Math.random() * 5) + 's';
-      emojiContainer.appendChild(span);
-    }
-  }
 
   // === OneSignal v16 init ===
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -733,8 +777,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastSpinId = 0;
   let lastPartnerScore = 0;
   
-  // Days Together Logic (Set Start Date Here)
-  const relationshipStartDate = new Date('2024-01-01'); // Ganti dengan tanggal jadian kalian
+  // Days Together Logic
+  const relationshipStartDate = new Date('2024-01-01'); // Ubah tanggal jadian di sini
   function updateDaysTogether() {
     const today = new Date();
     const diffTime = Math.abs(today - relationshipStartDate);
@@ -773,7 +817,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return (R * c).toFixed(2); 
   }
 
+  // OPTIMASI PETA: Throttle update biar gak lag
+  let lastMapUpdate = 0;
   function updateDistanceInfo() {
+    const now = Date.now();
+    if (now - lastMapUpdate < 2000) return; // Limit to every 2 seconds
+    lastMapUpdate = now;
+
     const distEl = document.getElementById('distanceInfo');
     if (!distEl) return;
     if (myMarker && partnerMarker) {
@@ -1015,6 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mySymbol = isMeX ? 'X' : 'O';
     if (gameState.turn !== mySymbol) return; 
 
+    AudioManager.playClick();
     isProcessingMove = true;
     const newBoard = [...board];
     newBoard[index] = mySymbol;
@@ -1029,8 +1080,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (error) { console.warn('Move gagal:', error.message); return; }
     if (data) { gameState = data; renderGame(); }
 
-    if (newWinner) sendPushToPartner('Hasil Tic Tac Toe: ' + (newWinner === 'Seri' ? 'Seri!' : newWinner + ' Menang!'));
-    else sendPushToPartner('Pacar lu jalan di Tic Tac Toe! 🎮');
+    if (newWinner) {
+        AudioManager.playSuccess();
+        sendPushToPartner('Hasil Tic Tac Toe: ' + (newWinner === 'Seri' ? 'Seri!' : newWinner + ' Menang!'));
+    } else {
+        sendPushToPartner('Pacar lu jalan di Tic Tac Toe! 🎮');
+    }
   }
 
   function checkWinner(b) {
@@ -1063,6 +1118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (error) alert('Gagal: ' + error.message);
     else {
       reminderModal.classList.remove('show');
+      AudioManager.playSuccess();
       sendPushToPartner('📢 Pesan Baru: ' + msg);
       alert('Pesan terkirim!');
     }
@@ -1135,14 +1191,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Update Kangen Gauge Function
+  // Update Kangen Gauge Function (More performant)
   function updateKangenGauge(score) {
     const maxScore = 100; 
     const percentage = Math.min((score / maxScore) * 100, 100);
     const strokeDashoffset = 276 - (276 * percentage) / 100;
     
+    // CSS transition handles the smooth animation
     gaugeProgress.style.strokeDashoffset = strokeDashoffset;
     
+    // Number animation
     let currentNum = parseInt(kangenScoreEl.innerText) || 0;
     if (score > currentNum) {
       const interval = setInterval(() => {
@@ -1165,6 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateKangenGauge(currentTotal + 1);
     
     spawnHearts(5);
+    AudioManager.playSuccess();
     safeVibrate([100, 50, 100]);
     sendPushToPartner('Pacar lu ngirim Kangen ❤️');
   });
@@ -1172,6 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnTouch').addEventListener('click', async () => {
     if (!currentUser) return;
     safeVibrate([200, 100, 200]);
+    AudioManager.playPop();
     sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
 
@@ -1186,6 +1246,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnDoSpin.addEventListener('click', async () => {
     if (isSpinning || !currentUser) return;
     isSpinning = true; btnDoSpin.disabled = true; btnDoSpin.innerText = "Memutar...";
+    AudioManager.playTone(200, 'sawtooth', 0.5, 0.05); // Whoosh sound
     const randomIndex = Math.floor(Math.random() * challenges.length);
     const resultTeks = challenges[randomIndex];
     const spinData = resultTeks + '|' + Date.now(); 
@@ -1201,6 +1262,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wheel.style.transform = `rotate(${targetDeg}deg)`;
     setTimeout(() => {
       spinResult.innerHTML = `Tantangannya:<br><span style="color:var(--primary)">${resultTeks}</span>`;
+      AudioManager.playSuccess();
       safeVibrate([100, 50, 100]);
       isSpinning = false; btnDoSpin.disabled = false; btnDoSpin.innerText = "Putar Lagi!";
     }, 4200);
@@ -1226,6 +1288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSendCapsule.innerText = 'Kirim & Kunci Surat'; btnSendCapsule.disabled = false;
     if (error) alert('Gagal: ' + error.message);
     else {
+      AudioManager.playSuccess();
       alert('Surat berhasil dikunci! Bakal kebuka otomatis tanggal ' + date);
       capsuleText.value = ''; capsuleDate.value = '';
       sendPushToPartner('Pacar lu ngirim Surat Masa Depan! 📜');
@@ -1263,6 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!content) return;
     bucketInput.value = ''; 
     await supabaseClient.from('bucket_list').insert({ content: content, added_by: currentUser.id });
+    AudioManager.playPop();
     sendPushToPartner('Pacar lu nambahin bucket list baru! 🎯');
   });
 
@@ -1289,7 +1353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  window.toggleBucket = async (id, currentStatus) => { await supabaseClient.from('bucket_list').update({ is_completed: !currentStatus }).eq('id', id); sendPushToPartner(!currentStatus ? 'Pacar lu nyentang bucket list! 🎉' : 'Bucket list dibatalin centangnya 😅'); };
+  window.toggleBucket = async (id, currentStatus) => { await supabaseClient.from('bucket_list').update({ is_completed: !currentStatus }).eq('id', id); AudioManager.playClick(); sendPushToPartner(!currentStatus ? 'Pacar lu nyentang bucket list! 🎉' : 'Bucket list dibatalin centangnya 😅'); };
   window.deleteBucket = async (id) => { if(!confirm('Hapus rencana ini?')) return; await supabaseClient.from('bucket_list').delete().eq('id', id); };
 
   // --- FUNGSI BANTU ---
@@ -1340,7 +1404,6 @@ document.addEventListener('DOMContentLoaded', () => {
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
       
-      // Update Days Together UI
       updateDaysTogether();
 
       ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel'].forEach(ch => {
@@ -1389,7 +1452,6 @@ document.addEventListener('DOMContentLoaded', () => {
           });
       }, 1500);
 
-      // AUTO-START TRACKING
       if (navigator.permissions && navigator.permissions.query) {
         navigator.permissions.query({ name: 'geolocation' }).then((result) => {
           if (result.state === 'granted' && !isTracking) {
@@ -1414,7 +1476,10 @@ document.addEventListener('DOMContentLoaded', () => {
       window.gameChannel = supabaseClient.channel('realtime_game')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'game_state' }, payload => {
           gameState = payload.new; renderGame();
-          if (gameState && gameState.winner && gameState.winner !== 'Seri') safeVibrate([200, 100, 200]);
+          if (gameState && gameState.winner && gameState.winner !== 'Seri') {
+              AudioManager.playSuccess();
+              safeVibrate([200, 100, 200]);
+          }
         }).subscribe();
 
       window.reminderChannel = supabaseClient.channel('realtime_reminders')
@@ -1424,6 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
              currentIncomingReminderId = newReminder.id;
              incomingReminderText.innerText = newReminder.message;
              incomingReminderModal.classList.add('show');
+             AudioManager.playNotif();
              safeVibrate([300, 100, 300, 100, 300]); 
           }
         }).subscribe();
@@ -1440,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const currentTotal = parseInt(kangenScoreEl.innerText) || 0;
               updateKangenGauge(currentTotal + 1);
               spawnHearts(3);
+              AudioManager.playNotif();
           }
 
           if (newData.spin_result) {
@@ -1453,6 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
                if (index !== -1) {
                  spinModal.classList.add('show');
                  spinResult.innerText = "Pacar lu muter rodanya!";
+                 AudioManager.playNotif();
                  setTimeout(() => { animateWheelTo(index, teks); }, 500);
                }
              }
