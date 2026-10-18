@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveLink - Kangen Meter & Touch</title>
+<title>LoveLink - Spin the Wheel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
@@ -36,16 +36,14 @@
   .btn:active { transform: scale(0.97); }
   .btn-outline { background: transparent; border: 1px solid #FF7FA8; color: #FF7FA8; margin-top: 12px; }
   .error { color: #FF6B6B; font-size: 12px; margin-top: 12px; min-height: 18px; }
-  .success { color: #64FFDA; font-size: 12px; margin-top: 12px; min-height: 18px; }
   .hidden { display: none !important; }
 
-  /* --- DASHBOARD UI --- */
+  /* DASHBOARD UI */
   .my-status-box, .action-box {
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
     padding: 15px; border-radius: 15px; margin-bottom: 15px;
   }
   .title-small { font-size: 11px; color: #C9A0B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: left;}
-  
   .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .status-btn {
     padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
@@ -53,18 +51,10 @@
   }
   .status-btn.active { background: linear-gradient(135deg, rgba(255,127,168,0.3), rgba(201,158,255,0.3)); border-color: #FF7FA8; font-weight: 700; }
   
-  /* Kangen Meter & Touch */
   .kangen-display { font-size: 30px; font-weight: 800; color: #FF7FA8; margin: 10px 0; }
-  .kangen-label { font-size: 11px; color: #C9A0B8; }
-  .btn-action {
-    padding: 12px; border-radius: 12px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; margin-top: 10px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .btn-kangen { background: linear-gradient(135deg, #FF7FA8, #FF4D6D); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(255,77,109,0.3); }
+  .btn-kangen { background: linear-gradient(135deg, #FF7FA8, #FF4D6D); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(255,77,109,0.3); margin-bottom: 8px;}
   .btn-touch { background: linear-gradient(135deg, #C99EFF, #8A2BE2); color: #FFF; width: 100%; box-shadow: 0 4px 15px rgba(138,43,226,0.3); }
-  .btn-kangen:active, .btn-touch:active { transform: scale(0.95); }
 
-  /* PARTNER STATUS BOX */
   .partner-status-box {
     background: linear-gradient(135deg, rgba(255,127,168,0.1), rgba(201,158,255,0.05));
     border: 1px dashed #FF7FA8; padding: 20px 15px; border-radius: 15px; margin-bottom: 15px;
@@ -73,25 +63,52 @@
   .partner-label { font-size: 11px; color: #C9A0B8; margin-bottom: 8px; text-align: left;}
   .partner-activity { font-size: 18px; font-weight: 700; color: #FF7FA8; z-index: 2; position: relative; text-align: left;}
 
-  /* ANIMASI STATUS */
-  .anim-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.6; z-index: 1; }
-  @keyframes ride { 0% { transform: translateX(-50px); } 100% { transform: translateX(400px); } }
-  .anim-motor { position: absolute; bottom: 10px; font-size: 30px; animation: ride 3s linear infinite; }
-  @keyframes write { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
-  .anim-nugas { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); font-size: 30px; animation: write 1s ease-in-out infinite; }
-  @keyframes float { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 1; } }
-  .anim-tidur { position: absolute; top: 30%; right: 20px; font-size: 30px; animation: float 2s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-  .anim-idle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; animation: pulse 2s ease-in-out infinite; opacity: 0.3;}
-
-  /* ANIMASI HATI BERJATUHAN */
-  .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
-  @keyframes fallUp {
-    0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(-150px) scale(1.5) rotate(30deg); opacity: 0; }
+  /* MODAL SPIN THE WHEEL */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal.show { opacity: 1; pointer-events: auto; }
+  .wheel-container { position: relative; width: 280px; height: 280px; margin-bottom: 20px; }
+  
+  /* RODA PUTAR */
+  .wheel {
+    width: 100%; height: 100%; border-radius: 50%;
+    border: 8px solid #2A1420; box-shadow: 0 0 20px rgba(255,127,168,0.4);
+    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    /* Bikin potongan roda pakai conic-gradient */
+    background: conic-gradient(
+      #FF7FA8 0deg 45deg, 
+      #C99EFF 45deg 90deg, 
+      #64FFDA 90deg 135deg, 
+      #FFD166 135deg 180deg, 
+      #FF6B6B 180deg 225deg, 
+      #4CAF50 225deg 270deg, 
+      #00B4D8 270deg 315deg, 
+      #E8C76A 315deg 360deg
+    );
+  }
+  .wheel-pointer {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
+    border-top: 30px solid #FFF; z-index: 2; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+  }
+  .wheel-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 50px; height: 50px; background: #2A1420; border-radius: 50%;
+    display: grid; place-items: center; font-size: 24px; box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  }
+  
+  .result-text {
+    font-size: 20px; font-weight: 800; color: #FFF; text-align: center;
+    background: rgba(255,127,168,0.2); padding: 15px 20px; border-radius: 15px;
+    border: 1px solid #FF7FA8; margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center;
   }
 
-  /* SCREEN FLASH EFFECT */
+  /* ANIMASI HATI */
+  .heart { position: fixed; font-size: 24px; pointer-events: none; z-index: 999; animation: fallUp 2s linear forwards; }
+  @keyframes fallUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
   .screen-flash { position: fixed; inset: 0; background: rgba(255,127,168,0.4); z-index: 998; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
   .screen-flash.active { opacity: 1; }
 </style>
@@ -108,7 +125,6 @@
   <button class="btn" id="btnAction">Masuk</button>
   <button class="btn btn-outline" id="btnSwitch">Belum punya akun? Daftar</button>
   <div class="error" id="errorMsg"></div>
-  <div class="success" id="successMsg"></div>
 </div>
 
 <!-- LAYAR DASHBOARD -->
@@ -116,24 +132,19 @@
   <h1>LoveLink 💌</h1>
   <p class="sub">Real-time Connection</p>
   
-  <!-- STATUS PACAR -->
   <div class="partner-status-box">
-    <div class="anim-container" id="partnerAnim"></div>
     <div class="partner-label">Pacar lu lagi:</div>
     <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
   </div>
 
-  <!-- KANGEN METER & TOUCH -->
   <div class="action-box" style="text-align:center;">
     <div class="title-small" style="text-align:center;">Kangen Meter Kalian</div>
     <div class="kangen-display" id="kangenScore">0</div>
-    <div class="kangen-label">Total Rasa Kangen</div>
-    
-    <button class="btn-action btn-kangen" id="btnKangen">❤️ Aku Kangen Kamu</button>
-    <button class="btn-action btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
+    <button class="btn btn-kangen" id="btnKangen">❤️ Aku Kangen Kamu</button>
+    <button class="btn btn-touch" id="btnTouch">🫶 Pegang Tanganku</button>
+    <button class="btn btn-primary" id="btnSpin" style="margin-top: 10px;">🎡 Putar Roda Tantangan</button>
   </div>
 
-  <!-- UPDATE STATUS -->
   <div class="my-status-box">
     <div class="title-small">Update Statusmu:</div>
     <div class="status-grid">
@@ -147,9 +158,20 @@
   <button class="btn" style="background:rgba(255,100,100,0.15); color:#FF6B6B; border:1px solid rgba(255,100,100,0.3);" id="btnLogout">Logout</button>
 </div>
 
+<!-- MODAL SPIN THE WHEEL -->
+<div class="modal" id="spinModal">
+  <div class="wheel-container">
+    <div class="wheel-pointer"></div>
+    <div class="wheel" id="wheel"></div>
+    <div class="wheel-center">🎯</div>
+  </div>
+  <div class="result-text" id="spinResult">Tekan tombol di bawah untuk memutar!</div>
+  <button class="btn btn-primary" id="btnDoSpin" style="width: 200px;">Putar Sekarang!</button>
+  <button class="btn btn-outline" id="btnCloseSpin" style="width: 200px; border-color: #FFF; color: #FFF; margin-top: 10px;">Tutup</button>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // KONFIGURASI
   const SUPABASE_URL = 'https://zhfpppuwumcdsipkmuya.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-UgbkWg428KoQqfTeX6REA_jY3saxWG';
   const ONESIGNAL_APP_ID = 'os_v2_app_xqjr3oxewvgc3aur7gsuoyb3slcblvsacm4e5uvmyregnzyvum3gydrqzlsdtzrgvo3res5bci3vr6sldjc4jmkk2u5y2iqvi423fey';
@@ -157,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  // Setup OneSignal
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: ONESIGNAL_APP_ID });
@@ -172,14 +193,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogout = document.getElementById('btnLogout');
   const errorEl = document.getElementById('errorMsg');
   const partnerActivity = document.getElementById('partnerActivity');
-  const partnerAnim = document.getElementById('partnerAnim');
   const kangenScoreEl = document.getElementById('kangenScore');
+  
+  // Elemen Spin
+  const spinModal = document.getElementById('spinModal');
+  const wheel = document.getElementById('wheel');
+  const btnSpin = document.getElementById('btnSpin');
+  const btnDoSpin = document.getElementById('btnDoSpin');
+  const btnCloseSpin = document.getElementById('btnCloseSpin');
+  const spinResult = document.getElementById('spinResult');
 
   let isLoginMode = true;
   let currentUser = null;
-  let partnerId = null;
+  let isSpinning = false;
 
-  // --- LOGIN / REGISTER ---
+  // DAFTAR TANTANGAN (8 SEGMEN)
+  const challenges = [
+    "Kirim Voice Note Nyanyi 🎤",
+    "Traktir Bakso Virtual 🍜",
+    "Bilang 'Aku Sayang Kamu' 3x 🥰",
+    "Panggil Pacar Pakai Nama Beb 🐣",
+    "Kirim Foto Selfie Sekarang 📸",
+    "Nyanyi 1 Bait Lagu Galau 🎵",
+    "Pelukan Virtual 10 Detik 🫂",
+    "Tukeran Wallpaper 1 Hari 🖼️"
+  ];
+
+  // --- LOGIN LOGIC ---
   btnSwitch.addEventListener('click', () => {
     isLoginMode = !isLoginMode;
     errorEl.innerText = '';
@@ -203,9 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) throw error;
         if (data.session) btnSwitch.click();
       }
-    } catch (err) {
-      errorEl.innerText = err.message;
-    } finally {
+    } catch (err) { errorEl.innerText = err.message; } 
+    finally {
       btnAction.innerText = isLoginMode ? 'Masuk' : 'Daftar Akun Baru';
       btnAction.disabled = false;
     }
@@ -216,38 +255,77 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.statusChannel) supabaseClient.removeChannel(window.statusChannel);
   });
 
-  // --- AKSI: UPDATE STATUS ---
+  // --- LOGIKA SPIN THE WHEEL ---
+  btnSpin.addEventListener('click', () => {
+    spinModal.classList.add('show');
+    spinResult.innerText = "Tekan tombol di bawah untuk memutar!";
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+  });
+
+  btnCloseSpin.addEventListener('click', () => spinModal.classList.remove('show'));
+
+  btnDoSpin.addEventListener('click', async () => {
+    if (isSpinning) return;
+    isSpinning = true;
+    btnDoSpin.disabled = true;
+    btnDoSpin.innerText = "Memutar...";
+
+    // Pilih tantangan random (0-7)
+    const randomIndex = Math.floor(Math.random() * challenges.length);
+    const resultTeks = challenges[randomIndex];
+
+    // Kirim trigger ke Supabase (biar pacar ikut muter)
+    await supabaseClient.from('user_status').update({ spin_result: resultTeks }).eq('id', currentUser.id);
+    sendPushToPartner('Pacar lu muter roda tantangan! 🎡');
+
+    // Jalankan animasi roda
+    animateWheelTo(randomIndex, resultTeks);
+  });
+
+  function animateWheelTo(index, resultTeks) {
+    // Hitung derajat biar roda berhenti di tantangan yang dipilih
+    // Ada 8 segmen, berarti 1 segmen = 360/8 = 45 derajat.
+    // Setiap segmen punya titik tengah.
+    const segmentAngle = 360 / challenges.length;
+    const targetDeg = (360 * 5) + (360 - (index * segmentAngle) - (segmentAngle / 2)); 
+    
+    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+    wheel.style.transform = `rotate(${targetDeg}deg)`;
+
+    setTimeout(() => {
+      spinResult.innerHTML = `Tantangannya:<br><span style="color:#64FFDA">${resultTeks}</span>`;
+      navigator.vibrate([100, 50, 100]);
+      isSpinning = false;
+      btnDoSpin.disabled = false;
+      btnDoSpin.innerText = "Putar Lagi!";
+    }, 4200); // Tunggu animasi selesai
+  }
+
+  // --- AKSI LAINNYA ---
   document.querySelectorAll('.status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!currentUser) return;
       const act = btn.getAttribute('data-act');
       document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
-      await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act, updated_at: new Date() });
+      await supabaseClient.from('user_status').upsert({ id: currentUser.id, activity: act });
       sendPushToPartner('Pacar lu sekarang: ' + getActivityLabel(act));
     });
   });
 
-  // --- AKSI: KANGEN METER ---
   document.getElementById('btnKangen').addEventListener('click', async () => {
     if (!currentUser) return;
-    
-    // Ambil skor skrg, tambah 1
     const { data } = await supabaseClient.from('user_status').select('kangen_score').eq('id', currentUser.id).single();
     const newScore = (data?.kangen_score || 0) + 1;
-
     await supabaseClient.from('user_status').update({ kangen_score: newScore }).eq('id', currentUser.id);
-    
-    // Efek di layar sendiri
     spawnHearts(5);
     sendPushToPartner('Pacar lu ngirim Kangen ❤️');
   });
 
-  // --- AKSI: VIRTUAL TOUCH (PEGANG TANGAN) ---
   document.getElementById('btnTouch').addEventListener('click', async () => {
     if (!currentUser) return;
-    navigator.vibrate([200, 100, 200]); // Getar di HP sendiri
+    navigator.vibrate([200, 100, 200]);
     flashScreen();
     sendPushToPartner('Pacar lu ngajak Pegang Tangan 🫶');
   });
@@ -258,21 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return labels[act] || act;
   }
 
-  function renderPartnerStatus(activity) {
-    partnerActivity.innerText = getActivityLabel(activity);
-    partnerAnim.innerHTML = '';
-    if (activity === 'motor') partnerAnim.innerHTML = '<div class="anim-motor">🏍️</div>';
-    else if (activity === 'nugas') partnerAnim.innerHTML = '<div class="anim-nugas">✍️</div>';
-    else if (activity === 'tidur') partnerAnim.innerHTML = '<div class="anim-tidur">💤</div>';
-    else partnerAnim.innerHTML = '<div class="anim-idle">✨</div>';
-  }
-
   function spawnHearts(count) {
     for(let i=0; i<count; i++) {
       setTimeout(() => {
         const heart = document.createElement('div');
-        heart.className = 'heart';
-        heart.innerText = '❤️';
+        heart.className = 'heart'; heart.innerText = '❤️';
         heart.style.left = (Math.random() * 80 + 10) + '%';
         heart.style.bottom = (Math.random() * 20 + 10) + '%';
         document.body.appendChild(heart);
@@ -289,58 +357,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function sendPushToPartner(pesan) {
     try {
-      const { data: partnerData } = await supabaseClient
-        .from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).single();
-
+      const { data: partnerData } = await supabaseClient.from('profiles').select('onesignal_id').neq('id', currentUser.id).not('onesignal_id', 'is', null).limit(1).single();
       if (!partnerData || !partnerData.onesignal_id) return;
-
       fetch('https://onesignal.com/api/v1/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + ONESIGNAL_REST_API_KEY },
-        body: JSON.stringify({
-          app_id: ONESIGNAL_APP_ID,
-          include_player_ids: [partnerData.onesignal_id],
-          headings: { en: 'LoveLink 💌' },
-          contents: { en: pesan }
-        })
+        body: JSON.stringify({ app_id: ONESIGNAL_APP_ID, include_player_ids: [partnerData.onesignal_id], headings: { en: 'LoveLink 💌' }, contents: { en: pesan } })
       });
-    } catch (err) { console.error(err); }
+    } catch (err) {}
   }
 
-  // --- SESSION & REALTIME ---
+  // --- SESSION & REALTIME (MENERIMA UPDATE DARI PACAR) ---
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (session) {
       currentUser = session.user;
       authCard.classList.add('hidden');
       dashboardCard.classList.remove('hidden');
 
-      // Ambil data status & skor kangen terbaru
       const { data: myData } = await supabaseClient.from('user_status').select('*').eq('id', currentUser.id).single();
-      if (myData) {
-        kangenScoreEl.innerText = myData.kangen_score || 0;
-        document.querySelectorAll('.status-btn').forEach(b => {
-          if (b.getAttribute('data-act') === myData.activity) b.classList.add('active');
-        });
-      }
+      if (myData) kangenScoreEl.innerText = myData.kangen_score || 0;
 
-      // Simpan Device ID
       OneSignalDeferred.push(async function(OneSignal) {
         const playerId = await OneSignal.getUserId();
         if (playerId) await supabaseClient.from('profiles').update({ onesignal_id: playerId }).eq('id', currentUser.id);
       });
 
-      // REALTIME LISTENER
       window.statusChannel = supabaseClient.channel('realtime_status')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_status' }, payload => {
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_status' }, payload => {
           const newData = payload.new;
           
           if (newData.id !== currentUser.id) {
-            // Kalau pacar update STATUS
-            renderPartnerStatus(newData.activity);
-            
-            // Update Kangen Score
-            if(newData.kangen_score !== undefined) {
+            // Kalau pacar update Kangen Score
+            if(newData.kangen_score) {
                 kangenScoreEl.innerText = newData.kangen_score;
+                spawnHearts(3); // Munculin hati di layar kita
+            }
+
+            // Kalau pacar muter roda tantangan
+            if (newData.spin_result) {
+               const index = challenges.indexOf(newData.spin_result);
+               if (index !== -1) {
+                 spinModal.classList.add('show');
+                 spinResult.innerText = "Pacar lu muter rodanya!";
+                 
+                 // Kasih delay dikit biar user sadar modalnya kebuka
+                 setTimeout(() => {
+                    animateWheelTo(index, newData.spin_result);
+                 }, 500);
+               }
             }
           }
         })
