@@ -143,148 +143,58 @@
   .modal.show .modal-content { transform: translateY(0); }
   .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 20px; text-align: center; color: var(--primary); text-shadow: 0 2px 0 var(--primary-dark); }
 
-  .map-wrapper { position: relative; width: 100%; height: 280px; border-radius: var(--radius-lg); overflow: hidden; border: 4px solid var(--bg); margin-bottom: 24px; box-shadow: var(--shadow-3d-float), inset 0 0 20px rgba(0,0,0,0.8); }
-  #map { height: 100%; width: 100%; z-index: 1; background: var(--bg); }
-  .leaflet-tile-pane { filter: sepia(0.6) hue-rotate(-20deg) brightness(0.6) contrast(1.2) saturate(0.7) !important; }
-  .map-wrapper::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 30%, rgba(26, 21, 20, 0.9) 100%); z-index: 300; }
-  .leaflet-control-zoom { border: 2px solid var(--border) !important; border-radius: var(--radius-md) !important; overflow: hidden; box-shadow: var(--shadow-3d-float) !important; margin: 12px !important; }
-  .leaflet-control-zoom a { background: var(--surface) !important; color: var(--primary) !important; border-bottom: 2px solid var(--border) !important; width: 38px !important; height: 38px !important; line-height: 38px !important; font-weight: bold; font-size: 18px !important; }
-  .map-distance-badge { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 2px solid var(--border); color: var(--primary); font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 700; padding: 8px 20px; border-radius: var(--radius-pill); z-index: 400; box-shadow: 0 8px 15px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 6px; }
-  .custom-map-avatar { position: relative; width: 48px; height: 48px; }
-  .custom-map-avatar img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--surface); background: var(--surface); object-fit: cover; box-shadow: 0 12px 20px rgba(0,0,0,0.7); }
-  .custom-map-avatar .mode-icon { position: absolute; bottom: -8px; right: -8px; background: var(--bg); border-radius: 50%; width: 24px; height: 24px; display: grid; place-items: center; font-size: 14px; border: 2px solid var(--border); }
-  .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-  .mode-btn { padding: 12px; border-radius: var(--radius-md); border: none; background: var(--bg); color: var(--text-main); font-size: 28px; cursor: pointer; box-shadow: 0 5px 0 var(--border); }
-  .mode-btn:active { transform: translateY(5px); box-shadow: none; }
-  .mode-btn.active { background: var(--primary); color: var(--bg); box-shadow: 0 5px 0 var(--primary-dark); }
+  /* ===== SYNC SHORTS (TIKTOK STYLE) ===== */
+  #shortsModal { padding: 0; justify-content: flex-start; background: #000; }
+  #shortsModal .modal-content { height: 100vh; max-height: 100vh; padding: 0; border-radius: 0; background: #000; overflow: hidden; }
+  .shorts-feed { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; position: relative; }
+  .shorts-feed::-webkit-scrollbar { display: none; }
+  .shorts-slide { width: 100%; height: 100vh; scroll-snap-align: start; position: relative; scroll-snap-stop: always; background: #000; }
+  .yt-short-container { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .yt-short-container iframe { width: 100% !important; height: 100% !important; position: absolute !important; top: 0 !important; left: 0 !important; border: none !important; }
+  .shorts-header { position: absolute; top: 0; left: 0; right: 0; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); pointer-events: none; }
+  .shorts-header button { pointer-events: auto; }
+  .shorts-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; display: flex; gap: 10px; z-index: 100; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); }
+  .shorts-footer input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 20px; padding: 12px 16px; font-size: 14px; }
+  .shorts-footer input::placeholder { color: rgba(255,255,255,0.5); }
+  .shorts-footer button { background: var(--primary); color: var(--bg); border: none; border-radius: 20px; padding: 0 20px; font-weight: 800; font-family: 'Fredoka', sans-serif; cursor: pointer; font-size: 14px; }
+  .shorts-footer button:active { transform: scale(0.95); }
+  .shorts-footer button:disabled { opacity: 0.5; }
+  .shorts-empty { color: #fff; text-align: center; padding: 50px 20px; font-weight: bold; display: flex; height: 100vh; align-items: center; justify-content: center; font-size: 14px; line-height: 1.6; }
+  .shorts-overlay-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: #fff; padding: 16px 24px; border-radius: 16px; font-size: 14px; font-weight: 700; text-align: center; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+  .shorts-overlay-hint.show { opacity: 1; }
 
-  .note-color-picker { display: flex; gap: 12px; margin-bottom: 16px; justify-content: center; }
-  .color-option { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: var(--bounce); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
-  .color-option.active { transform: scale(1.15) translateY(-2px); border-color: var(--text-main); }
-  .color-yellow { background: #E5B98E; } .color-pink { background: #DCA3A5; } .color-blue { background: #B8C4A8; } .color-purple { background: #C4A8B8; }
-  .notes-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-height: 300px; overflow-y: auto; padding: 10px; background: var(--bg); border-radius: var(--radius-md); box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5); }
-  .sticky-note { padding: 16px; border-radius: 4px; color: #2C2421; font-family: 'Caveat', cursive; font-size: 24px; font-weight: 700; box-shadow: 2px 6px 10px rgba(0,0,0,0.5); position: relative; word-wrap: break-word; transform: rotate(var(--rot)); transition: all 0.3s; }
-  .sticky-note::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: rgba(255,255,255,0.4); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-  .note-bg-yellow { background: #E8C7A3; } .note-bg-pink { background: #DCB0B1; } .note-bg-blue { background: #C1CBA0; } .note-bg-purple { background: #C9A8B7; }
-  .note-delete { position: absolute; bottom: 5px; right: 8px; font-family: 'Quicksand', sans-serif; font-size: 12px; color: rgba(0,0,0,0.5); cursor: pointer; font-weight: 800; }
-  .notes-empty { grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--text-sub); font-weight: 700; padding: 20px; }
-
-  .timeline-container { max-height: 400px; overflow-y: auto; padding: 10px; background: var(--bg); border-radius: var(--radius-md); box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5); margin-bottom: 16px; }
-  .timeline-group { margin-bottom: 24px; position: relative; padding-left: 20px; }
-  .timeline-group::before { content: ''; position: absolute; left: 4px; top: 10px; bottom: -20px; width: 4px; border-radius: 2px; background: var(--border); }
-  .timeline-group:last-child::before { display: none; }
-  .timeline-date { font-family: 'Fredoka', sans-serif; font-size: 18px; font-weight: 600; color: var(--primary); margin-bottom: 12px; position: relative; text-shadow: 0 2px 0 var(--primary-dark); }
-  .timeline-date::before { content: '📍'; position: absolute; left: -24px; top: 2px; font-size: 16px; }
-  .memory-card { background: linear-gradient(145deg, var(--surface), var(--bg)); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; display: flex; gap: 12px; align-items: center; box-shadow: 0 4px 0 var(--border), 0 6px 10px rgba(0,0,0,0.3); }
-  .memory-img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-  .memory-info { flex: 1; }
-  .memory-title { font-weight: 800; font-size: 14px; color: var(--text-main); }
-  .memory-desc { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
-  .ai-cinematic-box { background: var(--surface-hover); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; display: none; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3); border-left: 4px solid var(--primary); }
-  .ai-cinematic-box.show { display: block; animation: pop-up 0.4s var(--bounce); }
-  .ai-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: var(--primary); margin-bottom: 8px; text-align: center; }
-  .ai-text { font-family: 'Playfair Display', serif; font-size: 15px; line-height: 1.6; color: var(--text-main); text-align: justify; text-indent: 20px; }
-
-  .ttt-status { font-family: 'Fredoka', sans-serif; font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 16px; color: var(--primary); text-shadow: 0 2px 0 var(--primary-dark); }
-  .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 260px; margin: 0 auto 20px; background: var(--bg); padding: 10px; border-radius: var(--radius-lg); box-shadow: inset 4px 4px 10px rgba(0,0,0,0.6); }
-  .ttt-cell { aspect-ratio: 1; background: linear-gradient(145deg, var(--surface), var(--bg)); border-radius: var(--radius-md); font-size: 40px; font-weight: 900; color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 0 var(--border); }
-  .ttt-cell:active { transform: translateY(4px); box-shadow: none; }
-  .ttt-cell.x { color: var(--primary); text-shadow: 0 2px 0 var(--primary-dark); }
-  .ttt-cell.o { color: var(--secondary); text-shadow: 0 2px 0 var(--secondary-dark); }
-
-  .wheel-container { position: relative; width: 240px; height: 240px; margin: 0 auto 20px; border-radius: 50%; box-shadow: 0 15px 30px rgba(0,0,0,0.6), 0 0 0 8px var(--surface), 0 0 0 10px var(--border); }
-  .wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); background: conic-gradient(#E5B98E 0deg 45deg, #DCA3A5 45deg 90deg, #B8C4A8 90deg 135deg, #C4A8B8 135deg 180deg, #E5B98E 180deg 225deg, #DCA3A5 225deg 270deg, #B8C4A8 270deg 315deg, #C4A8B8 315deg 360deg); }
-  .wheel-pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid var(--primary); z-index: 2; }
-  .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; background: linear-gradient(145deg, var(--surface), var(--bg)); border-radius: 50%; display: grid; place-items: center; font-size: 24px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.5); border: 2px solid var(--primary); }
-  .result-text { font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 600; color: var(--text-main); text-align: center; background: var(--bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5); }
-
-  .letter-item { background: var(--bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 12px; text-align: left; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4); border-left: 4px solid var(--secondary); }
-  .letter-item.locked { opacity: 0.6; border-left-color: var(--border); }
-  .letter-date { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; }
-  .letter-content { font-size: 14px; color: var(--text-main); line-height: 1.6; white-space: pre-wrap; font-weight: 600; }
-  .letter-lock-msg { font-size: 12px; color: var(--secondary); font-weight: 800; text-align: center; margin-top: 10px; }
-
-  .bucket-item { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 14px 16px; border-radius: var(--radius-md); margin-bottom: 10px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4); transition: 0.3s; }
-  .bucket-item.done { opacity: 0.5; }
-  .bucket-checkbox { width: 26px; height: 26px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: transparent; font-size: 14px; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5); transition: all 0.3s; }
-  .bucket-item.done .bucket-checkbox { background: var(--tertiary); color: var(--bg); box-shadow: 0 2px 0 #8C9A7B; }
-  .bucket-text { flex: 1; font-size: 14px; color: var(--text-main); text-align: left; font-weight: 700; }
-  .bucket-item.done .bucket-text { text-decoration: line-through; color: var(--text-sub); }
-  .bucket-delete { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 18px; padding: 5px; }
-  .bucket-delete:hover { color: var(--secondary); }
-
-  #incomingReminderModal { justify-content: center; }
-  #incomingReminderModal .modal-content { border-radius: var(--radius-xl); transform: scale(0.9); max-width: 340px; }
-  #incomingReminderModal.show .modal-content { transform: scale(1); }
-  #incomingReminderModal h2 { color: var(--primary); font-size: 24px; }
-  #incomingReminderModal p { font-size: 16px; font-weight: 700; line-height: 1.5; margin-bottom: 24px; background: var(--bg); padding: 20px; border-radius: var(--radius-md); color: var(--text-main); box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5); }
-  #incomingReminderModal .btn { background: var(--primary); color: var(--bg); }
-
-  .heart { position: fixed; font-size: 28px; pointer-events: none; z-index: 999; animation: fallUp 2s ease-out forwards; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
-  @keyframes fallUp { 0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 1; } 100% { transform: translate3d(0, -150px, 0) scale(1.5); opacity: 0; } }
-
-  .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
-  .avatar-preset-btn { aspect-ratio: 1; border-radius: 16px; border: 3px solid transparent; background: linear-gradient(145deg, var(--surface), var(--bg)); padding: 3px; cursor: pointer; box-shadow: 0 4px 0 var(--border); transition: all 0.15s; overflow: hidden; position: relative; }
-  .avatar-preset-btn img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; display: block; }
-  .avatar-preset-btn.active { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-dark), 0 6px 12px rgba(229,185,142,0.4); }
-  .avatar-preset-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--border); }
-  .avatar-preset-label { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 800; color: var(--text-main); background: rgba(0,0,0,0.55); padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
-  .avatar-preview-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
-  .avatar-preview-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; background: var(--bg); box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 0 4px var(--surface), 0 0 0 6px var(--primary); }
-
-  .video-container { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: var(--radius-md); overflow: hidden; background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); margin-bottom: 16px; border: 2px solid var(--border); }
-  .video-container iframe, .video-container > div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-  .sync-status { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 10px; font-weight: 700; }
-  .sync-status.connected { color: var(--tertiary); }
-
-  /* ===== SYNC MUSIC ===== */
+  /* ===== MUSIC PLAYER ===== */
   .music-player { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .vinyl-container { position: relative; width: 200px; height: 200px; margin: 0 auto; }
-  .vinyl-record {
-    width: 100%; height: 100%; border-radius: 50%;
-    background: repeating-radial-gradient(circle at center, #0a0a0a 0, #0a0a0a 2px, #1a1514 2px, #1a1514 4px), radial-gradient(circle, #2C2421, #0a0a0a);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.9);
-    animation: spin 4s linear infinite; animation-play-state: paused; position: relative;
-  }
+  .vinyl-record { width: 100%; height: 100%; border-radius: 50%; background: repeating-radial-gradient(circle at center, #0a0a0a 0, #0a0a0a 2px, #1a1514 2px, #1a1514 4px), radial-gradient(circle, #2C2421, #0a0a0a); box-shadow: 0 15px 30px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.9); animation: spin 4s linear infinite; animation-play-state: paused; position: relative; }
   .music-player.playing .vinyl-record { animation-play-state: running; }
   .vinyl-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90px; height: 90px; border-radius: 50%; background: var(--primary); border: 4px solid var(--surface); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 0 2px var(--primary-dark), 0 4px 8px rgba(0,0,0,0.5); }
   .vinyl-center img { width: 100%; height: 100%; object-fit: cover; }
   .vinyl-center::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; background: var(--bg); border-radius: 50%; box-shadow: 0 0 0 3px var(--primary-dark); }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
   .music-note { position: absolute; color: var(--primary); font-size: 22px; opacity: 0; animation: floatNote 3s ease-in-out infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
   .music-note.n1 { top: 10%; left: -10px; animation-delay: 0s; }
   .music-note.n2 { top: 25%; right: -15px; animation-delay: 1s; }
   .music-note.n3 { bottom: 15%; left: -20px; animation-delay: 2s; }
   .music-player.playing .music-note { opacity: 0.8; }
   @keyframes floatNote { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 20% { opacity: 0.8; } 100% { transform: translateY(-60px) rotate(20deg); opacity: 0; } }
-
   .music-info { text-align: center; width: 100%; }
   .music-title { font-family: 'Fredoka', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
   .music-artist { font-size: 12px; color: var(--text-sub); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
-
   .music-progress-bar { width: 100%; height: 8px; background: var(--bg); border-radius: 4px; cursor: pointer; overflow: hidden; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.6); }
   .music-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; border-radius: 4px; transition: width 0.3s linear; }
   .music-times { display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: var(--text-sub); font-weight: 800; margin-top: -8px; }
-
   .music-controls { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 4px; }
-  .music-ctrl-btn {
-    width: 44px; height: 44px; border-radius: 50%; border: none;
-    background: linear-gradient(145deg, var(--surface), var(--bg)); color: var(--primary);
-    font-size: 18px; cursor: pointer; box-shadow: 0 4px 0 var(--border), inset 1px 1px 2px rgba(255,255,255,0.05);
-    display: grid; place-items: center; transition: all 0.1s;
-  }
+  .music-ctrl-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(145deg, var(--surface), var(--bg)); color: var(--primary); font-size: 18px; cursor: pointer; box-shadow: 0 4px 0 var(--border), inset 1px 1px 2px rgba(255,255,255,0.05); display: grid; place-items: center; transition: all 0.1s; }
   .music-ctrl-btn.active { background: var(--primary); color: var(--bg); box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5); transform: translateY(2px); }
   .music-ctrl-btn.big { width: 58px; height: 58px; font-size: 24px; background: var(--primary); color: var(--bg); box-shadow: 0 5px 0 var(--primary-dark); }
   .music-ctrl-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--border); }
   .music-ctrl-btn.big:active { box-shadow: 0 0 0 var(--primary-dark); }
-
   .volume-container { width: 100%; display: flex; align-items: center; gap: 10px; margin-top: 8px; background: var(--bg); padding: 8px 12px; border-radius: var(--radius-pill); box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4); }
   .volume-icon { font-size: 16px; color: var(--text-sub); }
   .volume-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--surface); border-radius: 3px; outline: none; padding: 0; box-shadow: none; border: none; }
   .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
   .volume-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-
   .music-queue-list { max-height: 180px; overflow-y: auto; background: var(--bg); border-radius: var(--radius-md); padding: 8px; box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5); }
   .queue-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background 0.2s; margin-bottom: 4px; }
   .queue-item:hover { background: var(--surface-hover); }
@@ -299,7 +209,6 @@
 
   .hidden { display: none !important; }
   .error { color: var(--secondary); font-size: 13px; font-weight: 700; margin-top: 10px; min-height: 20px; text-align: center; }
-
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
@@ -393,6 +302,10 @@
       <div class="partner-activity" id="partnerActivity">Nunggu update...</div>
     </div>
 
+    <button class="cute-action-btn" id="btnOpenShorts">
+      <div class="icon-wrap"><div class="icon">🎬</div></div>
+      <div class="text">Sync Shorts</div>
+    </button>
     <button class="cute-action-btn" id="btnOpenSyncWatch">
       <div class="icon-wrap"><div class="icon">🍿</div></div>
       <div class="text">Sync Watch</div>
@@ -451,6 +364,22 @@
     </div>
 
     <button class="btn span-full" style="background: var(--bg); color: var(--text-sub); margin-top: 10px; box-shadow: 0 4px 0 var(--border);" id="btnLogout">Keluar Akun</button>
+  </div>
+</div>
+
+<!-- MODAL SYNC SHORTS -->
+<div class="modal" id="shortsModal">
+  <div class="modal-content">
+    <div class="shorts-header">
+      <button id="btnCloseShorts" style="background: rgba(0,0,0,0.5); border: none; color: white; font-size: 20px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto;">✕</button>
+      <div style="color: white; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Scroll Bareng 🎬</div>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="shorts-feed" id="shortsFeed"></div>
+    <div class="shorts-footer">
+      <input type="text" id="shortsUrlInput" placeholder="Paste link YouTube Shorts...">
+      <button id="btnAddShort">Tambah</button>
+    </div>
   </div>
 </div>
 
@@ -617,7 +546,6 @@
 <div class="modal" id="bucketModal"><div class="modal-content"><h2>🎯 Bucket List</h2><div style="display:flex;gap:8px;margin-bottom:16px;"><input type="text" id="bucketInput" placeholder="Mau ngapain?" style="margin-bottom:0;"><button class="btn btn-primary" id="btnAddBucket" style="width:auto;padding:0 20px;font-size:24px;">+</button></div><div id="bucketListContainer" style="max-height:300px;overflow-y:auto;margin-bottom:16px;"></div><button class="btn" id="btnCloseBucket">Tutup</button></div></div>
 
 <script>
-// === YOUTUBE API GLOBAL ===
 window.onYouTubeIframeAPIReady = function() {
   window.ytApiReady = true;
   if (window.initYtPlayerIfPending) window.initYtPlayerIfPending();
@@ -856,7 +784,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const ytContainer = document.getElementById('ytContainer');
   const syncStatus = document.getElementById('syncStatus');
 
-  // === SYNC MUSIC DOM v3 ===
+  // === SYNC SHORTS DOM ===
+  const shortsModal = document.getElementById('shortsModal');
+  const btnOpenShorts = document.getElementById('btnOpenShorts');
+  const btnCloseShorts = document.getElementById('btnCloseShorts');
+  const shortsFeed = document.getElementById('shortsFeed');
+  const shortsUrlInput = document.getElementById('shortsUrlInput');
+  const btnAddShort = document.getElementById('btnAddShort');
+
+  // === SYNC MUSIC DOM ===
   const musicModal = document.getElementById('musicModal');
   const btnOpenMusic = document.getElementById('btnOpenMusic');
   const btnCloseMusic = document.getElementById('btnCloseMusic');
@@ -883,14 +819,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSyncVideoId = null;
   let syncChannel = null;
 
-  // === MUSIC STATE v3 ===
+  // === SYNC SHORTS STATE ===
+  let shortsChannel = null;
+  let shortsQueue = [];
+  let shortsPlayers = {};
+  let currentShortIndex = 0;
+  let currentShortVideoId = null;
+  let isRemoteScroll = false;
+  let shortsObserver = null;
+  let shortsRenderTimeout = null;
+
+  // === MUSIC STATE ===
   let musicYtPlayer = null;
   let musicChannel = null;
   let currentMusicVideoId = null;
   let musicQueue = [];
   let isRemoteMusicAction = false;
   let musicProgressInterval = null;
-  
+  let musicInitErrorCount = 0;
   let isShuffle = false;
   let repeatMode = 'off';
   let currentVolume = 100;
@@ -920,9 +866,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // === FIXED YOUTUBE ID EXTRACTOR ===
+  // ==========================================
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    url = url.trim();
+    const patterns = [
+      /youtu\.be\/([^#\&\?\/\s]+)/,
+      /[?&]v=([^#\&\?\/\s]+)/,
+      /\/embed\/([^#\&\?\/\s]+)/,
+      /\/shorts\/([^#\&\?\/\s]+)/,
+      /\/v\/([^#\&\?\/\s]+)/
+    ];
+    for (const p of patterns) {
+      const m = url.match(p);
+      if (m && m[1] && m[1].length === 11) return m[1];
+    }
+    return null;
+  }
+
+  // ==========================================
   // === SYNC WATCH LOGIC ===
   // ==========================================
-  function extractYouTubeId(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : null; }
   function showSyncStatus(text, isConnected) { syncStatus.innerText = text; syncStatus.className = 'sync-status ' + (isConnected ? 'connected' : ''); }
   window.isRemoteYtAction = false;
 
@@ -966,7 +931,277 @@ document.addEventListener('DOMContentLoaded', () => {
   btnLoadVideo.addEventListener('click', () => { const url = ytUrlInput.value.trim(); if (!url) return alert('Paste link dulu!'); const vid = extractYouTubeId(url); if (!vid) return alert('Format invalid!'); loadNewVideo(vid); });
 
   // ==========================================
-  // === SYNC MUSIC LOGIC v3 ===
+  // === FIXED SYNC SHORTS LOGIC ===
+  // ==========================================
+  function destroyAllShortPlayers() {
+    Object.values(shortsPlayers).forEach(p => {
+      try { if (p && typeof p.destroy === 'function') p.destroy(); } catch(e){}
+    });
+    shortsPlayers = {};
+  }
+
+  function shortsQueueHash(queue) {
+    return queue.map(v => v.videoId).join('|');
+  }
+
+  function renderShortsFeed(preserveCurrent) {
+    const prevVideoId = preserveCurrent ? currentShortVideoId : null;
+    
+    if (shortsRenderTimeout) { clearTimeout(shortsRenderTimeout); shortsRenderTimeout = null; }
+    if (shortsObserver) { shortsObserver.disconnect(); shortsObserver = null; }
+    destroyAllShortPlayers();
+    
+    if (shortsQueue.length === 0) {
+      shortsFeed.innerHTML = '<div class="shorts-empty">Belum ada video.<br><br>Tambah link YouTube Shorts di bawah! 🎬</div>';
+      currentShortIndex = 0;
+      currentShortVideoId = null;
+      return;
+    }
+    
+    shortsFeed.innerHTML = '';
+    shortsQueue.forEach((vid, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'shorts-slide';
+      slide.dataset.index = i;
+      slide.dataset.videoId = vid.videoId;
+      slide.innerHTML = `<div id="yt-short-${i}" class="yt-short-container"></div>`;
+      shortsFeed.appendChild(slide);
+    });
+    
+    let startIndex = 0;
+    if (prevVideoId) {
+      const found = shortsQueue.findIndex(v => v.videoId === prevVideoId);
+      if (found >= 0) startIndex = found;
+    }
+    currentShortIndex = startIndex;
+    currentShortVideoId = shortsQueue[startIndex]?.videoId || null;
+    
+    shortsRenderTimeout = setTimeout(() => {
+      const targetSlide = shortsFeed.children[startIndex];
+      if (targetSlide) targetSlide.scrollIntoView({ behavior: 'auto', block: 'start' });
+      manageShortPlayers(startIndex);
+      initShortsObserver();
+    }, 200);
+  }
+
+  function manageShortPlayers(activeIndex) {
+    if (shortsQueue.length === 0) return;
+    if (activeIndex < 0 || activeIndex >= shortsQueue.length) activeIndex = 0;
+    
+    shortsQueue.forEach((vid, i) => {
+      const shouldExist = Math.abs(i - activeIndex) <= 1;
+      
+      if (shouldExist) {
+        if (!shortsPlayers[i]) {
+          const elId = `yt-short-${i}`;
+          const el = document.getElementById(elId);
+          if (!el) return;
+          
+          shortsPlayers[i] = new YT.Player(elId, {
+            videoId: vid.videoId,
+            playerVars: {
+              playsinline: 1,
+              loop: 1,
+              playlist: vid.videoId,
+              controls: 0,
+              rel: 0,
+              modestbranding: 1,
+              fs: 0,
+              disablekb: 1,
+              showinfo: 0,
+              iv_load_policy: 3
+            },
+            events: {
+              'onReady': (e) => {
+                try {
+                  const iframe = e.target.getIframe();
+                  if (iframe) {
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.position = 'absolute';
+                    iframe.style.top = '0';
+                    iframe.style.left = '0';
+                    iframe.style.border = 'none';
+                  }
+                } catch(err){}
+                
+                if (i === currentShortIndex) {
+                  try { e.target.setVolume(100); e.target.playVideo(); } catch(err){}
+                }
+              },
+              'onStateChange': (e) => {
+                if (e.data === YT.PlayerState.ENDED && i === currentShortIndex) {
+                  try { e.target.seekTo(0); e.target.playVideo(); } catch(err){}
+                }
+              },
+              'onError': (e) => {
+                console.warn('YT Short error at index', i, ':', e.data);
+              }
+            }
+          });
+        } else {
+          try {
+            if (i === activeIndex) shortsPlayers[i].playVideo();
+            else shortsPlayers[i].pauseVideo();
+          } catch(err){}
+        }
+      } else {
+        if (shortsPlayers[i]) {
+          try { shortsPlayers[i].destroy(); } catch(err){}
+          delete shortsPlayers[i];
+        }
+      }
+    });
+  }
+
+  function initShortsObserver() {
+    if (shortsObserver) shortsObserver.disconnect();
+    shortsObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          const index = parseInt(entry.target.dataset.index);
+          if (isNaN(index)) return;
+          if (currentShortIndex !== index) {
+            currentShortIndex = index;
+            currentShortVideoId = shortsQueue[index]?.videoId || null;
+            manageShortPlayers(index);
+            if (!isRemoteScroll && shortsChannel) {
+              shortsChannel.send({ type: 'broadcast', event: 'swipe', payload: { index, videoId: currentShortVideoId } });
+            }
+          }
+        }
+      });
+    }, { threshold: [0.5, 0.6, 0.75], root: shortsFeed });
+    
+    document.querySelectorAll('.shorts-slide').forEach(slide => shortsObserver.observe(slide));
+  }
+
+  async function saveShortsQueue() {
+    if (!currentUser) return;
+    await supabaseClient.from('couple_settings').update({ shorts_queue: shortsQueue }).eq('id', 1);
+  }
+
+  btnOpenShorts.addEventListener('click', async () => {
+    shortsModal.classList.add('show');
+    
+    if (shortsQueue.length === 0 && currentUser) {
+      const { data } = await supabaseClient.from('couple_settings').select('shorts_queue').eq('id', 1).maybeSingle();
+      if (data && Array.isArray(data.shorts_queue)) shortsQueue = data.shorts_queue;
+    }
+    
+    renderShortsFeed(false);
+    
+    if (!shortsChannel) {
+      shortsChannel = supabaseClient.channel('sync_shorts_room');
+      
+      shortsChannel.on('broadcast', { event: 'swipe' }, payload => {
+        const { index, videoId } = payload.payload;
+        if (!shortsFeed.children[index]) return;
+        
+        isRemoteScroll = true;
+        currentShortIndex = index;
+        currentShortVideoId = videoId;
+        manageShortPlayers(index);
+        
+        shortsFeed.children[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        clearTimeout(window.shortsRemoteScrollTimeout);
+        window.shortsRemoteScrollTimeout = setTimeout(() => { isRemoteScroll = false; }, 1500);
+      });
+      
+      shortsChannel.on('broadcast', { event: 'queue_update' }, payload => {
+        const newQueue = payload.payload.queue;
+        if (!Array.isArray(newQueue)) return;
+        const newHash = shortsQueueHash(newQueue);
+        const oldHash = shortsQueueHash(shortsQueue);
+        if (newHash === oldHash) return;
+        shortsQueue = newQueue;
+        if (shortsModal.classList.contains('show')) renderShortsFeed(true);
+      });
+      
+      shortsChannel.on('broadcast', { event: 'request_state' }, () => {
+        if (shortsModal.classList.contains('show') && currentShortVideoId) {
+          shortsChannel.send({
+            type: 'broadcast',
+            event: 'reply_state',
+            payload: { index: currentShortIndex, videoId: currentShortVideoId, queue: shortsQueue }
+          });
+        }
+      });
+      
+      shortsChannel.on('broadcast', { event: 'reply_state' }, payload => {
+        const { videoId, queue } = payload.payload;
+        if (!Array.isArray(queue) || queue.length === 0) return;
+        
+        const newHash = shortsQueueHash(queue);
+        const oldHash = shortsQueueHash(shortsQueue);
+        
+        if (newHash !== oldHash) {
+          shortsQueue = queue;
+          renderShortsFeed(false);
+        }
+        
+        setTimeout(() => {
+          const targetIdx = shortsQueue.findIndex(v => v.videoId === videoId);
+          if (targetIdx >= 0 && shortsFeed.children[targetIdx]) {
+            isRemoteScroll = true;
+            currentShortIndex = targetIdx;
+            currentShortVideoId = videoId;
+            manageShortPlayers(targetIdx);
+            shortsFeed.children[targetIdx].scrollIntoView({ behavior: 'auto', block: 'start' });
+            setTimeout(() => { isRemoteScroll = false; }, 1500);
+          }
+        }, 400);
+      });
+      
+      shortsChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setTimeout(() => {
+            if (shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'request_state', payload: {} });
+          }, 600);
+        }
+      });
+    }
+  });
+
+  btnCloseShorts.addEventListener('click', () => {
+    shortsModal.classList.remove('show');
+    if (shortsObserver) { shortsObserver.disconnect(); shortsObserver = null; }
+    if (shortsRenderTimeout) { clearTimeout(shortsRenderTimeout); shortsRenderTimeout = null; }
+    Object.values(shortsPlayers).forEach(p => {
+      try { if (p && typeof p.pauseVideo === 'function') p.pauseVideo(); } catch(e){}
+    });
+  });
+
+  btnAddShort.addEventListener('click', async () => {
+    const url = shortsUrlInput.value.trim();
+    if (!url) return alert('Paste link YouTube Shorts dulu!');
+    const vid = extractYouTubeId(url);
+    if (!vid) return alert('Link YouTube tidak valid bro!');
+    if (shortsQueue.some(s => s.videoId === vid)) return alert('Video ini sudah ada di antrian!');
+    
+    btnAddShort.disabled = true;
+    btnAddShort.innerText = 'Menambah...';
+    
+    try {
+      shortsQueue.push({ videoId: vid, addedBy: currentUser?.id });
+      await saveShortsQueue();
+      renderShortsFeed(true);
+      shortsUrlInput.value = '';
+      AudioManager.playPop();
+      
+      if (shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'queue_update', payload: { queue: shortsQueue } });
+      sendPushToPartner('🎬 Pacar nambahin Shorts baru!');
+    } catch(err) {
+      alert('Gagal menambah: ' + err.message);
+    } finally {
+      btnAddShort.disabled = false;
+      btnAddShort.innerText = 'Tambah';
+    }
+  });
+
+  // ==========================================
+  // === SYNC MUSIC LOGIC ===
   // ==========================================
   function formatTime(sec) { if (!sec || isNaN(sec) || sec < 0) return '0:00'; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
 
@@ -988,14 +1223,11 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         if (typeof musicYtPlayer.getPlayerState === 'function') {
           const state = musicYtPlayer.getPlayerState();
-          
           if (state !== YT.PlayerState.PLAYING) {
             if (seekTime > 0 && Math.abs((musicYtPlayer.getCurrentTime() || 0) - seekTime) > 3) {
               musicYtPlayer.seekTo(seekTime, true);
             }
             musicYtPlayer.playVideo();
-            
-            // Jika 5 kali mencoba tapi belum play, kasih hint
             if (attempts === 5 && state !== YT.PlayerState.PLAYING) {
                musicCurrentTime.innerText = 'Klik ▶️';
             }
@@ -1007,39 +1239,33 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } catch(e) {}
-      
       if (attempts >= 10) clearInterval(window.musicPlayInterval);
     }, 500);
   }
 
   window.initMusicPlayer = function(videoId, startTime = 0) {
-    if (!window.ytApiReady) { 
-      window.initMusicPlayerIfPending = () => window.initMusicPlayer(videoId, startTime); 
-      return; 
-    }
+    if (!window.ytApiReady) { window.initMusicPlayerIfPending = () => window.initMusicPlayer(videoId, startTime); return; }
     
-    if (musicYtPlayer && typeof musicYtPlayer.loadVideoById === 'function') { 
-      try { 
-        musicYtPlayer.loadVideoById({ videoId: videoId, startSeconds: startTime }); 
-        safePlayVideo(startTime);
-      } catch(e) { console.warn('loadVideoById error:', e); } 
-      return; 
+    // FIX: Handle case where player exists but not ready yet
+    if (musicYtPlayer) {
+      if (typeof musicYtPlayer.loadVideoById === 'function') {
+        try { 
+          musicYtPlayer.loadVideoById({ videoId: videoId, startSeconds: startTime }); 
+          safePlayVideo(startTime);
+        } catch(e) { console.warn('loadVideoById error:', e); }
+      } else {
+        // Player exists but not ready - retry in 500ms
+        setTimeout(() => window.initMusicPlayer(videoId, startTime), 500);
+      }
+      return;
     }
     
     musicYtPlayer = new YT.Player('musicYtPlayer', {
       height: '1', width: '1', videoId: videoId,
-      playerVars: { 
-        playsinline: 1, 
-        controls: 0, 
-        disablekb: 1, 
-        modestbranding: 1, 
-        rel: 0, 
-        fs: 0, 
-        origin: window.location.origin,
-        autoplay: 1
-      },
+      playerVars: { playsinline: 1, controls: 0, disablekb: 1, modestbranding: 1, rel: 0, fs: 0, origin: window.location.origin, autoplay: 1 },
       events: { 
         'onReady': (e) => { 
+          musicInitErrorCount = 0;
           try { 
             musicYtPlayer.setVolume(currentVolume); 
             safePlayVideo(startTime);
@@ -1048,7 +1274,14 @@ document.addEventListener('DOMContentLoaded', () => {
         'onStateChange': onMusicPlayerStateChange, 
         'onError': (e) => {
           console.warn('YT Music error:', e.data);
-          if (!isRemoteMusicAction) playNextMusic();
+          musicInitErrorCount++;
+          if (musicInitErrorCount < 3 && !isRemoteMusicAction) {
+            setTimeout(() => playNextMusic(), 1000);
+          } else {
+            musicInitErrorCount = 0;
+            musicTitle.innerText = 'Gagal memutar lagu';
+            musicArtist.innerText = 'Coba lagu lain ya';
+          }
         } 
       }
     });
@@ -1092,7 +1325,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const curr = musicYtPlayer.getCurrentTime() || 0;
       const dur = musicYtPlayer.getDuration() || 0;
-      
       if (dur === 0) {
         musicDuration.innerText = '0:00';
         if (musicCurrentTime.innerText !== 'Klik ▶️') {
@@ -1156,13 +1388,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (musicQueue.length === 0) return;
     const idx = musicQueue.findIndex(q => q.videoId === currentMusicVideoId);
     let nextIdx = idx + 1;
-    
     if (isShuffle) {
       if (musicQueue.length > 1) {
         do { nextIdx = Math.floor(Math.random() * musicQueue.length); } while (nextIdx === idx);
-      } else {
-        nextIdx = 0;
-      }
+      } else { nextIdx = 0; }
     } else if (nextIdx >= musicQueue.length) {
       if (repeatMode === 'all') { nextIdx = 0; } 
       else { updateMusicPlaying(false); return; }
@@ -1174,13 +1403,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (musicQueue.length === 0) return;
     const idx = musicQueue.findIndex(q => q.videoId === currentMusicVideoId);
     let prevIdx = idx - 1;
-    
     if (isShuffle) {
       if (musicQueue.length > 1) {
         do { prevIdx = Math.floor(Math.random() * musicQueue.length); } while (prevIdx === idx);
-      } else {
-        prevIdx = 0;
-      }
+      } else { prevIdx = 0; }
     } else if (prevIdx < 0) {
       if (repeatMode === 'all') { prevIdx = musicQueue.length - 1; } 
       else { prevIdx = 0; }
@@ -1190,13 +1416,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function removeFromQueue(idx) {
     const removed = musicQueue[idx];
+    const wasCurrent = removed.videoId === currentMusicVideoId;
+    
+    // Determine next song BEFORE removing
+    let nextCandidate = null;
+    if (wasCurrent) {
+      const nextIdx = idx + 1 < musicQueue.length ? idx + 1 : 0;
+      nextCandidate = musicQueue[nextIdx];
+    }
+    
     musicQueue.splice(idx, 1);
     await saveQueue();
     
-    if (removed.videoId === currentMusicVideoId) {
-      if (musicQueue.length > 0) playNextMusic();
-      else { 
-        currentMusicVideoId = null; 
+    if (wasCurrent) {
+      currentMusicVideoId = null;
+      if (nextCandidate && musicQueue.length > 0) {
+        const newIdx = musicQueue.findIndex(q => q.videoId === nextCandidate.videoId);
+        if (newIdx >= 0) playMusicFromQueue(newIdx);
+        else if (musicQueue.length > 0) playMusicFromQueue(0);
+      } else if (musicQueue.length > 0) {
+        playMusicFromQueue(0);
+      } else {
         musicTitle.innerText = 'Belum ada lagu'; 
         musicArtist.innerText = 'Paste link di bawah untuk mulai';
         updateMusicPlaying(false);
@@ -1240,7 +1480,6 @@ document.addEventListener('DOMContentLoaded', () => {
           try { musicYtPlayer.seekTo(time, true); } catch(e){}
         }
         
-        // Perpanjang jadi 3 detik biar ga infinite loop
         setTimeout(() => { isRemoteMusicAction = false; }, 3000);
       });
       
@@ -1264,25 +1503,20 @@ document.addEventListener('DOMContentLoaded', () => {
         musicQueue = data.queue || [];
         isShuffle = data.isShuffle; repeatMode = data.repeatMode; currentVolume = data.volume;
         currentMusicVideoId = data.videoId;
-        
         renderQueueUI();
         updateControlUI();
-        
         if (currentMusicVideoId && data.meta) {
           musicTitle.innerText = data.meta.title;
           musicArtist.innerText = data.meta.artist || '';
           musicCover.src = data.meta.thumbnail;
           window.initMusicPlayer(currentMusicVideoId, data.time);
-          
-          if (data.isPlaying) {
-             safePlayVideo(data.time);
-          }
+          if (data.isPlaying) safePlayVideo(data.time);
         }
       });
 
       musicChannel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          musicChannel.send({ type: 'broadcast', event: 'request_state', payload: {} });
+          setTimeout(() => { if (musicChannel) musicChannel.send({ type: 'broadcast', event: 'request_state', payload: {} }); }, 500);
         }
       });
     }
@@ -1359,6 +1593,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ==========================================
+  // REST OF FEATURES (Timeline, Notes, ShareLock, etc.)
   // ==========================================
 
   btnOpenTimeline.addEventListener('click', async () => { timelineModal.classList.add('show'); memTitle.value=''; memDesc.value=''; memFile.value=''; aiCinematicBox.classList.remove('show'); await loadMemories(); });
@@ -1471,11 +1707,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (countdownInterval) clearInterval(countdownInterval); if (gaugeInterval) clearInterval(gaugeInterval); if (watchId) navigator.geolocation.clearWatch(watchId);
     if (musicProgressInterval) { clearInterval(musicProgressInterval); musicProgressInterval = null; }
     if (window.musicPlayInterval) { clearInterval(window.musicPlayInterval); window.musicPlayInterval = null; }
+    if (shortsRenderTimeout) { clearTimeout(shortsRenderTimeout); shortsRenderTimeout = null; }
+    if (shortsObserver) { shortsObserver.disconnect(); shortsObserver = null; }
     isTracking = false; resetTrackingButton();
     if (currentUser) await supabaseClient.from('user_status').update({ latitude: null, longitude: null }).eq('id', currentUser.id);
     await supabaseClient.auth.signOut();
     ['statusChannel','bucketChannel','settingsChannel','reminderChannel','gameChannel','sharelockChannel','notesChannel','memoriesChannel'].forEach(ch => { if (window[ch]) { try { supabaseClient.removeChannel(window[ch]); } catch(e){} window[ch] = null; } });
     if (syncChannel) { try { supabaseClient.removeChannel(syncChannel); syncChannel = null; } catch(e){} }
+    if (shortsChannel) { try { supabaseClient.removeChannel(shortsChannel); shortsChannel = null; } catch(e){} }
     if (musicChannel) { try { supabaseClient.removeChannel(musicChannel); musicChannel = null; } catch(e){} }
     if (map) { try { map.remove(); } catch(e){} map = null; }
     const mapEl = document.getElementById('map');
@@ -1483,7 +1722,9 @@ document.addEventListener('DOMContentLoaded', () => {
     myMarker = null; partnerMarker = null; mapInitialized = false; lastPartnerLat = null; lastPartnerLng = null;
     if (window.ytPlayer) { try { window.ytPlayer.destroy(); } catch(e){} window.ytPlayer = null; }
     if (musicYtPlayer) { try { musicYtPlayer.destroy(); } catch(e){} musicYtPlayer = null; }
-    currentSyncVideoId = null; currentMusicVideoId = null; musicQueue = [];
+    destroyAllShortPlayers();
+    currentSyncVideoId = null; currentMusicVideoId = null; currentShortVideoId = null;
+    musicQueue = []; shortsQueue = [];
     updateMusicPlaying(false);
   });
 
@@ -1646,6 +1887,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (settingsData && settingsData.sync_video_id) currentSyncVideoId = settingsData.sync_video_id;
       if (settingsData && settingsData.sync_music_video_id) currentMusicVideoId = settingsData.sync_music_video_id;
       if (settingsData && Array.isArray(settingsData.music_queue)) { musicQueue = settingsData.music_queue; renderQueueUI(); }
+      if (settingsData && Array.isArray(settingsData.shorts_queue)) { shortsQueue = settingsData.shorts_queue; }
 
       const totalScore = (myData?.kangen_score || 0) + (partnerData?.kangen_score || 0);
       updateKangenGauge(totalScore, true);
@@ -1683,6 +1925,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newSettings.meet_date) renderCountdown(newSettings.meet_date); else renderCountdown(null);
         if (newSettings.sync_video_id && newSettings.sync_video_id !== currentSyncVideoId) { currentSyncVideoId = newSettings.sync_video_id; if (syncWatchModal.classList.contains('show')) loadNewVideo(currentSyncVideoId, true); }
         if (newSettings.music_queue && Array.isArray(newSettings.music_queue)) { musicQueue = newSettings.music_queue; renderQueueUI(); }
+        if (newSettings.shorts_queue && Array.isArray(newSettings.shorts_queue)) {
+          const newHash = shortsQueueHash(newSettings.shorts_queue);
+          const oldHash = shortsQueueHash(shortsQueue);
+          if (newHash !== oldHash) {
+            shortsQueue = newSettings.shorts_queue;
+            if (shortsModal.classList.contains('show')) renderShortsFeed(true);
+          }
+        }
       }).subscribe();
 
       window.notesChannel = supabaseClient.channel('realtime_notes').on('postgres_changes', { event: '*', schema: 'public', table: 'love_notes' }, async payload => { if (loveNotesModal.classList.contains('show')) { await loadNotes(); if (payload.eventType === 'INSERT' && payload.new.sender_id !== currentUser.id) AudioManager.playSticky(); } }).subscribe();
@@ -1696,4 +1946,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+          </html>
