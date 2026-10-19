@@ -109,8 +109,6 @@
   .modal-content { background: var(--surface); border-top: 2px solid var(--surface-hover); box-shadow: 0 -15px 40px rgba(0,0,0,0.6); width: 100%; max-width: 440px; padding: 24px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; text-align: left; transform: translateY(100%); transition: transform 0.4s var(--bounce); max-height: 90vh; overflow-y: auto; }
   .modal.show .modal-content { transform: translateY(0); }
   .modal-content h2 { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 20px; text-align: center; color: var(--primary); text-shadow: 0 2px 0 var(--primary-dark); }
-
-  /* ===== SYNC SHORTS (v7 OPTIMIZED) ===== */
   #shortsModal { padding: 0; justify-content: flex-start; background: #000; align-items: stretch; }
   #shortsModal .modal-content { position: relative; width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; padding: 0; border-radius: 0; background: #000; overflow: hidden; transform: translateY(0); transition: none; }
   #shortsModal.show .modal-content { transform: translateY(0); }
@@ -133,12 +131,10 @@
   .shorts-footer button:disabled { opacity: 0.6; }
   .shorts-empty { color: #fff; text-align: center; padding: 50px 20px; font-weight: bold; display: flex; height: 100%; align-items: center; justify-content: center; font-size: 14px; line-height: 1.8; }
   .shorts-empty span { color: var(--primary); }
-
   .video-container { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: var(--radius-md); overflow: hidden; background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); margin-bottom: 16px; border: 2px solid var(--border); }
   .video-container iframe, .video-container > div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
   .sync-status { font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 10px; font-weight: 700; }
   .sync-status.connected { color: var(--tertiary); }
-
   .music-player { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .vinyl-container { position: relative; width: 200px; height: 200px; margin: 0 auto; }
   .vinyl-record { width: 100%; height: 100%; border-radius: 50%; background: repeating-radial-gradient(circle at center, #0a0a0a 0, #0a0a0a 2px, #1a1514 2px, #1a1514 4px), radial-gradient(circle, #2C2421, #0a0a0a); box-shadow: 0 15px 30px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.9); animation: spin 4s linear infinite; animation-play-state: paused; position: relative; }
@@ -176,7 +172,6 @@
   .queue-artist { font-size: 10px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .queue-remove { background: transparent; border: none; color: var(--text-sub); font-size: 16px; cursor: pointer; padding: 4px; }
   .queue-empty { text-align: center; font-size: 12px; color: var(--text-sub); font-weight: 700; padding: 15px; }
-
   .map-wrapper { position: relative; width: 100%; height: 280px; border-radius: var(--radius-lg); overflow: hidden; border: 4px solid var(--bg); margin-bottom: 24px; }
   #map { height: 100%; width: 100%; z-index: 1; background: var(--bg); }
   .leaflet-tile-pane { filter: sepia(0.6) hue-rotate(-20deg) brightness(0.6) contrast(1.2) saturate(0.7) !important; }
@@ -644,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isLoginMode = true, currentUser = null, partnerId = null, isSpinning = false, lastSpinId = 0, lastPartnerScore = 0;
   let currentSyncVideoId = null, syncChannel = null;
   let shortsChannel = null, shortsQueue = [], currentShortIndex = 0, currentShortVideoId = null, isRemoteScroll = false, shortsObserver = null, shortsRenderTimeout = null;
-  let activeShortPlayer = null; // HANYA 1 PLAYER
+  let activeShortPlayer = null; 
   let musicYtPlayer = null, musicChannel = null, currentMusicVideoId = null, musicQueue = [], isRemoteMusicAction = false, musicProgressInterval = null, musicInitErrorCount = 0, isShuffle = false, repeatMode = 'off', currentVolume = 100;
 
   const relationshipStartDate = new Date('2026-01-01T00:00:00');
@@ -671,21 +666,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return o[Math.floor(Math.random() * o.length)] + my + "." + mi[Math.floor(Math.random() * mi.length)] + t.join(", ") + "." + c[Math.floor(Math.random() * c.length)];
   }
 
-  // ==========================================
-  // PERBAIKAN EKSTRAKSI ID (LIVE STREAM & SHORTS)
-  // ==========================================
   function extractYouTubeId(url) {
     if (!url) return null;
     url = url.trim();
-    // Ditambahkan pattern /live/ untuk live stream
-    const patterns = [ 
-      /youtu\.be\/([^#\&\?\/\s]+)/, 
-      /[?&]v=([^#\&\?\/\s]+)/, 
-      /\/embed\/([^#\&\?\/\s]+)/, 
-      /\/shorts\/([^#\&\?\/\s]+)/, 
-      /\/v\/([^#\&\?\/\s]+)/,
-      /\/live\/([^#\&\?\/\s]+)/ 
-    ];
+    const patterns = [ /youtu\.be\/([^#\&\?\/\s]+)/, /[?&]v=([^#\&\?\/\s]+)/, /\/embed\/([^#\&\?\/\s]+)/, /\/shorts\/([^#\&\?\/\s]+)/, /\/v\/([^#\&\?\/\s]+)/, /\/live\/([^#\&\?\/\s]+)/ ];
     for (const p of patterns) { const m = url.match(p); if (m && m[1] && m[1].length === 11) return m[1]; }
     return null;
   }
@@ -693,9 +677,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function showSyncStatus(t, c) { syncStatus.innerText = t; syncStatus.className = 'sync-status ' + (c ? 'connected' : ''); }
   window.isRemoteYtAction = false;
 
-  // ==========================================
-  // SYNC WATCH (FIXED STOP VIDEO BEFORE LOAD)
-  // ==========================================
   function initYtPlayer(vid) {
     if (!window.ytApiReady) { window.initYtPlayerIfPending = () => initYtPlayer(vid); return; }
     if (window.ytPlayer) { try { window.ytPlayer.stopVideo(); window.ytPlayer.destroy(); } catch(e){} }
@@ -726,9 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseSyncWatch.addEventListener('click', () => syncWatchModal.classList.remove('show'));
   btnLoadVideo.addEventListener('click', () => { const u = ytUrlInput.value.trim(); if (!u) return alert('Paste link!'); const v = extractYouTubeId(u); if (!v) return alert('Invalid! Cek format link YouTube/Live.'); loadNewVideo(v); });
 
-  // ==========================================
-  // SYNC SHORTS (v7 - 1 Player, Tap to Pause)
-  // ==========================================
   function destroyActiveShortPlayer() {
     if (activeShortPlayer) {
       try { activeShortPlayer.stopVideo(); } catch(e){}
@@ -760,7 +738,6 @@ document.addEventListener('DOMContentLoaded', () => {
       shortsFeed.appendChild(slide);
     });
     
-    // RESET KE AWAL SAAT REFRESH / RENDER BARU
     let startIdx = 0;
     currentShortIndex = startIdx;
     currentShortVideoId = shortsQueue[startIdx]?.videoId || null;
@@ -776,8 +753,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initShortPlayer(index) {
     if (shortsQueue.length === 0 || index < 0 || index >= shortsQueue.length) return;
-    
-    // Destroy player lama dulu (anti tabrakan audio)
     destroyActiveShortPlayer();
     
     const vid = shortsQueue[index].videoId;
@@ -803,7 +778,6 @@ document.addEventListener('DOMContentLoaded', () => {
           } catch(err){}
           try { e.target.setLoop(true); e.target.setVolume(100); e.target.playVideo(); } catch(err){}
           
-          // Deteksi kalau autoplay diblokir
           setTimeout(() => {
             try {
               const state = e.target.getPlayerState();
@@ -828,7 +802,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // TAP TO PAUSE / PLAY MANUAL
     const slide = shortsFeed.children[index];
     const overlay = slide?.querySelector('.shorts-touch-overlay');
     if (overlay) {
@@ -865,10 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function saveShortsQueue() { if (!currentUser) return; await supabaseClient.from('couple_settings').update({ shorts_queue: shortsQueue }).eq('id', 1); }
 
-  async function fetchWithProxy(url, timeoutMs = 20000) {
+  async function fetchWithProxy(url, timeoutMs = 15000) {
     const proxies = [
-      { url: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, isJson: true },
-      { url: `https://corsproxy.io/?${encodeURIComponent(url)}`, isJson: false }
+      { url: `https://r.jina.ai/http://${url.replace(/^https?:\/\//, '')}`, name: 'Jina' },
+      { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, name: 'AllOrigins' },
+      { url: `https://corsproxy.io/?${encodeURIComponent(url)}`, name: 'CorsProxy' }
     ];
     for (const proxy of proxies) {
       try {
@@ -878,11 +852,10 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(timeoutId);
         if (!res.ok) continue;
         const text = await res.text();
-        if (proxy.isJson) { try { const d = JSON.parse(text); if (d.contents) return d.contents; } catch(e) { continue; } }
-        else { if (text && text.length > 100) return text; }
+        if (text && text.length > 100) return text;
       } catch(e) { continue; }
     }
-    throw new Error('Proxy gagal.');
+    throw new Error('Semua proxy sedang sibuk. Coba lagi 1 menit lagi ya.');
   }
 
   async function fetchFromPlaylist(plId) {
@@ -1025,9 +998,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ==========================================
-  // SYNC MUSIC (FIXED STOP VIDEO)
-  // ==========================================
   function formatTime(s) { if (!s || isNaN(s) || s < 0) return '0:00'; return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`; }
 
   async function getYouTubeInfo(vid) {
@@ -1063,7 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (musicYtPlayer) {
       if (typeof musicYtPlayer.loadVideoById === 'function') { 
         try { 
-          musicYtPlayer.stopVideo(); // ANTI GHOST AUDIO
+          musicYtPlayer.stopVideo(); 
           musicYtPlayer.loadVideoById({ videoId: vid, startSeconds: st }); 
           safePlayVideo(st); 
         } catch(e){} 
@@ -1270,7 +1240,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (d > 0) { const nt = p * d; musicYtPlayer.seekTo(nt, true); if (musicChannel) musicChannel.send({ type: 'broadcast', event: 'music_sync', payload: { action: 'seek', time: nt } }); }
   });
 
-  // Other features (Timeline, Notes, ShareLock, etc.) - Sama seperti sebelumnya
   btnOpenTimeline.addEventListener('click', async () => { timelineModal.classList.add('show'); memTitle.value=''; memDesc.value=''; memFile.value=''; aiCinematicBox.classList.remove('show'); await loadMemories(); });
   btnCloseTimeline.addEventListener('click', () => timelineModal.classList.remove('show'));
   btnAddMemory.addEventListener('click', async () => {
