@@ -838,35 +838,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function saveShortsQueue() { if (!currentUser) return; await supabaseClient.from('couple_settings').update({ shorts_queue: shortsQueue }).eq('id', 1); }
 
-  // ==========================================
-  // JALUR UTAMA: RSS2JSON (Anti CORS)
-  // ==========================================
-  async function fetchViaRss2Json(rssUrl) {
-    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-    try {
-      const res = await fetch(apiUrl);
-      if (!res.ok) throw new Error('rss2json request failed');
-      const data = await res.json();
-      if (data.status !== 'ok' || !Array.isArray(data.items)) return null;
-      
-      const vids = [];
-      data.items.forEach(item => {
-        // item.link berformat https://www.youtube.com/watch?v=VIDEO_ID
-        const match = item.link.match(/[?&]v=([^&]+)/);
-        if (match && match[1].length === 11) {
-          vids.push({ videoId: match[1] });
-        }
-      });
-      return vids;
-    } catch (e) {
-      console.warn('rss2json error, fallback to proxy:', e);
-      return null; // Return null artinya kita coba fallback ke proxy
-    }
-  }
-
-  // ==========================================
-  // FALLBACK: PROXY LAMA
-  // ==========================================
   async function fetchWithProxy(url, timeoutMs = 15000) {
     const proxies = [
       { url: `https://r.jina.ai/http://${url.replace(/^https?:\/\//, '')}`, name: 'Jina' },
@@ -884,67 +855,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (text && text.length > 100) return text;
       } catch(e) { continue; }
     }
-    throw new Error('Semua proxy sedang sibuk. Coba lagi nanti.');
+    throw new Error('Semua proxy sedang sibuk. Coba lagi 1 menit lagi ya.');
   }
 
   async function fetchFromPlaylist(plId) {
-    const rssUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${plId}`;
-    
-    // 1. Coba via rss2json (paling stabil)
-    let vids = await fetchViaRss2Json(rssUrl);
-    if (vids !== null) return vids;
-
-    // 2. Fallback ke proxy
-    try {
-      const xmlStr = await fetchWithProxy(rssUrl);
-      const xml = new DOMParser().parseFromString(xmlStr, 'text/xml');
-      const entries = xml.querySelectorAll('entry');
-      const fallbackVids = [];
-      entries.forEach(e => { const v = e.getElementsByTagName('yt:videoId')[0]?.textContent; if (v && v.length === 11) fallbackVids.push({ videoId: v }); });
-      return fallbackVids;
-    } catch (e) {
-      throw new Error('Gagal memuat playlist. Pastikan playlist publik dan coba lagi.');
-    }
+    const url = `https://www.youtube.com/feeds/videos.xml?playlist_id=${plId}`;
+    const xmlStr = await fetchWithProxy(url);
+    const xml = new DOMParser().parseFromString(xmlStr, 'text/xml');
+    const entries = xml.querySelectorAll('entry');
+    const vids = [];
+    entries.forEach(e => { const v = e.getElementsByTagName('yt:videoId')[0]?.textContent; if (v && v.length === 11) vids.push({ videoId: v }); });
+    return vids;
   }
 
   async function fetchFromChannel(handle) {
     let cid = null;
     if (handle.startsWith('UC') && handle.length === 24) { cid = handle; }
     else {
-      // Coba ekstrak Channel ID dari HTML halaman channel
-      try {
-        const html = await fetchWithProxy(`https://www.youtube.com/${handle}`);
-        if (html) {
-          // Regex diperkuat untuk mencari channelId di berbagai tempat
-          const m = html.match(/"channelId":"(UC[A-Za-z0-9_-]{22})"/) || html.match(/channel_id=(UC[A-Za-z0-9_-]{22})/);
-          if (m) cid = m[1];
-        }
-      } catch (e) {
-        console.warn('Gagal ekstrak Channel ID:', e);
-      }
+      const html = await fetchWithProxy(`https://www.youtube.com/${handle}`);
+      if (!html) return [];
+      const m = html.match(/"channelId":"(UC[A-Za-z0-9_-]{22})"/) || html.match(/channel_id=(UC[A-Za-z0-9_-]{22})/);
+      if (m) cid = m[1];
     }
-    
-    if (!cid) {
-      throw new Error('Gagal menemukan ID channel. Coba paste link video dari channel tersebut, atau gunakan link playlist.');
-    }
-
-    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${cid}`;
-    
-    // 1. Coba via rss2json
-    let vids = await fetchViaRss2Json(rssUrl);
-    if (vids !== null) return vids;
-
-    // 2. Fallback ke proxy
-    try {
-      const xmlStr = await fetchWithProxy(rssUrl);
-      const xml = new DOMParser().parseFromString(xmlStr, 'text/xml');
-      const entries = xml.querySelectorAll('entry');
-      const fallbackVids = [];
-      entries.forEach(e => { const v = e.getElementsByTagName('yt:videoId')[0]?.textContent; if (v && v.length === 11) fallbackVids.push({ videoId: v }); });
-      return fallbackVids;
-    } catch (e) {
-      throw new Error('Gagal memuat video channel. Pastikan channel publik dan coba lagi.');
-    }
+    if (!cid) return [];
+    const url = `https://www.youtube.com/feeds/videos.xml?channel_id=${cid}`;
+    const xmlStr = await fetchWithProxy(url);
+    const xml = new DOMParser().parseFromString(xmlStr, 'text/xml');
+    const entries = xml.querySelectorAll('entry');
+    const vids = [];
+    entries.forEach(e => { const v = e.getElementsByTagName('yt:videoId')[0]?.textContent; if (v && v.length === 11) vids.push({ videoId: v }); });
+    return vids;
   }
 
   btnOpenShorts.addEventListener('click', async () => {
@@ -1022,41 +962,17 @@ document.addEventListener('DOMContentLoaded', () => {
         mode = 'playlist';
         const plId = lines[0].match(/[?&]list=([A-Za-z0-9_-]+)/)[1];
         btnAddShort.innerText = 'Memuat playlist...';
-        try {
-            const fetched = await fetchFromPlaylist(plId);
-            nv = fetched.filter(v => !shortsQueue.some(s => s.videoId === v.videoId));
-            if (nv.length === 0 && fetched.length > 0) {
-                alert('Semua video di playlist ini sudah ada di antrian.');
-                return;
-            }
-            if (fetched.length === 0) {
-                alert('Playlist kosong atau tidak dapat diakses. Pastikan playlist publik (bukan private/unlisted).');
-                return;
-            }
-        } catch (err) {
-            alert(err.message);
-            return;
-        }
+        const fetched = await fetchFromPlaylist(plId);
+        nv = fetched.filter(v => !shortsQueue.some(s => s.videoId === v.videoId));
+        if (fetched.length === 0) { alert('Playlist kosong/private.'); return; }
       } else if (/youtube\.com\/(@[A-Za-z0-9_.-]+|channel\/UC[A-Za-z0-9_-]{22})/.test(lines[0])) {
         mode = 'channel';
         const m = lines[0].match(/youtube\.com\/(@[A-Za-z0-9_.-]+|channel\/UC[A-Za-z0-9_-]{22})/);
         const handle = m[1].replace('channel/', '');
         btnAddShort.innerText = 'Memuat channel...';
-        try {
-            const fetched = await fetchFromChannel(handle);
-            nv = fetched.filter(v => !shortsQueue.some(s => s.videoId === v.videoId));
-            if (nv.length === 0 && fetched.length > 0) {
-                alert('Semua video dari channel ini sudah ada di antrian.');
-                return;
-            }
-            if (fetched.length === 0) {
-                alert('Channel tidak ditemukan atau tidak memiliki video publik.');
-                return;
-            }
-        } catch (err) {
-            alert(err.message);
-            return;
-        }
+        const fetched = await fetchFromChannel(handle);
+        nv = fetched.filter(v => !shortsQueue.some(s => s.videoId === v.videoId));
+        if (fetched.length === 0) { alert('Channel private/not found.'); return; }
       } else {
         mode = 'single';
         const v = extractYouTubeId(lines[0]);
@@ -1632,10 +1548,10 @@ document.addEventListener('DOMContentLoaded', () => {
       window.notesChannel = supabaseClient.channel('realtime_notes').on('postgres_changes', { event: '*', schema: 'public', table: 'love_notes' }, async p => { if (loveNotesModal.classList.contains('show')) { await loadNotes(); if (p.eventType === 'INSERT' && p.new.sender_id !== currentUser.id) AudioManager.playSticky(); } }).subscribe();
       window.memoriesChannel = supabaseClient.channel('realtime_memories').on('postgres_changes', { event: '*', schema: 'public', table: 'memories' }, async p => { if (timelineModal.classList.contains('show')) { await loadMemories(); if (p.eventType === 'INSERT' && p.new.sender_id !== currentUser.id) AudioManager.playNotif(); } }).subscribe();
     } else {
-      currentUser = null; partnerId = null; authCard.classList.add('hidden'); dashboardCard.classList.add('hidden');
+      currentUser = null; partnerId = null; authCard.classList.remove('hidden'); dashboardCard.classList.add('hidden');
     }
   });
 });
 </script>
 </body>
-  </html>
+</html>
