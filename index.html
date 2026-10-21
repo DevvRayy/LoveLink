@@ -1220,6 +1220,35 @@ input::placeholder,textarea::placeholder{color:var(--text-sub);opacity:.55}
 .modal.show .mode-btn:nth-child(1){animation-delay:0.32s}
 .modal.show .mode-btn:nth-child(2){animation-delay:0.39s}
 .modal.show .mode-btn:nth-child(3){animation-delay:0.46s}
+
+/* ============ v4: Sync Watch + Sync Shorts ============ */
+@keyframes glyph{from{transform:scale(.6);opacity:.95}to{transform:scale(1.6);opacity:0}}
+#syncWatchModal .modal-content{max-width:520px}
+.sw-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
+.sw-bar .sync-status{margin:0}
+.sw-dot{position:relative;width:8px;height:8px;border-radius:50%;background:var(--tertiary);flex:none}
+.sw-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--tertiary);animation:ping 1.8s ease-out infinite}
+.sw-stage{position:relative}
+.sw-stage .video-container{margin-bottom:12px;box-shadow:var(--shadow-elevated),0 0 40px -12px rgba(229,185,142,.3)}
+.sw-empty{display:grid;place-items:center;align-content:center;gap:6px;text-align:center;aspect-ratio:16/9;margin-bottom:14px;border-radius:var(--radius-md);background:var(--bg);box-shadow:inset 4px 4px 10px rgba(0,0,0,.5);color:var(--text-sub);font-weight:700;font-size:13px}
+.sw-empty .sw-emoji{font-size:40px;animation:bob 3s ease-in-out infinite}
+.sw-empty span{font-size:11px;opacity:.7}
+.sw-actions{display:flex;gap:8px;margin-bottom:12px}
+.sw-actions .btn{padding:11px 8px;font-size:13px}
+@media(orientation:landscape) and (max-height:520px){#syncWatchModal .modal-content{max-width:min(100%,720px)}#syncWatchModal .video-container{padding-bottom:0;height:min(56.25vw,62dvh)}}
+.sh-btn{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.5);color:#fff;font-size:18px;cursor:pointer;pointer-events:auto;transition:transform .15s var(--ease-out),opacity .2s}
+.sh-btn:active{transform:scale(.88)}
+.sh-btn.off{opacity:.5}
+.sh-title{display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.8)}
+.sh-title b{font-family:'Fredoka',sans-serif;font-size:16px}
+.sh-title span{font-size:11px;font-weight:800;padding:2px 10px;border-radius:50px;background:rgba(0,0,0,.5);color:var(--primary);font-variant-numeric:tabular-nums}
+.shorts-rail{position:absolute;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 98px);z-index:100;display:flex;flex-direction:column;gap:12px}
+.shorts-prog{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);height:3px;background:rgba(255,255,255,.15);z-index:100;pointer-events:none}
+.shorts-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));transform-origin:left;transform:scaleX(0);transition:transform .3s linear}
+.shorts-toast{position:absolute;top:calc(env(safe-area-inset-top,0px) + 68px);left:50%;z-index:110;padding:8px 16px;border-radius:50px;background:rgba(0,0,0,.7);color:#fff;font-size:12px;font-weight:800;opacity:0;pointer-events:none;transform:translate3d(-50%,-8px,0);transition:opacity .25s var(--ease-out),transform .3s var(--ease-expo);white-space:nowrap}
+.shorts-toast.show{opacity:1;transform:translate3d(-50%,0,0)}
+.sh-glyph{position:absolute;font-size:64px;color:#fff;pointer-events:none;animation:glyph .6s ease-out forwards;filter:drop-shadow(0 4px 12px rgba(0,0,0,.6))}
+#shortsModal .modal-content .heart{z-index:120}
 </style>
 </head>
 <body>
@@ -1302,12 +1331,10 @@ input::placeholder,textarea::placeholder{color:var(--text-sub);opacity:.55}
 <!-- SHORTS MODAL -->
 <div class="modal" id="shortsModal">
   <div class="modal-content">
-    <div class="shorts-header">
-      <button id="btnCloseShorts" style="background:rgba(0,0,0,0.5);border:none;color:white;font-size:20px;width:40px;height:40px;border-radius:50%;cursor:pointer;pointer-events:auto;">✕</button>
-      <div style="color:white;font-family:'Fredoka',sans-serif;font-weight:700;font-size:16px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">Scroll Bareng 🎬</div>
-      <div style="width:40px;"></div>
-    </div>
+    <div class="shorts-header"><button id="btnCloseShorts" class="sh-btn">✕</button><div class="sh-title"><b>Scroll Bareng</b><span id="shortsCount">–</span></div><button id="btnShortsSync" class="sh-btn" title="Sinkron swipe">🔗</button></div>
     <div class="shorts-feed" id="shortsFeed"></div>
+    <div class="shorts-rail"><button id="btnShortsLike" class="sh-btn">❤️</button><button id="btnShortsMute" class="sh-btn">🔊</button><button id="btnShortsDel" class="sh-btn">🗑️</button></div>
+    <div class="shorts-prog"><i id="shortsProg"></i></div><div class="shorts-toast" id="shortsToast"></div>
     <div class="shorts-footer">
       <textarea id="shortsUrlInput" placeholder="Paste link Shorts, playlist, channel, atau banyak link (1 per baris)..." rows="2"></textarea>
       <button id="btnAddShort">Tambah</button>
@@ -1347,8 +1374,10 @@ input::placeholder,textarea::placeholder{color:var(--text-sub);opacity:.55}
 <div class="modal" id="syncWatchModal">
   <div class="modal-content">
     <h2>🍿 Sync Watch</h2>
-    <div class="video-container" id="ytContainer" style="display:none;"><div id="ytPlayer"></div></div>
-    <div class="sync-status" id="syncStatus">Masukkan link YouTube.</div>
+    <div class="sw-bar"><span class="sw-dot"></span><div class="sync-status" id="syncStatus">Masukkan link YouTube.</div></div>
+    <div class="sw-stage"><div class="video-container" id="ytContainer" style="display:none;"><div id="ytPlayer"></div></div>
+      <div class="sw-empty" id="swEmpty"><div class="sw-emoji">🍿</div><div>Belum ada video<br><span>Paste link YouTube atau Live di bawah</span></div></div></div>
+    <div class="sw-actions" id="swActions" style="display:none;"><button class="btn" id="btnResync">🔄 Samain</button><button class="btn" id="btnChangeVideo">🎞️ Ganti video</button></div>
     <div class="input-group" id="ytInputGroup" style="margin-bottom:12px;"><input type="text" id="ytUrlInput" placeholder="Paste link YouTube atau Live..."></div>
     <button class="btn btn-accent" id="btnLoadVideo" style="margin-bottom:12px;">Putar 🎬</button>
     <button class="btn" id="btnCloseSyncWatch">Tutup</button>
@@ -1709,34 +1738,67 @@ document.addEventListener('DOMContentLoaded', () => {
   function showSyncStatus(t, c) { syncStatus.innerText = t; syncStatus.className = 'sync-status ' + (c ? 'connected' : ''); }
   window.isRemoteYtAction = false;
 
+  const swActions = document.getElementById('swActions'), swEmpty = document.getElementById('swEmpty'), btnChangeVideo = document.getElementById('btnChangeVideo'), btnResync = document.getElementById('btnResync');
+  let swLoop = null, swPending = null, swLastT = 0, swLastWall = 0, swLastPlaying = false, swLeader = false, swTick = 0, swForce = false, swLoadedId = null;
+  const swFmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  const swSend = (event, payload) => { if (syncChannel) { try { syncChannel.send({ type: 'broadcast', event, payload: payload || {} }); } catch (e) {} } };
+  const swPlayer = () => (window.ytPlayer && typeof window.ytPlayer.getCurrentTime === 'function') ? window.ytPlayer : null;
+  function swRemote(fn) { window.isRemoteYtAction = true; try { fn(); } catch (e) {} clearTimeout(window.swRemoteT); window.swRemoteT = setTimeout(() => { window.isRemoteYtAction = false; const p = swPlayer(); swLastT = p ? (p.getCurrentTime() || 0) : 0; swLastWall = Date.now(); swLastPlaying = p ? p.getPlayerState() === 1 : false; }, 1200); }
+  function swApply(time, playing, force) { const p = swPlayer(); if (!p) { swPending = { time, playing }; return; } const target = time + (playing ? 0.25 : 0), ct = p.getCurrentTime() || 0; swRemote(() => { if (force || Math.abs(ct - target) > 1.2) p.seekTo(target, true); if (playing) p.playVideo(); else p.pauseVideo(); }); }
+  function swWatch() {
+    const p = swPlayer(); if (!p) return; let st; try { st = p.getPlayerState(); } catch (e) { return; }
+    const t = p.getCurrentTime() || 0, now = Date.now(), playing = st === 1;
+    if (!window.isRemoteYtAction && swLastWall && st !== 3) {
+      const exp = swLastT + (swLastPlaying ? (now - swLastWall) / 1000 : 0);
+      if (Math.abs(t - exp) > 2) { swLeader = true; swSend('sync', { action: playing ? 'play' : 'pause', time: t }); showSyncStatus('⏩ Lompat ke ' + swFmt(t), true); }
+      else if (playing && swLeader && ++swTick % 5 === 0) swSend('sync', { action: 'tick', time: t });
+    }
+    swLastT = t; swLastWall = now; swLastPlaying = playing;
+  }
   function initYtPlayer(vid) {
     if (!window.ytApiReady) { window.initYtPlayerIfPending = () => initYtPlayer(vid); return; }
-    if (window.ytPlayer) { try { window.ytPlayer.stopVideo(); window.ytPlayer.destroy(); } catch(e){} }
-    ytContainer.style.display = 'block'; ytInputGroup.style.display = 'none'; btnLoadVideo.style.display = 'none';
-    window.ytPlayer = new YT.Player('ytPlayer', { height: '100%', width: '100%', videoId: vid, playerVars: { playsinline: 1, origin: window.location.origin, autoplay: 0 }, events: { 'onReady': () => showSyncStatus('Siap. Tekan play!', true), 'onStateChange': onPlayerStateChange } });
+    clearInterval(swLoop);
+    if (window.ytPlayer) { try { window.ytPlayer.stopVideo(); window.ytPlayer.destroy(); } catch (e) {} window.ytPlayer = null; }
+    if (!document.getElementById('ytPlayer')) { const d = document.createElement('div'); d.id = 'ytPlayer'; ytContainer.appendChild(d); }
+    swLoadedId = vid; swLastWall = 0; swLeader = false;
+    ytContainer.style.display = 'block'; swEmpty.style.display = 'none'; ytInputGroup.style.display = 'none'; btnLoadVideo.style.display = 'none'; swActions.style.display = 'flex';
+    window.ytPlayer = new YT.Player('ytPlayer', { height: '100%', width: '100%', videoId: vid, playerVars: { playsinline: 1, rel: 0, origin: window.location.origin, autoplay: 0 }, events: {
+      'onReady': () => { showSyncStatus('Siap. Tekan play!', true); if (swPending) { const q = swPending; swPending = null; setTimeout(() => swApply(q.time, q.playing, true), 400); } },
+      'onStateChange': onPlayerStateChange,
+      'onError': () => showSyncStatus('Video ini nggak bisa diputar, coba link lain', false) } });
+    swLoop = setInterval(swWatch, 1000);
   }
   function onPlayerStateChange(e) {
-    if (window.isRemoteYtAction || !syncChannel) return;
-    const t = window.ytPlayer.getCurrentTime();
-    if (e.data == YT.PlayerState.PLAYING) { syncChannel.send({ type: 'broadcast', event: 'sync', payload: { action: 'play', time: t } }); showSyncStatus('▶️ Sedang diputar', true); }
-    else if (e.data == YT.PlayerState.PAUSED) { syncChannel.send({ type: 'broadcast', event: 'sync', payload: { action: 'pause', time: t } }); showSyncStatus('⏸️ Di-pause', true); }
+    if (window.isRemoteYtAction || !syncChannel) return; const p = swPlayer(); if (!p) return; const t = p.getCurrentTime();
+    if (e.data == YT.PlayerState.PLAYING) { swLeader = true; swSend('sync', { action: 'play', time: t }); showSyncStatus('▶️ Sedang diputar', true); }
+    else if (e.data == YT.PlayerState.PAUSED) { swLeader = true; swSend('sync', { action: 'pause', time: t }); showSyncStatus('⏸️ Di-pause', true); }
   }
   async function loadNewVideo(vid, isRemote = false) {
     if (!vid) return alert('Link invalid!');
-    if (!isRemote) { await supabaseClient.from('couple_settings').update({ sync_video_id: vid }).eq('id', 1); sendPushToPartner('Pacar ngajak nonton! 🍿'); syncChannel.send({ type: 'broadcast', event: 'load_video', payload: { videoId: vid } }); }
+    if (isRemote && vid === swLoadedId && window.ytPlayer) { currentSyncVideoId = vid; return; }
+    if (!isRemote) { await supabaseClient.from('couple_settings').update({ sync_video_id: vid }).eq('id', 1); sendPushToPartner('Pacar ngajak nonton! 🍿'); swSend('load_video', { videoId: vid }); }
     currentSyncVideoId = vid; initYtPlayer(vid);
   }
-
   btnOpenSyncWatch.addEventListener('click', async () => {
     syncWatchModal.classList.add('show'); ytUrlInput.value = '';
     if (!syncChannel) {
       syncChannel = supabaseClient.channel('sync_watch_room');
-      syncChannel.on('broadcast', { event: 'sync' }, p => { if (!window.ytPlayer || typeof window.ytPlayer.getCurrentTime !== 'function') return; window.isRemoteYtAction = true; const { action, time } = p.payload; const ct = window.ytPlayer.getCurrentTime(); if (action === 'play') { if (Math.abs(ct - time) > 3) window.ytPlayer.seekTo(time, true); window.ytPlayer.playVideo(); } else if (action === 'pause') { if (Math.abs(ct - time) > 3) window.ytPlayer.seekTo(time, true); window.ytPlayer.pauseVideo(); } setTimeout(() => { window.isRemoteYtAction = false; }, 800); });
+      syncChannel.on('broadcast', { event: 'sync' }, p => { const { action, time } = p.payload; swLeader = false; const pl = swPlayer();
+        if (action === 'tick') { if (pl && pl.getPlayerState() === 1 && !window.isRemoteYtAction) swApply(time, true, false); return; }
+        swApply(time, action === 'play', false); showSyncStatus(action === 'play' ? '▶️ Pacar memutar' : '⏸️ Pacar pause', true); });
       syncChannel.on('broadcast', { event: 'load_video' }, p => { loadNewVideo(p.payload.videoId, true); safeVibrate([100, 50, 100]); });
-      syncChannel.subscribe(s => { if (s === 'SUBSCRIBED') showSyncStatus(currentSyncVideoId ? 'Terhubung' : 'Pilih video!', true); });
-    }
+      syncChannel.on('broadcast', { event: 'request_state' }, () => { const pl = swPlayer(); if (pl && currentSyncVideoId) swSend('reply_state', { videoId: currentSyncVideoId, time: pl.getCurrentTime() || 0, playing: pl.getPlayerState() === 1 }); });
+      syncChannel.on('broadcast', { event: 'reply_state' }, p => { const { videoId, time, playing } = p.payload; if (!videoId) return; const force = swForce; swForce = false;
+        if (videoId !== currentSyncVideoId || !window.ytPlayer) { swPending = { time, playing }; loadNewVideo(videoId, true); }
+        else if (swPlayer()) { if (force || Math.abs((swPlayer().getCurrentTime() || 0) - time) > 2) swApply(time, playing, true); if (force) showSyncStatus('✅ Udah sama dengan pacar', true); }
+        else swPending = { time, playing }; });
+      syncChannel.subscribe(s => { if (s === 'SUBSCRIBED') { showSyncStatus(currentSyncVideoId ? 'Terhubung' : 'Pilih video!', true); swSend('request_state'); } });
+    } else swSend('request_state');
+    if (currentSyncVideoId && !window.ytPlayer) initYtPlayer(currentSyncVideoId);
   });
-  btnCloseSyncWatch.addEventListener('click', () => syncWatchModal.classList.remove('show'));
+  btnCloseSyncWatch.addEventListener('click', () => { syncWatchModal.classList.remove('show'); const p = swPlayer(); if (p) swRemote(() => p.pauseVideo()); });
+  btnChangeVideo.addEventListener('click', () => { ytInputGroup.style.display = ''; btnLoadVideo.style.display = ''; ytUrlInput.focus(); });
+  btnResync.addEventListener('click', () => { swForce = true; swSend('request_state'); showSyncStatus('🔄 Menyamakan dengan pacar...', true); setTimeout(() => { swForce = false; }, 4000); });
   btnLoadVideo.addEventListener('click', () => { const u = ytUrlInput.value.trim(); if (!u) return alert('Paste link!'); const v = extractYouTubeId(u); if (!v) return alert('Invalid! Cek format link YouTube/Live.'); loadNewVideo(v); });
 
   function destroyActiveShortPlayer() {
@@ -1755,7 +1817,7 @@ document.addEventListener('DOMContentLoaded', () => {
     destroyActiveShortPlayer();
     if (shortsQueue.length === 0) {
       shortsFeed.innerHTML = '<div class="shorts-empty">Belum ada video.<br><br>Coba paste:<br><span>• Link Shorts</span><br><span>• Playlist YouTube</span><br><span>• Channel YouTube</span><br><span>• Banyak link (1 per baris)</span><br><br>di bawah! 🎬</div>';
-      currentShortIndex = 0; currentShortVideoId = null;
+      currentShortIndex = 0; currentShortVideoId = null; updateShortsHud();
       return;
     }
     shortsFeed.innerHTML = '';
@@ -1768,8 +1830,9 @@ document.addEventListener('DOMContentLoaded', () => {
       shortsFeed.appendChild(slide);
     });
     let startIdx = 0;
+    if (preserveCurrent && currentShortVideoId) { const fi = shortsQueue.findIndex(v => v.videoId === currentShortVideoId); startIdx = fi >= 0 ? fi : Math.min(currentShortIndex, shortsQueue.length - 1); }
     currentShortIndex = startIdx;
-    currentShortVideoId = shortsQueue[startIdx]?.videoId || null;
+    currentShortVideoId = shortsQueue[startIdx]?.videoId || null; updateShortsHud();
     shortsRenderTimeout = setTimeout(() => {
       if (shortsFeed.children[startIdx]) { shortsFeed.scrollTop = startIdx * shortsFeed.clientHeight; }
       initShortPlayer(startIdx);
@@ -1789,7 +1852,7 @@ document.addEventListener('DOMContentLoaded', () => {
       events: {
         'onReady': (e) => {
           try { const iframe = e.target.getIframe(); if (iframe) { iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.position = 'absolute'; iframe.style.top = '0'; iframe.style.left = '0'; iframe.style.border = 'none'; iframe.style.pointerEvents = 'none'; } } catch(err){}
-          try { e.target.setLoop(true); e.target.setVolume(100); e.target.playVideo(); } catch(err){}
+          try { e.target.setLoop(true); e.target.setVolume(100); if (shortsMuted) e.target.mute(); e.target.playVideo(); } catch(err){}
           setTimeout(() => {
             try {
               const state = e.target.getPlayerState();
@@ -1819,8 +1882,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           if (!activeShortPlayer) return;
           const state = activeShortPlayer.getPlayerState();
-          if (state === YT.PlayerState.PLAYING) { activeShortPlayer.pauseVideo(); isPlaying = false; overlay.style.background = 'rgba(255,255,255,0.05)'; }
-          else { activeShortPlayer.playVideo(); isPlaying = true; overlay.style.background = 'transparent'; }
+          if (state === YT.PlayerState.PLAYING) { activeShortPlayer.pauseVideo(); isPlaying = false; overlay.style.background = 'rgba(255,255,255,0.05)'; shortsGlyph(overlay, '⏸'); }
+          else { activeShortPlayer.playVideo(); isPlaying = true; overlay.style.background = 'transparent'; shortsGlyph(overlay, '▶'); }
         } catch(e){}
       };
     }
@@ -1835,9 +1898,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (isNaN(idx)) return;
           if (currentShortIndex !== idx) {
             currentShortIndex = idx;
-            currentShortVideoId = shortsQueue[idx]?.videoId || null;
+            currentShortVideoId = shortsQueue[idx]?.videoId || null; updateShortsHud();
             initShortPlayer(idx);
-            if (!isRemoteScroll && shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'swipe', payload: { index: idx, videoId: currentShortVideoId } });
+            if (!isRemoteScroll && shortsSyncOn && shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'swipe', payload: { index: idx, videoId: currentShortVideoId } });
           }
         }
       });
@@ -1888,24 +1951,40 @@ document.addEventListener('DOMContentLoaded', () => {
     return vids;
   }
 
+  let shortsMuted = false, shortsSyncOn = true, shortsHudTimer = null, shortsToastT = null;
+  const shortsCount = document.getElementById('shortsCount'), shortsProg = document.getElementById('shortsProg'), shortsToastEl = document.getElementById('shortsToast');
+  const btnShortsMute = document.getElementById('btnShortsMute'), btnShortsLike = document.getElementById('btnShortsLike'), btnShortsDel = document.getElementById('btnShortsDel'), btnShortsSync = document.getElementById('btnShortsSync');
+  function updateShortsHud() { if (shortsCount) shortsCount.innerText = shortsQueue.length ? (currentShortIndex + 1) + ' / ' + shortsQueue.length : '–'; }
+  function shortsToast(t) { if (!shortsToastEl) return; shortsToastEl.innerText = t; shortsToastEl.classList.add('show'); clearTimeout(shortsToastT); shortsToastT = setTimeout(() => shortsToastEl.classList.remove('show'), 1600); }
+  function startShortsHud() { stopShortsHud(); updateShortsHud(); shortsHudTimer = setInterval(() => { try { if (!activeShortPlayer || !shortsProg) return; const d = activeShortPlayer.getDuration(), c = activeShortPlayer.getCurrentTime(); if (d > 0) shortsProg.style.transform = 'scaleX(' + Math.min(c / d, 1) + ')'; } catch (e) {} }, 250); }
+  function stopShortsHud() { if (shortsHudTimer) { clearInterval(shortsHudTimer); shortsHudTimer = null; } }
+  function shortsGlyph(host, ch) { const g = document.createElement('div'); g.className = 'sh-glyph'; g.innerText = ch; host.appendChild(g); setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 650); }
+  function shortsHearts(remote) { const host = shortsModal.querySelector('.modal-content'); if (!host) return; for (let i = 0; i < 6; i++) { const h = document.createElement('div'); h.className = 'heart'; h.innerText = remote ? '💖' : '❤️'; h.style.right = (18 + Math.random() * 44) + 'px'; h.style.bottom = (130 + Math.random() * 30) + 'px'; h.style.left = 'auto'; h.style.fontSize = (22 + Math.random() * 14) + 'px'; h.style.animationDelay = (i * 0.08) + 's'; host.appendChild(h); setTimeout(() => { if (h.parentNode) h.parentNode.removeChild(h); }, 2400); } }
+  btnShortsLike.addEventListener('click', () => { shortsHearts(false); AudioManager.playPop(); if (shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'like', payload: {} }); });
+  btnShortsMute.addEventListener('click', () => { shortsMuted = !shortsMuted; btnShortsMute.innerText = shortsMuted ? '🔇' : '🔊'; try { if (activeShortPlayer) { if (shortsMuted) activeShortPlayer.mute(); else { activeShortPlayer.unMute(); activeShortPlayer.setVolume(100); } } } catch (e) {} });
+  btnShortsSync.addEventListener('click', () => { shortsSyncOn = !shortsSyncOn; btnShortsSync.classList.toggle('off', !shortsSyncOn); btnShortsSync.innerText = shortsSyncOn ? '🔗' : '🚫'; shortsToast(shortsSyncOn ? 'Swipe disinkron dengan pacar' : 'Sinkron swipe dimatikan'); });
+  btnShortsDel.addEventListener('click', async () => { if (!shortsQueue.length) return; if (!confirm('Hapus video ini dari daftar?')) return; shortsQueue.splice(currentShortIndex, 1); currentShortVideoId = shortsQueue.length ? shortsQueue[Math.min(currentShortIndex, shortsQueue.length - 1)].videoId : null; await saveShortsQueue(); renderShortsFeed(true); if (shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'queue_update', payload: { queue: shortsQueue } }); shortsToast('Video dihapus'); });
+
   btnOpenShorts.addEventListener('click', async () => {
-    shortsModal.classList.add('show');
+    shortsModal.classList.add('show'); startShortsHud();
     if (shortsQueue.length === 0 && currentUser) {
       const { data } = await supabaseClient.from('couple_settings').select('shorts_queue').eq('id', 1).maybeSingle();
       if (data && Array.isArray(data.shorts_queue)) shortsQueue = data.shorts_queue;
     }
     renderShortsFeed(false);
+    if (shortsChannel) setTimeout(() => { if (shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'request_state', payload: {} }); }, 700);
     if (!shortsChannel) {
       shortsChannel = supabaseClient.channel('sync_shorts_room');
-      shortsChannel.on('broadcast', { event: 'swipe' }, p => { const { index, videoId } = p.payload; if (!shortsFeed.children[index]) return; isRemoteScroll = true; currentShortIndex = index; currentShortVideoId = videoId; initShortPlayer(index); shortsFeed.scrollTo({ top: index * shortsFeed.clientHeight, behavior: 'smooth' }); clearTimeout(window.shortsRemoteScrollTimeout); window.shortsRemoteScrollTimeout = setTimeout(() => { isRemoteScroll = false; }, 1500); });
+      shortsChannel.on('broadcast', { event: 'swipe' }, p => { const { index, videoId } = p.payload; if (!shortsFeed.children[index]) return; if (!shortsSyncOn || index === currentShortIndex || !shortsModal.classList.contains('show')) return; isRemoteScroll = true; shortsFeed.scrollTo({ top: index * shortsFeed.clientHeight, behavior: Math.abs(index - currentShortIndex) === 1 ? 'smooth' : 'auto' }); clearTimeout(window.shortsRemoteScrollTimeout); window.shortsRemoteScrollTimeout = setTimeout(() => { isRemoteScroll = false; }, 1500); });
       shortsChannel.on('broadcast', { event: 'queue_update' }, p => { const nq = p.payload.queue; if (!Array.isArray(nq)) return; if (shortsQueueHash(nq) === shortsQueueHash(shortsQueue)) return; shortsQueue = nq; if (shortsModal.classList.contains('show')) renderShortsFeed(true); });
       shortsChannel.on('broadcast', { event: 'request_state' }, () => { if (shortsModal.classList.contains('show') && currentShortVideoId) shortsChannel.send({ type: 'broadcast', event: 'reply_state', payload: { index: currentShortIndex, videoId: currentShortVideoId, queue: shortsQueue } }); });
-      shortsChannel.on('broadcast', { event: 'reply_state' }, p => { const { videoId, queue } = p.payload; if (!Array.isArray(queue) || queue.length === 0) return; if (shortsQueueHash(queue) !== shortsQueueHash(shortsQueue)) { shortsQueue = queue; renderShortsFeed(false); } setTimeout(() => { const ti = shortsQueue.findIndex(v => v.videoId === videoId); if (ti >= 0 && shortsFeed.children[ti]) { isRemoteScroll = true; currentShortIndex = ti; currentShortVideoId = videoId; initShortPlayer(ti); shortsFeed.scrollTop = ti * shortsFeed.clientHeight; setTimeout(() => { isRemoteScroll = false; }, 1500); } }, 400); });
+      shortsChannel.on('broadcast', { event: 'reply_state' }, p => { const { videoId, queue } = p.payload; if (!Array.isArray(queue) || queue.length === 0) return; if (shortsQueueHash(queue) !== shortsQueueHash(shortsQueue)) { shortsQueue = queue; renderShortsFeed(false); } setTimeout(() => { const ti = shortsQueue.findIndex(v => v.videoId === videoId); if (ti >= 0 && shortsFeed.children[ti]) { if (ti !== currentShortIndex) { isRemoteScroll = true; shortsFeed.scrollTop = ti * shortsFeed.clientHeight; } setTimeout(() => { isRemoteScroll = false; }, 1500); } }, 400); });
+      shortsChannel.on('broadcast', { event: 'like' }, () => { shortsHearts(true); shortsToast('Pacar kirim ❤️'); AudioManager.playNotif(); });
       shortsChannel.subscribe(s => { if (s === 'SUBSCRIBED') setTimeout(() => { if (shortsChannel) shortsChannel.send({ type: 'broadcast', event: 'request_state', payload: {} }); }, 600); });
     }
   });
 
-  btnCloseShorts.addEventListener('click', () => { shortsModal.classList.remove('show'); if (shortsObserver) { shortsObserver.disconnect(); shortsObserver = null; } if (shortsRenderTimeout) { clearTimeout(shortsRenderTimeout); shortsRenderTimeout = null; } destroyActiveShortPlayer(); });
+  btnCloseShorts.addEventListener('click', () => { shortsModal.classList.remove('show'); stopShortsHud(); if (shortsObserver) { shortsObserver.disconnect(); shortsObserver = null; } if (shortsRenderTimeout) { clearTimeout(shortsRenderTimeout); shortsRenderTimeout = null; } destroyActiveShortPlayer(); });
 
   btnAddShort.addEventListener('click', async () => {
     const raw = shortsUrlInput.value.trim();
