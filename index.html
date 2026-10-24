@@ -1366,6 +1366,13 @@ input::placeholder,textarea::placeholder{color:var(--text-sub);opacity:.55}
 .ql-item button{flex:none;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.06);color:var(--text-sub);font-size:14px;cursor:pointer}
 #shortsModal .sheet-pane[data-pane="paste"] textarea{margin:12px 0;width:100%;min-height:96px}
 @media(max-height:560px){.shorts-rail{bottom:calc(env(safe-area-inset-bottom,0px) + 70px);gap:6px}.sh-btn{width:38px;height:38px}.sh-sheet{height:92%}}
+
+/* v7: kategori */
+.sh-sec{margin:14px 2px 8px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:13px;color:var(--primary)}
+.sh-sec:first-child{margin-top:4px}
+.sh-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sh-chips{display:block;margin:12px 0}
+.sh-rand{width:100%;margin-top:14px;background:linear-gradient(135deg,rgba(229,185,142,.16),rgba(220,163,165,.16));color:var(--primary)}
 </style>
 </head>
 <body>
@@ -1958,7 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnResync.addEventListener('click', () => { swForce = true; swSend('request_state'); showSyncStatus('🔄 Menyamakan dengan pacar...', true); setTimeout(() => { swForce = false; }, 4000); });
   btnLoadVideo.addEventListener('click', () => { const u = ytUrlInput.value.trim(); if (!u) return alert('Paste link!'); const v = extractYouTubeId(u); if (!v) return alert('Invalid! Cek format link YouTube/Live.'); loadNewVideo(v); });
 
-  let shortsReady = false, shortsLoadedId = null, shortsPendingId = null, shortsMeta = {}, shortsMoving = false, shortsMoveT = null, shortsAutoNext = false, shortsRate = 1, shortsErrTimer = null;
+  let shortsPosFor = null, shortsHudN = 0, shortsSyncToastT = 0, shortsReady = false, shortsLoadedId = null, shortsPendingId = null, shortsMeta = {}, shortsMoving = false, shortsMoveT = null, shortsAutoNext = false, shortsRate = 1, shortsErrTimer = null;
   function destroyActiveShortPlayer() {
     if (activeShortPlayer) { try { activeShortPlayer.stopVideo(); } catch (e) {} try { activeShortPlayer.destroy(); } catch (e) {} }
     activeShortPlayer = null; shortsReady = false; shortsLoadedId = null; shortsPendingId = null;
@@ -1978,7 +1985,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function shortsHintCheck() { setTimeout(() => { try { if (!activeShortPlayer || !shortsReady) return; const st = activeShortPlayer.getPlayerState(); if (st !== 1 && st !== 3) { const ov = shortsFeed.querySelector('.shorts-slide.active .shorts-touch-overlay'); if (ov && !ov.querySelector('.tap-play-hint')) { const h = document.createElement('div'); h.className = 'tap-play-hint'; h.textContent = '▶️ Tap untuk play'; ov.appendChild(h); } } } catch (e) {} }, 2200); }
   function onShortsState(e) {
     const slide = shortsFeed.querySelector('.shorts-slide.active');
-    if (e.data === YT.PlayerState.PLAYING) { if (slide) { slide.classList.add('playing'); const h = slide.querySelector('.tap-play-hint'); if (h) h.remove(); } try { if (shortsRate !== 1) e.target.setPlaybackRate(shortsRate); } catch (er) {} }
+    if (e.data === YT.PlayerState.PLAYING) { if (slide) { slide.classList.add('playing'); const h = slide.querySelector('.tap-play-hint'); if (h) h.remove(); } if (shortsLeader && shortsSyncOn && shortsChannel && shortsPosFor !== shortsLoadedId) { shortsPosFor = shortsLoadedId; setTimeout(shortsTickSend, 600); } try { if (shortsRate !== 1) e.target.setPlaybackRate(shortsRate); } catch (er) {} }
     else if (e.data === YT.PlayerState.ENDED) { if (shortsAutoNext && currentShortIndex < shortsQueue.length - 1) shortsGoto(currentShortIndex + 1); else { try { e.target.seekTo(0); e.target.playVideo(); } catch (er) {} } }
   }
   function createShortsPlayer(vid) {
@@ -2077,14 +2084,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnShortsMute = $s('btnShortsMute'), btnShortsLike = $s('btnShortsLike'), btnShortsSync = $s('btnShortsSync'), btnShortsAuto = $s('btnShortsAuto'), btnShortsSpeed = $s('btnShortsSpeed');
   function updateShortsHud() { if (shortsCount) shortsCount.textContent = shortsQueue.length ? (currentShortIndex + 1) + ' / ' + shortsQueue.length : '–'; }
   function shortsToast(t) { if (!shortsToastEl) return; shortsToastEl.textContent = t; shortsToastEl.classList.add('show'); clearTimeout(shortsToastT); shortsToastT = setTimeout(() => shortsToastEl.classList.remove('show'), 1800); }
-  function startShortsHud() { stopShortsHud(); updateShortsHud(); shortsHudTimer = setInterval(() => { try { if (!activeShortPlayer || !shortsReady || shortsScrubbing) return; const d = activeShortPlayer.getDuration(), c = activeShortPlayer.getCurrentTime(); if (d > 0) { shortsProg.style.transform = 'scaleX(' + Math.min(c / d, 1) + ')'; $s('shortsTimeCur').textContent = formatTime(c); $s('shortsTimeDur').textContent = formatTime(d); } } catch (e) {} }, 250); }
+  function startShortsHud() { stopShortsHud(); updateShortsHud(); shortsHudTimer = setInterval(() => { shortsHudN++; if (shortsHudN % 12 === 0) shortsTickSend(); try { if (!activeShortPlayer || !shortsReady || shortsScrubbing) return; const d = activeShortPlayer.getDuration(), c = activeShortPlayer.getCurrentTime(); if (d > 0) { shortsProg.style.transform = 'scaleX(' + Math.min(c / d, 1) + ')'; $s('shortsTimeCur').textContent = formatTime(c); $s('shortsTimeDur').textContent = formatTime(d); } } catch (e) {} }, 250); }
   function stopShortsHud() { if (shortsHudTimer) { clearInterval(shortsHudTimer); shortsHudTimer = null; } }
   function shortsGlyph(host, ch) { const g = document.createElement('div'); g.className = 'sh-glyph'; g.textContent = ch; host.appendChild(g); setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 650); }
   function shortsSend(event, payload) { if (shortsChannel) { try { shortsChannel.send({ type: 'broadcast', event, payload: payload || {} }); } catch (e) {} } }
   function shortsBroadcastQueue() { shortsSend('queue_update', { queue: shortsQueue, topic: shortsAutoTopic }); }
   function shortsFloat(emoji) { const host = shortsModal.querySelector('.modal-content'); if (!host) return; for (let i = 0; i < 6; i++) { const h = document.createElement('div'); h.className = 'heart'; h.textContent = emoji; h.style.left = 'auto'; h.style.right = (18 + Math.random() * 56) + 'px'; h.style.bottom = (130 + Math.random() * 40) + 'px'; h.style.fontSize = (22 + Math.random() * 14) + 'px'; h.style.animationDelay = (i * 0.08) + 's'; host.appendChild(h); setTimeout(() => { if (h.parentNode) h.parentNode.removeChild(h); }, 2400); } }
   function shortsLikeAt(x, y) { const host = shortsModal.querySelector('.modal-content'), b = document.createElement('div'); b.className = 'sh-bigheart'; b.textContent = '❤️'; b.style.left = x + 'px'; b.style.top = y + 'px'; host.appendChild(b); setTimeout(() => { if (b.parentNode) b.parentNode.removeChild(b); }, 900); shortsFloat('❤️'); AudioManager.playPop(); safeVibrate(20); shortsSend('like', {}); }
-  function shortsTogglePlay(ov) { const p = activeShortPlayer; if (!p || !shortsReady) return; try { if (p.getPlayerState() === 1) { p.pauseVideo(); shortsGlyph(ov, '⏸'); } else { p.playVideo(); if (!shortsMuted) p.unMute(); shortsGlyph(ov, '▶'); const h = ov.querySelector('.tap-play-hint'); if (h) h.remove(); } } catch (e) {} }
+  function shortsPlayerInfo() { const p = activeShortPlayer; if (!p || !shortsReady) return null; try { return { time: p.getCurrentTime() || 0, playing: p.getPlayerState() === 1 }; } catch (e) { return null; } }
+  function shortsSendPos(action, time) { if (!shortsSyncOn || !shortsChannel || !currentShortVideoId) return; const i = shortsPlayerInfo(); if (!i) return; shortsLeader = true; shortsSend('sp', { videoId: currentShortVideoId, action, time: time != null ? time : i.time }); }
+  function shortsTickSend() { if (!shortsSyncOn || !shortsChannel || !shortsLeader || !currentShortVideoId) return; const i = shortsPlayerInfo(); if (!i) return; shortsSend('sp', { videoId: currentShortVideoId, action: 'tick', time: i.time, playing: i.playing }); }
+  function shortsApplyPos(vid, time, playing, force) {
+    const p = activeShortPlayer; if (!p || !shortsReady || vid !== currentShortVideoId || shortsLoadedId !== vid) return; let ct = 0, d = 0;
+    try { ct = p.getCurrentTime() || 0; d = p.getDuration() || 0; } catch (e) { return; }
+    const target = time + (playing ? 0.25 : 0); let diff = Math.abs(ct - target); if (d > 0) diff = Math.min(diff, Math.abs(d - diff));
+    try { const need = force || diff > (playing ? 1.5 : 0.6); if (need) p.seekTo(target, true); const st = p.getPlayerState(); if (playing && st !== 1) p.playVideo(); else if (!playing && st === 1) p.pauseVideo(); if (need && !force && Date.now() - shortsSyncToastT > 10000) { shortsSyncToastT = Date.now(); shortsToast('⏩ Disamakan dengan pacar'); } } catch (e) {}
+  }
+  function shortsTogglePlay(ov) { const p = activeShortPlayer; if (!p || !shortsReady) return; try { if (p.getPlayerState() === 1) { p.pauseVideo(); shortsGlyph(ov, '⏸'); shortsSendPos('pause'); } else { p.playVideo(); if (!shortsMuted) p.unMute(); shortsGlyph(ov, '▶'); shortsSendPos('play'); const h = ov.querySelector('.tap-play-hint'); if (h) h.remove(); } } catch (e) {} }
   shortsFeed.addEventListener('click', e => { const ov = e.target.closest ? e.target.closest('.shorts-touch-overlay') : null; if (!ov) return; const now = Date.now(); if (now - lastTap < 300) { clearTimeout(tapT); lastTap = 0; shortsLikeAt(e.clientX, e.clientY); return; } lastTap = now; tapT = setTimeout(() => { lastTap = 0; shortsTogglePlay(ov); }, 280); });
   shortsFeed.addEventListener('scroll', () => { if (!shortsMoving) { shortsMoving = true; shortsFeed.classList.add('moving'); } clearTimeout(shortsMoveT); shortsMoveT = setTimeout(() => { shortsMoving = false; shortsFeed.classList.remove('moving'); }, 150); }, { passive: true });
   shortsFeed.addEventListener('error', e => { if (e.target && e.target.classList && e.target.classList.contains('sh-poster')) e.target.style.visibility = 'hidden'; }, true);
@@ -2092,14 +2108,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const calc = e => { const r = bar.getBoundingClientRect(); pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); shortsProg.style.transform = 'scaleX(' + pct + ')'; };
     bar.addEventListener('pointerdown', e => { if (!activeShortPlayer || !shortsReady) return; shortsScrubbing = true; try { bar.setPointerCapture(e.pointerId); } catch (er) {} calc(e); });
     bar.addEventListener('pointermove', e => { if (shortsScrubbing) calc(e); });
-    bar.addEventListener('pointerup', () => { if (!shortsScrubbing) return; shortsScrubbing = false; try { const d = activeShortPlayer.getDuration() || 0; if (d > 0) activeShortPlayer.seekTo(pct * d, true); } catch (er) {} });
+    bar.addEventListener('pointerup', () => { if (!shortsScrubbing) return; shortsScrubbing = false; try { const d = activeShortPlayer.getDuration() || 0; if (d > 0) { activeShortPlayer.seekTo(pct * d, true); shortsSendPos('seek', pct * d); } } catch (er) {} });
     bar.addEventListener('pointercancel', () => { shortsScrubbing = false; }); })();
   btnShortsLike.addEventListener('click', () => shortsLikeAt(window.innerWidth - 60, window.innerHeight * 0.55));
   $s('btnShortsReact').addEventListener('click', () => shortsTray.classList.toggle('open'));
   shortsTray.addEventListener('click', e => { const b = e.target.closest ? e.target.closest('button') : null; if (!b) return; const em = b.dataset.e; shortsFloat(em); AudioManager.playPop(); shortsSend('react', { emoji: em }); shortsTray.classList.remove('open'); });
   btnShortsMute.addEventListener('click', () => { shortsMuted = !shortsMuted; btnShortsMute.textContent = shortsMuted ? '🔇' : '🔊'; try { if (activeShortPlayer && shortsReady) { if (shortsMuted) activeShortPlayer.mute(); else { activeShortPlayer.unMute(); activeShortPlayer.setVolume(100); } } } catch (e) {} });
   const SH_RATES = [1, 1.25, 1.5, 2, 0.75];
-  btnShortsSpeed.addEventListener('click', () => { shortsRate = SH_RATES[(SH_RATES.indexOf(shortsRate) + 1) % SH_RATES.length]; btnShortsSpeed.textContent = shortsRate + 'x'; try { if (activeShortPlayer && shortsReady) activeShortPlayer.setPlaybackRate(shortsRate); } catch (e) {} shortsToast('Kecepatan ' + shortsRate + 'x'); });
+  btnShortsSpeed.addEventListener('click', () => { shortsRate = SH_RATES[(SH_RATES.indexOf(shortsRate) + 1) % SH_RATES.length]; btnShortsSpeed.textContent = shortsRate + 'x'; try { if (activeShortPlayer && shortsReady) activeShortPlayer.setPlaybackRate(shortsRate); } catch (e) {} shortsToast('Kecepatan ' + shortsRate + 'x'); if (shortsSyncOn) shortsSend('sp', { videoId: currentShortVideoId, action: 'rate', rate: shortsRate }); });
   btnShortsAuto.addEventListener('click', () => { shortsAutoNext = !shortsAutoNext; btnShortsAuto.classList.toggle('off', !shortsAutoNext); shortsToast(shortsAutoNext ? 'Lanjut otomatis aktif ⏭' : 'Lanjut otomatis mati (video diulang)'); });
   btnShortsSync.addEventListener('click', () => { shortsSyncOn = !shortsSyncOn; btnShortsSync.classList.toggle('off', !shortsSyncOn); btnShortsSync.textContent = shortsSyncOn ? '🔗' : '🚫'; shortsToast(shortsSyncOn ? 'Swipe disinkron dengan pacar' : 'Sinkron swipe dimatikan'); });
   async function shortsRemoveAt(i) { if (!shortsQueue[i]) return; const cur = shortsQueue[currentShortIndex] ? shortsQueue[currentShortIndex].videoId : null, wasCur = shortsQueue[i].videoId === cur; shortsQueue.splice(i, 1); currentShortVideoId = wasCur ? (shortsQueue.length ? shortsQueue[Math.min(i, shortsQueue.length - 1)].videoId : null) : cur; await saveShortsQueue(); renderShortsFeed(true); shortsBroadcastQueue(); renderQList(); }
@@ -2116,28 +2132,39 @@ document.addEventListener('DOMContentLoaded', () => {
   function mkRow(v, label, btnText, onMain, onBtn, active) { const r = document.createElement('div'); r.className = 'ql-item' + (active ? ' active' : ''); const im = document.createElement('img'); im.loading = 'lazy'; im.alt = ''; im.src = 'https://img.youtube.com/vi/' + encodeURIComponent(v.videoId) + '/default.jpg'; r.appendChild(im); const t = document.createElement('div'); t.className = 'ql-t'; const b = document.createElement('b'), s = document.createElement('span'), m = shortsMeta[v.videoId] || {}; b.textContent = m.title || v.title || label; s.textContent = m.author || v.author || ''; t.appendChild(b); t.appendChild(s); r.appendChild(t); const x = document.createElement('button'); x.textContent = btnText; x.addEventListener('click', e => { e.stopPropagation(); onBtn(); }); r.appendChild(x); r.addEventListener('click', onMain); return r; }
   function renderQList() { const l = $s('shortsQList'); l.innerHTML = ''; if (!shortsQueue.length) { l.innerHTML = '<div class="sh-hint">Antrean kosong. Cari video di tab Jelajah ✨</div>'; return; } const f = document.createDocumentFragment(); shortsQueue.forEach((v, i) => f.appendChild(mkRow(v, 'Video ' + (i + 1), '✕', () => { closeShortsSheet(); shortsGoto(i); }, () => shortsRemoveAt(i), i === currentShortIndex))); l.appendChild(f); const a = l.querySelector('.active'), pane = l.parentNode; if (a && pane) pane.scrollTop = Math.max(0, a.offsetTop - 90); }
 
-  const SH_API = [['p', 'https://pipedapi.kavin.rocks'], ['p', 'https://pipedapi.adminforge.de'], ['p', 'https://api.piped.private.coffee'], ['p', 'https://pipedapi.leptons.xyz'], ['i', 'https://inv.nadeko.net'], ['i', 'https://yewtu.be'], ['i', 'https://invidious.nerdvpn.de']];
+  const SH_API = [['i', 'https://inv.nadeko.net'], ['i', 'https://yewtu.be'], ['i', 'https://invidious.nerdvpn.de'], ['p', 'https://pipedapi.kavin.rocks'], ['p', 'https://pipedapi.adminforge.de'], ['p', 'https://api.piped.private.coffee'], ['p', 'https://pipedapi.leptons.xyz']];
   const shortsCache = {};
   async function shortsFetchJson(url, ms) { const c = new AbortController(), t = setTimeout(() => c.abort(), ms); try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) throw new Error('http'); return await r.json(); } finally { clearTimeout(t); } }
-  function shortsParse(kind, d) { const arr = kind === 'p' ? (d && d.items) : d; if (!Array.isArray(arr)) return []; const res = []; arr.forEach(x => { let id, dur, title, author; if (kind === 'p') { const m = /[?&]v=([\w-]{11})/.exec(x.url || ''); id = m && m[1]; dur = x.duration; title = x.title; author = x.uploaderName; } else { id = x.videoId; dur = x.lengthSeconds; title = x.title; author = x.author; } if (id && dur > 0 && dur <= 75) res.push({ videoId: id, title: String(title || '').slice(0, 120), author: String(author || '').slice(0, 60) }); }); return res; }
-  async function shortsFind(q) {
-    const key = q.toLowerCase(), hit = shortsCache[key]; if (hit && Date.now() - hit.t < 600000) return hit.v.slice();
-    const query = q + ' #shorts'; let v;
-    try { v = await Promise.any(SH_API.map(([k, b]) => shortsFetchJson(k === 'p' ? b + '/search?q=' + encodeURIComponent(query) + '&filter=videos' : b + '/api/v1/search?q=' + encodeURIComponent(query) + '&type=video', 8000).then(d => { const r = shortsParse(k, d); if (!r.length) throw new Error('kosong'); return r; }))); }
-    catch (e) { throw new Error('Pencarian lagi nggak tersedia. Pakai tab Tempel dulu ya 🙏'); }
+  const SH_MAXDUR = 120, SH_AGE = { today: 2 * 864e5, week: 8 * 864e5, month: 32 * 864e5 };
+  function shortsParse(kind, d) { const arr = kind === 'p' ? (d && d.items) : d; if (!Array.isArray(arr)) return []; const res = []; arr.forEach(x => { let id, dur, title, author, up, views; if (kind === 'p') { const m = /[?&]v=([\w-]{11})/.exec(x.url || ''); id = m && m[1]; dur = x.duration; title = x.title; author = x.uploaderName; up = x.uploaded > 0 ? x.uploaded : 0; views = x.views; } else { id = x.videoId; dur = x.lengthSeconds; title = x.title; author = x.author; up = x.published > 0 ? x.published * 1000 : 0; views = x.viewCount; } if (id && dur > 0 && dur <= SH_MAXDUR) res.push({ videoId: id, title: String(title || '').slice(0, 120), author: String(author || '').slice(0, 60), up: up || 0, views: views > 0 ? views : 0 }); }); return res; }
+  function shortsRank(list) { const now = Date.now(); list.forEach(x => { const days = x.up ? Math.max(0, (now - x.up) / 864e5) : 30; x.s = Math.log10((x.views || 1) + 10) / Math.pow(days + 2, 0.35) + Math.random() * 0.15; }); return list.sort((a, b) => b.s - a.s); }
+  function shortsUrl(kind, base, q, age) { if (kind === 'p') return base + '/search?q=' + encodeURIComponent(q + ' 2026') + '&filter=videos'; let u = base + '/api/v1/search?q=' + encodeURIComponent(q) + '&type=video&region=ID&duration=short&sort_by=view_count'; if (age !== 'any') u += '&date=' + age; return u; }
+  async function shortsFindOnce(q, age) {
+    const key = q.toLowerCase() + '|' + age, hit = shortsCache[key]; if (hit && Date.now() - hit.t < 600000) return hit.v.slice();
+    const query = q + ' #shorts';
+    const v = await Promise.any(SH_API.map(([k, b]) => shortsFetchJson(shortsUrl(k, b, query, age), 8000).then(d => { let r = shortsParse(k, d); if (age !== 'any' && r.some(x => x.up)) { const lim = Date.now() - SH_AGE[age]; r = r.filter(x => !x.up || x.up >= lim); } if (!r.length) throw new Error('kosong'); return r; })));
     shortsCache[key] = { t: Date.now(), v }; return v.slice();
+  }
+  async function shortsFind(q, age0) {
+    const ladder = age0 === 'today' ? ['today', 'week', 'month', 'any'] : age0 === 'week' ? ['week', 'month', 'any'] : ['week', 'month', 'any']; let best = [];
+    for (const age of ladder) { try { const r = await shortsFindOnce(q, age); if (r.length > best.length) best = r; if (r.length >= 6) break; } catch (e) {} }
+    if (!best.length) throw new Error('Pencarian lagi nggak tersedia. Pakai tab Tempel dulu ya 🙏');
+    return shortsRank(best);
   }
   async function shortsAddItems(items) {
     const have = new Set(shortsQueue.map(s => s.videoId)), fresh = items.filter(x => !have.has(x.videoId));
-    for (let i = fresh.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = fresh[i]; fresh[i] = fresh[j]; fresh[j] = t; }
     const take = fresh.slice(0, 15); if (!take.length) { shortsToast('Belum ada video baru, coba topik lain'); return 0; }
     const old = shortsQueue.length; take.forEach(x => shortsQueue.push({ videoId: x.videoId, title: x.title, author: x.author, addedBy: currentUser ? currentUser.id : null }));
     await saveShortsQueue(); if (shortsModal.classList.contains('show')) { if (old === 0) renderShortsFeed(false); else shortsAppend(old); } updateShortsHud(); shortsBroadcastQueue(); return take.length;
   }
   function shortsSetTopic(q) { shortsAutoTopic = q; try { localStorage.setItem('ll_shorts_topic', q); } catch (e) {} }
-  async function shortsExplore(q, label, btn) { if (btn.classList.contains('busy')) return; btn.classList.add('busy'); try { shortsSetTopic(q); const n = await shortsAddItems(await shortsFind(q)); if (n) { shortsToast('+' + n + ' video ' + label + ' ✨'); AudioManager.playSuccess(); closeShortsSheet(); } } catch (e) { shortsToast(e.message || 'Gagal memuat'); } finally { btn.classList.remove('busy'); } }
-  const SH_TOPICS = [['😂', 'Lucu', 'video lucu'], ['🐱', 'Hewan', 'kucing lucu hewan'], ['🍳', 'Masak', 'resep masak simpel'], ['✈️', 'Travel', 'travel indonesia'], ['🎵', 'Musik', 'cover lagu'], ['🎮', 'Gaming', 'gaming momen'], ['🔬', 'Fakta', 'fakta unik sains'], ['💕', 'Couple', 'couple goals romantis'], ['🏋️', 'Olahraga', 'olahraga skill'], ['🎨', 'DIY', 'diy kreatif']];
-  (function () { const box = $s('shortsChips'); SH_TOPICS.forEach(t => { const b = document.createElement('button'); b.className = 'sh-chip'; b.textContent = t[0] + ' ' + t[1]; b.addEventListener('click', () => shortsExplore(t[2], t[1], b)); box.appendChild(b); }); const r = document.createElement('button'); r.className = 'sh-chip'; r.textContent = '🎲 Acak'; r.addEventListener('click', () => { const t = SH_TOPICS[Math.floor(Math.random() * SH_TOPICS.length)]; shortsExplore(t[2], t[1], r); }); box.appendChild(r); })();
+  async function shortsExplore(q, label, btn, age0) { if (btn.classList.contains('busy')) return; btn.classList.add('busy'); try { shortsSetTopic(q); const n = await shortsAddItems(await shortsFind(q, age0)); if (n) { shortsToast('+' + n + ' video ' + label + ' ✨'); AudioManager.playSuccess(); closeShortsSheet(); } } catch (e) { shortsToast(e.message || 'Gagal memuat'); } finally { btn.classList.remove('busy'); } }
+  const SH_GROUPS = [
+    ['🔥 Lagi viral', [['🔥', 'Viral hari ini', 'viral shorts indonesia', 'today'], ['📈', 'Trending minggu ini', 'trending shorts indonesia', 'week']]],
+    ['🫧 Satisfying & santai', [['🧸', 'Squishy', 'squishy satisfying'], ['🫧', 'Slime', 'slime satisfying asmr'], ['🌙', 'ASMR ngantuk', 'asmr relaxing sleep satisfying'], ['✨', 'Satisfying', 'oddly satisfying'], ['🏖️', 'Kinetic sand', 'kinetic sand satisfying'], ['🎀', 'Mainan & fidget', 'mainan fidget pop it viral'], ['🍡', 'Kuliner satisfying', 'satisfying food asmr'], ['🎨', 'DIY & craft', 'diy kreatif satisfying']]],
+    ['🎬 Hiburan', [['😂', 'Lucu', 'video lucu'], ['🐱', 'Hewan', 'kucing lucu hewan'], ['🍳', 'Masak', 'resep masak simpel'], ['💕', 'Couple', 'couple goals romantis'], ['🎵', 'Musik', 'cover lagu'], ['🎮', 'Gaming', 'gaming momen'], ['🔬', 'Fakta', 'fakta unik sains'], ['✈️', 'Travel', 'travel indonesia']]]
+  ];
+  (function () { const box = $s('shortsChips'), all = []; SH_GROUPS.forEach(g => { const h = document.createElement('div'); h.className = 'sh-sec'; h.textContent = g[0]; box.appendChild(h); const grid = document.createElement('div'); grid.className = 'sh-grid'; g[1].forEach(t => { all.push(t); const b = document.createElement('button'); b.className = 'sh-chip'; b.textContent = t[0] + ' ' + t[1]; b.addEventListener('click', () => shortsExplore(t[2], t[1], b, t[3])); grid.appendChild(b); }); box.appendChild(grid); }); const r = document.createElement('button'); r.className = 'sh-chip sh-rand'; r.textContent = '🎲 Kejutan (acak)'; r.addEventListener('click', () => { const t = all[Math.floor(Math.random() * all.length)]; shortsExplore(t[2], t[1], r, t[3]); }); box.appendChild(r); })();
   async function shortsDoSearch() {
     const q = $s('shortsSearch').value.trim(); if (!q) return; const box = $s('shortsResults'); box.innerHTML = '<div class="sh-hint">Mencari...</div>';
     try { const items = await shortsFind(q); box.innerHTML = ''; const all = document.createElement('button'); all.className = 'btn btn-accent sh-all'; all.textContent = 'Tambah semua (' + Math.min(items.length, 15) + ')'; all.addEventListener('click', async () => { shortsSetTopic(q); const n = await shortsAddItems(items); if (n) { shortsToast('+' + n + ' video ✨'); closeShortsSheet(); } }); box.appendChild(all); const f = document.createDocumentFragment(); items.slice(0, 20).forEach(v => f.appendChild(mkRow(v, 'Video', '＋', () => {}, async () => { const n = await shortsAddItems([v]); if (n) shortsToast('Ditambah ✨'); }, false))); box.appendChild(f); }
@@ -2147,7 +2174,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $s('shortsSearch').addEventListener('keydown', e => { if (e.key === 'Enter') shortsDoSearch(); });
   async function shortsMaybeRefill() {
     if (!shortsAutoTopic || shortsRefilling || !$s('shortsAutoRefill').checked) return; if (shortsQueue.length - currentShortIndex > 3) return; if (shortsChannel && !shortsLeader) return;
-    shortsRefilling = true; try { const mods = ['', ' terbaru', ' viral', ' compilation', ' populer', ' 2026']; shortsMods = (shortsMods + 1) % mods.length; const n = await shortsAddItems(await shortsFind(shortsAutoTopic + mods[shortsMods])); if (n) shortsToast('+' + n + ' video baru ✨'); } catch (e) {} finally { shortsRefilling = false; }
+    shortsRefilling = true; try { const mods = ['', ' viral hari ini', ' terbaru', ' trending', ' populer', ' baru upload']; shortsMods = (shortsMods + 1) % mods.length; const n = await shortsAddItems(await shortsFind(shortsAutoTopic + mods[shortsMods])); if (n) shortsToast('+' + n + ' video baru ✨'); } catch (e) {} finally { shortsRefilling = false; }
   }
   $s('btnShortsClip').addEventListener('click', async () => {
     try { const t = await navigator.clipboard.readText(); const urls = (t || '').match(/https?:\/\/[^\s]+/g) || []; const ok = urls.filter(u => extractYouTubeId(u) || /[?&]list=/.test(u) || /youtube\.com\/(@|channel\/)/.test(u));
@@ -2156,7 +2183,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnOpenShorts.addEventListener('click', async () => {
-    shortsModal.classList.add('show'); startShortsHud();
+    shortsModal.classList.add('show'); startShortsHud(); shortsLeader = false;
     if (shortsQueue.length === 0 && currentUser) { const { data } = await supabaseClient.from('couple_settings').select('shorts_queue').eq('id', 1).maybeSingle(); if (data && Array.isArray(data.shorts_queue)) shortsQueue = data.shorts_queue; }
     renderShortsFeed(true);
     if (shortsQueue.length === 0) openShortsSheet('explore');
@@ -2166,8 +2193,16 @@ document.addEventListener('DOMContentLoaded', () => {
       shortsChannel.on('presence', { event: 'sync' }, () => { try { const n = Object.keys(shortsChannel.presenceState()).length, el = $s('shortsPresence'); if (el) el.textContent = n >= 2 ? '💞 Pacar ikut nonton' : ''; } catch (e) {} });
       shortsChannel.on('broadcast', { event: 'swipe' }, p => { const { index } = p.payload; if (!shortsFeed.children[index]) return; if (!shortsSyncOn || index === currentShortIndex || !shortsModal.classList.contains('show')) return; shortsLeader = false; isRemoteScroll = true; shortsFeed.scrollTo({ top: index * shortsFeed.clientHeight, behavior: Math.abs(index - currentShortIndex) === 1 ? 'smooth' : 'auto' }); clearTimeout(window.shortsRemoteScrollTimeout); window.shortsRemoteScrollTimeout = setTimeout(() => { isRemoteScroll = false; }, 1500); });
       shortsChannel.on('broadcast', { event: 'queue_update' }, p => { const nq = p.payload.queue; if (!Array.isArray(nq)) return; if (p.payload.topic) shortsSetTopic(p.payload.topic); if (shortsQueueHash(nq) === shortsQueueHash(shortsQueue)) return; shortsApplyQueue(nq); });
-      shortsChannel.on('broadcast', { event: 'request_state' }, () => { if (shortsModal.classList.contains('show') && currentShortVideoId) shortsSend('reply_state', { index: currentShortIndex, videoId: currentShortVideoId, queue: shortsQueue, topic: shortsAutoTopic }); });
-      shortsChannel.on('broadcast', { event: 'reply_state' }, p => { const { videoId, queue, topic } = p.payload; if (!Array.isArray(queue) || queue.length === 0) return; if (topic) shortsSetTopic(topic); if (shortsQueueHash(queue) !== shortsQueueHash(shortsQueue)) { shortsQueue = queue; currentShortVideoId = videoId; renderShortsFeed(true); } setTimeout(() => { const ti = shortsQueue.findIndex(v => v.videoId === videoId); if (ti >= 0 && shortsFeed.children[ti] && ti !== currentShortIndex && shortsSyncOn) { isRemoteScroll = true; shortsFeed.scrollTop = ti * shortsFeed.clientHeight; setTimeout(() => { isRemoteScroll = false; }, 1500); } }, 400); });
+      shortsChannel.on('broadcast', { event: 'request_state' }, () => { if (shortsModal.classList.contains('show') && currentShortVideoId) { const pi = shortsPlayerInfo() || {}; shortsSend('reply_state', { index: currentShortIndex, videoId: currentShortVideoId, queue: shortsQueue, topic: shortsAutoTopic, time: pi.time || 0, playing: pi.playing !== false }); } });
+      shortsChannel.on('broadcast', { event: 'reply_state' }, p => { const { videoId, queue, topic } = p.payload; if (!Array.isArray(queue) || queue.length === 0) return; if (topic) shortsSetTopic(topic); if (shortsQueueHash(queue) !== shortsQueueHash(shortsQueue)) { shortsQueue = queue; currentShortVideoId = videoId; renderShortsFeed(true); } setTimeout(() => { const ti = shortsQueue.findIndex(v => v.videoId === videoId); if (ti >= 0 && shortsFeed.children[ti] && ti !== currentShortIndex && shortsSyncOn) { isRemoteScroll = true; shortsFeed.scrollTop = ti * shortsFeed.clientHeight; setTimeout(() => { isRemoteScroll = false; }, 1500); } }, 400); setTimeout(() => shortsApplyPos(videoId, p.payload.time || 0, p.payload.playing !== false, true), 2400); });
+      shortsChannel.on('broadcast', { event: 'sp' }, p => {
+        const d = p.payload || {}; if (!shortsSyncOn || !shortsModal.classList.contains('show') || d.videoId !== currentShortVideoId) return;
+        if (d.action === 'rate') { if (SH_RATES.indexOf(d.rate) >= 0) { shortsRate = d.rate; btnShortsSpeed.textContent = shortsRate + 'x'; try { if (activeShortPlayer && shortsReady) activeShortPlayer.setPlaybackRate(shortsRate); } catch (e) {} } return; }
+        shortsLeader = false;
+        if (d.action === 'tick') { shortsApplyPos(d.videoId, d.time, d.playing !== false, false); return; }
+        if (d.action === 'seek') { const i = shortsPlayerInfo(); shortsApplyPos(d.videoId, d.time, i ? i.playing : true, true); return; }
+        shortsApplyPos(d.videoId, d.time, d.action === 'play', false); shortsToast(d.action === 'play' ? '▶ Pacar memutar' : '⏸ Pacar pause');
+      });
       shortsChannel.on('broadcast', { event: 'like' }, () => { shortsFloat('💖'); shortsToast('Pacar kirim ❤️'); AudioManager.playNotif(); });
       shortsChannel.on('broadcast', { event: 'react' }, p => { shortsFloat(String((p.payload && p.payload.emoji) || '💖').slice(0, 4)); AudioManager.playNotif(); });
       shortsChannel.subscribe(async s => { if (s === 'SUBSCRIBED') { try { await shortsChannel.track({ t: Date.now() }); } catch (e) {} setTimeout(() => shortsSend('request_state'), 600); } });
